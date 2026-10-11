@@ -1,0 +1,86 @@
+// 材质缓存的烘焙入口（材质缓存.gd 把它接在自动翻译的 地形.gdshader 后面）。一个线程 = 缓存的一个纹素。
+// 和 地形.gdshader 片元第 1–7 步一一对应；区别：隐式导数换成按纹素边长 t 选 lod、像素足迹 fp = t、微观不烘（运行时实时加）、
+// 几何法线（露岩用）由高度层 + 地貌印章在纹素尺度上算。
+// 输出 A = (det × 积尘色, σ)、B = (0.5 + mg/2, 材质号/8, k/2)，k = 运行时微观对比系数：det_最终 ≈ det_缓存 ·(1 + k·(Dm − 1))。
+
+float mc_l(float texels, float span, float t) { return max(log2(max(t*texels/span, 1e-6)), 0.0); }   // 纹素边长 t 米对应的 mip
+
+void main() {
+	ivec2 id = ivec2(gl_GlobalInvocationID.xy);
+	if (id.x >= pc.rect.z || id.y >= pc.rect.w) return;
+	int layer = int(pc.lv.x); float t = pc.lv.y; int n = int(pc.lv.z);
+	ivec2 g = pc.rect.xy + id;                                   // 世界纹素编号（x 东、z 南）
+	ivec2 sto = ((g % n) + n) % n;                               // 环形寻址
+	vec2 xz = (vec2(g) + 0.5)*t;
+	vec3 P = vec3(xz.x, -xz.y, 0.0);                             // ENU（mat_frag 只用 P.xy）
+	float e = max(abs(P.x), abs(P.y));
+	// 1 宏观反照率 cur 与数据分辨率 res
+	vec3 cur = base_color; float res = data_res.x*4.0; float w;
+	w = region(e, half_size.x, 0.08); cur = mix(cur, textureLod(albedo_ctx, map_uv(P, half_size.x), mc_l(float(textureSize(albedo_ctx, 0).x), 2.0*half_size.x, t)).rgb, w); res = mix(res, data_res.x, w);
+	w = region(e, half_size.y, 0.08); cur = mix(cur, textureLod(albedo_hirise, map_uv(P, half_size.y), mc_l(float(textureSize(albedo_hirise, 0).x), 2.0*half_size.y, t)).rgb, w); res = mix(res, data_res.y, w);
+	vec4 tm = textureLod(albedo_mid, map_uv(P, half_size.z), mc_l(float(textureSize(albedo_mid, 0).x), 2.0*half_size.z, t));
+	w = region(e, half_size.z, 0.08)*tm.a; cur = mix(cur, tm.rgb, w); res = mix(res, data_res.z, w);
+	vec4 tn = textureLod(albedo_near, map_uv(P, half_size.w), mc_l(float(textureSize(albedo_near, 0).x), 2.0*half_size.w, t));
+	w = region(e, half_size.w, 0.08)*tn.a; cur = mix(cur, tn.rgb, w); res = mix(res, data_res.w, w);
+	// 1b 细层
+	float wf = 0.0;
+	if (fine_half > 0.0 && e < fine_half) {
+		vec2 fuv = map_uv(P, fine_half);
+		vec4 tf = textureLod(fine_alb, fuv, mc_l(float(textureSize(fine_alb, 0).x), 2.0*fine_half, t));
+		wf = tf.a;
+		cur = mix(cur, tf.rgb, wf); res = mix(res, 0.001*exp2(textureLod(fine_res, fuv, 0.0).r*(255.0/32.0)), wf);
+		vec4 pr = fine_patch_rect;
+		if (P.x > pr.x && P.x < pr.z && P.y > pr.y && P.y < pr.w) {
+			vec2 puv = vec2((P.x - pr.x)/max(pr.z - pr.x, 1e-3), (pr.w - P.y)/max(pr.w - pr.y, 1e-3));
+			vec4 tp = textureLod(fine_patch, puv, mc_l(float(textureSize(fine_patch, 0).x), pr.z - pr.x, t));
+			cur = mix(cur, tp.rgb, tp.a); res = mix(res, fine_patch_res, tp.a); wf = max(wf, tp.a);
+		}
+	}
+	// 3 频段门控（中观）
+	float g_meso = clamp(log2(2.0*res/0.04)/log2(0.5/0.04), 0.0, 1.0);
+	// 几何法线的 y（露岩）：高度层 + 地貌印章，在纹素尺度上
+	float kmin = max(log2(t/hlv_info.x), 0.0);
+	vec3 n0 = clip ? hl_normal(xz, hl_level(xz, kmin)) : vec3(0.0, 1.0, 0.0);
+	vec3 gv = geo_at2(xz, max(t, 0.02), max(t, 0.02), 0);
+	float ny = normalize(n0/n0.y - vec3(gv.y, 0.0, gv.z)).y;
+	// 4–7 材质（同 地形.gdshader）
+	float lee = mat_lee.z > 0.0 ? mat_lee.z*(1.0 - hz_rock_vis(xz + mat_lee.xy)) : 0.0;
+	float mr = 0.0;
+	float wh = region(e, half_size.y, 0.08);
+	if (wh > 0.0) mr = wh*clamp(log(max(dot(cur, LUM_W), 1e-3)/max(dot(textureLod(albedo_hirise, map_uv(P, half_size.y), 5.0).rgb, LUM_W), 1e-3)), -0.5, 0.5);
+	vec3 det; vec2 mg; float rough; float mdust; vec3 mdbg;
+	mc_mj = 0;
+	mat_frag(P, vec2(t, 0.0), vec2(0.0, t), t, g_meso, 0.0, ny, lee, mr, det, mg, rough, mdust, mdbg);
+	// 交界起伏（材质.gdshaderinc 的 mat_edge）：运行时用屏幕导数，这里没有导数，改成往 +x、+z 各走一个纹素的有限差分；
+	// 三处参与的材质 / k 档 / 过权重下限的组合不同（sk 不等）时是跳变不是交界，不加（同运行时 fwidth(sk) == 0 的条件）
+	if (mat_edge > 0.0 && (mat_perf & 1) == 0) {
+		vec3 bw0 = mc_bw, hk0 = mc_hk; float sk0 = mc_sk; int mj0 = mc_mj;
+		vec2 mgd; float rd_; float md_; vec3 dd_; vec3 dbd_;
+		mat_frag(P + vec3(t, 0.0, 0.0), vec2(t, 0.0), vec2(0.0, t), t, g_meso, 0.0, ny, lee, mr, dd_, mgd, rd_, md_, dbd_);
+		vec3 bwx = mc_bw; float skx = mc_sk;
+		mat_frag(P + vec3(0.0, t, 0.0), vec2(t, 0.0), vec2(0.0, t), t, g_meso, 0.0, ny, lee, mr, dd_, mgd, rd_, md_, dbd_);
+		vec3 bwy = mc_bw; float sky = mc_sk;
+		mc_mj = mj0;
+		if (skx == sk0 && sky == sk0) {
+			vec2 ge = vec2(dot(hk0, bwx - bw0), dot(hk0, bwy - bw0))/t;
+			float gl = length(ge);
+			if (gl > 1.0) ge /= gl;
+			mg += mat_edge*(1.0 - smoothstep(mat_lod.z, mat_lod.w, t))*ge;
+		}
+	}
+	// 运行时微观的对比系数：mat_frag 里 det = mix((1 + (det_raw·Dm − 1)·mc)·cb, 1, dw)，对 Dm 求导 / det
+	vec4 MN = mat_macro_n(P.xy);
+	float mc = clamp(1.0 + g_meso*(1.6*mat_macro.x*MN.x - mat_macro.y*mr), 0.35, 1.8);
+	float cb = 1.0 + g_meso*mat_macro.w*MN.y;
+	float dw = mat_dust.w*mdust*g_meso;
+	float dl = dot(det, LUM_W);
+	float raw = ((dl - dw)/max((1.0 - dw)*cb, 1e-3) - 1.0)/mc + 1.0;   // 亮度上的 det_raw
+	float k = (1.0 - dw)*cb*mc*raw/max(dl, 1e-3);
+	det *= mix(vec3(1.0), mat_dust.rgb, mdust*g_meso);           // 积尘色（地形.gdshader 在 mat_frag 外乘）
+	// 8 字节 / 纹素（两张 RGBA8）：A = (det/4 加抖动, σ)；B = (0.5 + mg/2, 材质号/8, k/2)
+	float dth = fract(sin(dot(vec3(vec2(g), float(layer)), vec3(12.9898, 78.233, 37.719)))*43758.5453) - 0.5;
+	imageStore(mc_out_a, ivec3(sto, layer), vec4(clamp(det/4.0, 0.0, 1.0) + dth/255.0, clamp(rough, 0.0, 1.0)));
+	imageStore(mc_out_b, ivec3(sto, layer), vec4(clamp(0.5 + 0.5*mg, 0.0, 1.0), (float(mc_mj) + 0.5)/16.0, clamp(0.5*k, 0.0, 1.0)));
+	// 微观自阴影（颗粒感 §2）：这一纹素的位移高度（米；和顶点位移同一个 mat_disp，按纹素边长选 mip）写进高度图，地平线那遍着色器读它
+	if (layer < int(pc.lv.w)) imageStore(mc_out_h, ivec3(sto, layer), vec4(disp_gain*mat_disp(xz, t, false)));
+}

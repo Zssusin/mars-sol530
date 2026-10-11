@@ -1,0 +1,155 @@
+From 5d7782b310193922d660b82a3f52e11baebbb707 Mon Sep 17 00:00:00 2001
+From: mars <mars@local>
+Date: Tue, 6 Oct 2026 13:29:48 -0400
+Subject: [PATCH 4/4] =?UTF-8?q?=E7=A9=BA=E9=97=B4=E7=9D=80=E8=89=B2?=
+ =?UTF-8?q?=E5=99=A8=E6=96=B0=E5=A2=9E=E5=86=85=E5=BB=BA=E5=B8=B8=E9=87=8F?=
+ =?UTF-8?q?=20IN=5FDEPTH=5FPREPASS=E3=80=81IN=5FNORMAL=5FPREPASS=EF=BC=88F?=
+ =?UTF-8?q?orward+=EF=BC=89?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+IN_DEPTH_PREPASS：主视图深度预通道（含法线/粗糙度）里为 true；阴影 pass、颜色 pass、
+SDFGI 体素化（MODE_RENDER_SDF）、GI 烘焙（MODE_RENDER_MATERIAL）里为 false——后两者要完整材质。
+IN_NORMAL_PREPASS：预通道同时写 normal_roughness 缓冲时为 true。SSAO、SSIL、SSR、SDFGI/VoxelGI
+和合成器特效读这个缓冲，在这里换便宜法线会改变它们看到的法线（和颜色 pass 不一致）。
+非深度变体里两者都是编译期 false，不影响颜色 pass。Mobile / Compatibility 恒为 false。
+
+着色器预处理器在本构建里定义 HAS_IN_DEPTH_PREPASS：用这两个量的代码包在
+#ifdef HAS_IN_DEPTH_PREPASS … #endif 里，官方 Godot 上同一份着色器照样能编译。
+
+动机：开 SDFGI/SSAO 时预通道要输出 normal_roughness，地形片元的程序化法线每帧要算两遍（前期预案_二 §4 #1）。
+纯深度预通道里不写 NORMAL，法线计算本来就会被编译器删掉，所以收益只在 IN_NORMAL_PREPASS 时有，代价见上。
+
+2026-10-06 审查后的修正：原版在所有 MODE_RENDER_DEPTH 变体里都为 true，包括 SDFGI 体素化和 GI 烘焙，
+材质若在那里走便宜分支会把错的反照率/法线写进 GI；也没有告诉材质预通道是否在写法线缓冲。
+未编译验证。
+---
+ drivers/gles3/storage/material_storage.cpp    |  2 ++
+ .../scene_shader_forward_clustered.cpp        |  2 ++
+ .../scene_shader_forward_mobile.cpp           |  2 ++
+ .../scene_forward_clustered.glsl              | 32 +++++++++++++++++++
+ servers/rendering/shader_preprocessor.cpp     |  4 +++
+ servers/rendering/shader_types.cpp            |  2 ++
+ 6 files changed, 44 insertions(+)
+
+diff --git a/drivers/gles3/storage/material_storage.cpp b/drivers/gles3/storage/material_storage.cpp
+index de059cc..47a879e 100644
+--- a/drivers/gles3/storage/material_storage.cpp
++++ b/drivers/gles3/storage/material_storage.cpp
+@@ -1295,6 +1295,8 @@ MaterialStorage::MaterialStorage() {
+ 		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
+ 		actions.renames["CLIP_SPACE_FAR"] = "SHADER_SPACE_FAR";
+ 		actions.renames["IN_SHADOW_PASS"] = "IN_SHADOW_PASS";
++		actions.renames["IN_DEPTH_PREPASS"] = "false"; // Only implemented in Forward+.
++		actions.renames["IN_NORMAL_PREPASS"] = "false"; // Only implemented in Forward+.
+ 		actions.renames["VIEWPORT_SIZE"] = "scene_data_block.data.viewport_size";
+ 
+ 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
+diff --git a/servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.cpp b/servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.cpp
+index 44a97f3..b8f5fb6 100644
+--- a/servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.cpp
++++ b/servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.cpp
+@@ -741,6 +741,8 @@ void SceneShaderForwardClustered::init(const String p_defines) {
+ 		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
+ 		actions.renames["CLIP_SPACE_FAR"] = "SHADER_SPACE_FAR";
+ 		actions.renames["IN_SHADOW_PASS"] = "bool(scene_data_block.data.flags & SCENE_DATA_FLAGS_IN_SHADOW_PASS)";
++		actions.renames["IN_DEPTH_PREPASS"] = "IN_DEPTH_PREPASS"; // Defined in scene_forward_clustered.glsl per shader variant.
++		actions.renames["IN_NORMAL_PREPASS"] = "IN_NORMAL_PREPASS"; // Defined in scene_forward_clustered.glsl per shader variant.
+ 		actions.renames["VIEWPORT_SIZE"] = "read_viewport_size";
+ 
+ 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
+diff --git a/servers/rendering/renderer_rd/forward_mobile/scene_shader_forward_mobile.cpp b/servers/rendering/renderer_rd/forward_mobile/scene_shader_forward_mobile.cpp
+index 0d598bf..3b88881 100644
+--- a/servers/rendering/renderer_rd/forward_mobile/scene_shader_forward_mobile.cpp
++++ b/servers/rendering/renderer_rd/forward_mobile/scene_shader_forward_mobile.cpp
+@@ -681,6 +681,8 @@ void SceneShaderForwardMobile::init(const String p_defines) {
+ 		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
+ 		actions.renames["CLIP_SPACE_FAR"] = "SHADER_SPACE_FAR";
+ 		actions.renames["IN_SHADOW_PASS"] = "IN_SHADOW_PASS";
++		actions.renames["IN_DEPTH_PREPASS"] = "false"; // Only implemented in Forward+.
++		actions.renames["IN_NORMAL_PREPASS"] = "false"; // Only implemented in Forward+.
+ 		actions.renames["VIEWPORT_SIZE"] = "read_viewport_size";
+ 
+ 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
+diff --git a/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered.glsl b/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered.glsl
+index cc0b4ba..d31c083 100644
+--- a/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered.glsl
++++ b/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered.glsl
+@@ -12,6 +12,22 @@
+ #define SHADER_IS_SRGB false
+ #define SHADER_SPACE_FAR 0.0
+ 
++// IN_DEPTH_PREPASS: true while rendering the depth prepass of the main view (with or without normal/roughness),
++// false in shadow maps, the color pass, and the GI passes (SDFGI voxelization MODE_RENDER_SDF, GI baking
++// MODE_RENDER_MATERIAL), which need the full material. A compile-time false outside depth variants.
++// IN_NORMAL_PREPASS: the prepass also writes the normal/roughness buffer, which SSAO, SSIL, SSR, SDFGI/VoxelGI
++// and compositor effects read. A cheaper NORMAL there changes what those effects see.
++#if defined(MODE_RENDER_DEPTH) && !defined(MODE_RENDER_SDF) && !defined(MODE_RENDER_MATERIAL) && !defined(MODE_DUAL_PARABOLOID)
++#define IN_DEPTH_PREPASS (!bool(scene_data_block.data.flags & SCENE_DATA_FLAGS_IN_SHADOW_PASS))
++#else
++#define IN_DEPTH_PREPASS false
++#endif
++#if defined(MODE_RENDER_DEPTH) && defined(MODE_RENDER_NORMAL_ROUGHNESS)
++#define IN_NORMAL_PREPASS IN_DEPTH_PREPASS
++#else
++#define IN_NORMAL_PREPASS false
++#endif
++
+ #ifdef USE_MULTIVIEW
+ #define OUTPUT_IS_MULTIVIEW true
+ #else
+@@ -869,6 +885,22 @@ void main() {
+ #define SHADER_IS_SRGB false
+ #define SHADER_SPACE_FAR 0.0
+ 
++// IN_DEPTH_PREPASS: true while rendering the depth prepass of the main view (with or without normal/roughness),
++// false in shadow maps, the color pass, and the GI passes (SDFGI voxelization MODE_RENDER_SDF, GI baking
++// MODE_RENDER_MATERIAL), which need the full material. A compile-time false outside depth variants.
++// IN_NORMAL_PREPASS: the prepass also writes the normal/roughness buffer, which SSAO, SSIL, SSR, SDFGI/VoxelGI
++// and compositor effects read. A cheaper NORMAL there changes what those effects see.
++#if defined(MODE_RENDER_DEPTH) && !defined(MODE_RENDER_SDF) && !defined(MODE_RENDER_MATERIAL) && !defined(MODE_DUAL_PARABOLOID)
++#define IN_DEPTH_PREPASS (!bool(scene_data_block.data.flags & SCENE_DATA_FLAGS_IN_SHADOW_PASS))
++#else
++#define IN_DEPTH_PREPASS false
++#endif
++#if defined(MODE_RENDER_DEPTH) && defined(MODE_RENDER_NORMAL_ROUGHNESS)
++#define IN_NORMAL_PREPASS IN_DEPTH_PREPASS
++#else
++#define IN_NORMAL_PREPASS false
++#endif
++
+ #ifdef USE_MULTIVIEW
+ #define OUTPUT_IS_MULTIVIEW true
+ #else
+diff --git a/servers/rendering/shader_preprocessor.cpp b/servers/rendering/shader_preprocessor.cpp
+index 2cdb144..54856ad 100644
+--- a/servers/rendering/shader_preprocessor.cpp
++++ b/servers/rendering/shader_preprocessor.cpp
+@@ -1363,6 +1363,10 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
+ 		insert_builtin_define("RENDERER_COMPATIBILITY", _MKSTR(0), pp_state);
+ 		insert_builtin_define("RENDERER_MOBILE", _MKSTR(1), pp_state);
+ 		insert_builtin_define("RENDERER_FORWARD_PLUS", _MKSTR(2), pp_state);
++
++		// This build has the IN_DEPTH_PREPASS / IN_NORMAL_PREPASS built-ins: wrap their use in
++		// #ifdef HAS_IN_DEPTH_PREPASS so the same shader still compiles on stock Godot.
++		insert_builtin_define("HAS_IN_DEPTH_PREPASS", _MKSTR(1), pp_state);
+ 	}
+ 
+ 	Error err = preprocess(&pp_state, p_code, r_result);
+diff --git a/servers/rendering/shader_types.cpp b/servers/rendering/shader_types.cpp
+index b733b6b..d6e3b1a 100644
+--- a/servers/rendering/shader_types.cpp
++++ b/servers/rendering/shader_types.cpp
+@@ -81,6 +81,8 @@ ShaderTypes::ShaderTypes() {
+ 	shader_modes[RSE::SHADER_SPATIAL].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
+ 	shader_modes[RSE::SHADER_SPATIAL].functions["global"].built_ins["EXPOSURE"] = constt(ShaderLanguage::TYPE_FLOAT);
+ 	shader_modes[RSE::SHADER_SPATIAL].functions["global"].built_ins["IN_SHADOW_PASS"] = constt(ShaderLanguage::TYPE_BOOL);
++	shader_modes[RSE::SHADER_SPATIAL].functions["global"].built_ins["IN_DEPTH_PREPASS"] = constt(ShaderLanguage::TYPE_BOOL);
++	shader_modes[RSE::SHADER_SPATIAL].functions["global"].built_ins["IN_NORMAL_PREPASS"] = constt(ShaderLanguage::TYPE_BOOL);
+ 	shader_modes[RSE::SHADER_SPATIAL].functions["constants"].built_ins["PI"] = constvt(ShaderLanguage::TYPE_FLOAT, { pi_scalar });
+ 	shader_modes[RSE::SHADER_SPATIAL].functions["constants"].built_ins["TAU"] = constvt(ShaderLanguage::TYPE_FLOAT, { tau_scalar });
+ 	shader_modes[RSE::SHADER_SPATIAL].functions["constants"].built_ins["E"] = constvt(ShaderLanguage::TYPE_FLOAT, { e_scalar });
+-- 
+2.55.0
+

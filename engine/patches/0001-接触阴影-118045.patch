@@ -1,0 +1,1381 @@
+From 21f264ebdbef4a37b5261e8f4206aa6e8de65008 Mon Sep 17 00:00:00 2001
+From: mars <mars@local>
+Date: Tue, 6 Oct 2026 13:16:18 -0400
+Subject: [PATCH 1/4] =?UTF-8?q?=E7=A7=BB=E6=A4=8D=20#118045=EF=BC=9A?=
+ =?UTF-8?q?=E6=96=B9=E5=90=91=E5=85=89=E5=B1=8F=E5=B9=95=E7=A9=BA=E9=97=B4?=
+ =?UTF-8?q?=E6=8E=A5=E8=A7=A6=E9=98=B4=E5=BD=B1=EF=BC=884.8=EF=BC=89?=
+ =?UTF-8?q?=E2=86=92=204.7.2?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+来源 https://github.com/godotengine/godot/pull/118045（2026-09-10 合并进 master）。
+冲突处理：
+- render_forward_clustered.cpp / scene_forward_clustered_inc.glsl：master 的 binding 37
+  被 4.8 纹理流送（#113429）占用，原补丁把它挪到 38；4.7.2 没有纹理流送，接触阴影直接用 37。
+- rendering_device.cpp：只是报错信息改进（依赖 4.8 的 TEXTURE_TYPE_NAMES），跳过。
+
+在上游基础上的修正（2026-10-06 审查，上游同样存在）：
+- 层号错位：上游给所有允许接触阴影的方向光依次编号，而接触阴影纹理的层是按
+  "开了阴影、这一帧有第 0 级联"的方向光排的。有一盏不开阴影的补光排在太阳前面时，
+  太阳会读到别的层。现在由渲染器按实际的 contact_shadows 列表给每个光源实例写层号
+  （light_instance_set_sscs_layer），update_light_buffers 读走后清空。
+- 不再为接触阴影强制"深度 + 法线粗糙度"预通道：SSCS 只读深度。改为把它算进
+  finish_depth（MSAA 时 resolve 深度）；没有深度预通道时关闭接触阴影。
+
+未编译验证（2026-10-06 渲染机关机），只做了符号静态核对。
+---
+ doc/classes/Light3D.xml                       |  17 +-
+ doc/classes/ProjectSettings.xml               |  12 +
+ doc/classes/RenderingServer.xml               |  16 +-
+ drivers/gles3/storage/light_storage.cpp       |   2 +
+ drivers/gles3/storage/light_storage.h         |   3 +
+ scene/3d/light_3d.cpp                         |  24 ++
+ scene/3d/light_3d.h                           |   6 +
+ .../rendering/dummy/storage/light_storage.h   |   2 +
+ .../renderer_rd/effects/ss_effects.cpp        | 153 +++++++++++
+ .../renderer_rd/effects/ss_effects.h          |  45 ++++
+ .../render_forward_clustered.cpp              |  96 ++++++-
+ .../render_forward_clustered.h                |  13 +-
+ .../effects/screen_space_contact_shadows.glsl | 237 ++++++++++++++++++
+ .../scene_forward_clustered.glsl              |  12 +
+ .../scene_forward_clustered_inc.glsl          |   3 +
+ .../renderer_rd/shaders/light_data_inc.glsl   |   3 +-
+ .../renderer_rd/storage_rd/light_storage.cpp  |  22 ++
+ .../renderer_rd/storage_rd/light_storage.h    |  15 +-
+ .../renderer_rd/storage_rd/render_data_rd.h   |   1 +
+ .../storage_rd/render_scene_buffers_rd.cpp    |   7 +-
+ .../storage_rd/render_scene_buffers_rd.h      |   7 +-
+ servers/rendering/rendering_server.cpp        |   7 +
+ servers/rendering/rendering_server.h          |   1 +
+ servers/rendering/rendering_server_default.h  |   1 +
+ servers/rendering/rendering_server_enums.h    |   9 +
+ servers/rendering/storage/light_storage.h     |   2 +
+ 26 files changed, 699 insertions(+), 17 deletions(-)
+ create mode 100644 servers/rendering/renderer_rd/shaders/effects/screen_space_contact_shadows.glsl
+
+diff --git a/doc/classes/Light3D.xml b/doc/classes/Light3D.xml
+index e8905ae..f41aa40 100644
+--- a/doc/classes/Light3D.xml
++++ b/doc/classes/Light3D.xml
+@@ -119,6 +119,15 @@
+ 		<member name="shadow_caster_mask" type="int" setter="set_shadow_caster_mask" getter="get_shadow_caster_mask" default="4294967295">
+ 			The light will only cast shadows using objects in the selected layers.
+ 		</member>
++		<member name="shadow_contact_shadows_allow" type="bool" setter="set_allow_contact_shadows" getter="get_allow_contact_shadows" default="true">
++			Enables screen-space contact shadows for this light. Only used when [member ProjectSettings.rendering/lights_and_shadows/contact_shadow/enabled] is enabled.
++		</member>
++		<member name="shadow_contact_shadows_blur" type="float" setter="set_param" getter="get_param" default="1.0">
++			Blurs the edges of the contact shadow. [code]0.0[/code] produces sharp shadows; higher values increase the noise magnitude. Only used when [member shadow_contact_shadows_allow] is enabled.
++		</member>
++		<member name="shadow_contact_shadows_opacity" type="float" setter="set_param" getter="get_param" default="1.0">
++			Changes the opacity of this light's screen-space contact shadows. A value of [code]1.0[/code] uses the same opacity as [member shadow_opacity], a value of [code]0.5[/code] would be 50% of the opacity of [member shadow_opacity]. Only used when [member shadow_contact_shadows_allow] is enabled.
++		</member>
+ 		<member name="shadow_enabled" type="bool" setter="set_shadow" getter="has_shadow" default="false">
+ 			If [code]true[/code], the light will cast real-time shadows. This has a significant performance cost. Only enable shadow rendering when it makes a noticeable difference in the scene's appearance, and consider using [member distance_fade_enabled] to hide the light when far away from the [Camera3D].
+ 		</member>
+@@ -198,7 +207,13 @@
+ 		<constant name="PARAM_INTENSITY" value="20" enum="Param">
+ 			Constant for accessing [member light_intensity_lumens] and [member light_intensity_lux]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
+ 		</constant>
+-		<constant name="PARAM_MAX" value="21" enum="Param">
++		<constant name="PARAM_CONTACT_SHADOW_OPACITY" value="21" enum="Param">
++			Constant for accessing [member shadow_contact_shadows_opacity].
++		</constant>
++		<constant name="PARAM_CONTACT_SHADOW_BLUR" value="22" enum="Param">
++			Constant for accessing [member shadow_contact_shadows_blur].
++		</constant>
++		<constant name="PARAM_MAX" value="23" enum="Param">
+ 			Represents the size of the [enum Param] enum.
+ 		</constant>
+ 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">
+diff --git a/doc/classes/ProjectSettings.xml b/doc/classes/ProjectSettings.xml
+index 14e3133..7e930e7 100644
+--- a/doc/classes/ProjectSettings.xml
++++ b/doc/classes/ProjectSettings.xml
+@@ -3140,6 +3140,18 @@
+ 			The framerate-independent update speed when representing dynamic object lighting from [LightmapProbe]s. Higher values make dynamic object lighting update faster. Higher values can prevent fast-moving objects from having "outdated" indirect lighting displayed on them, at the cost of possible flickering when an object moves from a bright area to a shaded area.
+ 			[b]Note:[/b] This property is only read when the project starts. To adjust the BVH build quality at runtime, use [method RenderingServer.lightmap_set_probe_capture_update_speed].
+ 		</member>
++		<member name="rendering/lights_and_shadows/contact_shadow/enabled" type="bool" setter="" getter="" default="false">
++			If [code]true[/code], screen-space contact shadows are enabled. These catch small-scale shadows that shadow maps miss, such as foliage, crevices, and the contact points where objects meet surfaces. Contact shadows are also cast by objects that have their [member GeometryInstance3D.cast_shadow] property set to [constant GeometryInstance3D.SHADOW_CASTING_SETTING_OFF], which can be useful for performance reasons.
++			[b]Note:[/b] Only objects visible on screen can cast screen-space contact shadows. Objects outside the viewport, occluded by other geometry, or using the [member GeometryInstance3D.cast_shadow] property set to [constant GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY] will not contribute.
++			[b]Note:[/b] Screen-space contact shadows are only supported in the Forward+ renderer, not Mobile or Compatibility.
++			[b]Note:[/b] Screen-space contact shadows only affect [DirectionalLight3D] nodes that have shadows enabled. The [DirectionalLight3D] node must also have [member Light3D.shadow_contact_shadows_allow] set to [code]true[/code].
++		</member>
++		<member name="rendering/lights_and_shadows/contact_shadow/shadow_length" type="int" setter="" getter="" default="1">
++			Controls the maximum distance contact shadows can be cast from their caster. Higher settings sample further along the shadow ray, at a moderate performance cost. Note that the effective maximum distance depends on the distance between the camera and object, as well as the 3D rendering resolution (determined by the viewport resolution multiplied by [member rendering/scaling_3d/scale]).
++		</member>
++		<member name="rendering/lights_and_shadows/contact_shadow/surface_thickness" type="float" setter="" getter="" default="0.01">
++			The assumed depth thickness of surfaces, as a fraction of the depth range. A larger value widens the depth interval in which an occluder is considered to block light, which can fill in gaps in thin geometry but may also cause shadows to bleed through surfaces if set too high.
++		</member>
+ 		<member name="rendering/lights_and_shadows/directional_shadow/16_bits" type="bool" setter="" getter="" default="true">
+ 			Use 16 bits for the directional shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
+ 		</member>
+diff --git a/doc/classes/RenderingServer.xml b/doc/classes/RenderingServer.xml
+index 5f8cb39..fbaceb8 100644
+--- a/doc/classes/RenderingServer.xml
++++ b/doc/classes/RenderingServer.xml
+@@ -2168,6 +2168,14 @@
+ 				Sets the texture filter mode to use when rendering light projectors. This parameter is global and cannot be set on a per-light basis.
+ 			</description>
+ 		</method>
++		<method name="light_set_allow_contact_shadows">
++			<return type="void" />
++			<param index="0" name="light" type="RID" />
++			<param index="1" name="enable" type="bool" />
++			<description>
++				If [code]true[/code], allows screen-space contact shadows for this light. Only used when [member ProjectSettings.rendering/lights_and_shadows/contact_shadow/enabled] is enabled. Equivalent to [member Light3D.shadow_contact_shadows_allow].
++			</description>
++		</method>
+ 		<method name="light_set_bake_mode">
+ 			<return type="void" />
+ 			<param index="0" name="light" type="RID" />
+@@ -5100,7 +5108,13 @@
+ 		<constant name="LIGHT_PARAM_INTENSITY" value="20" enum="LightParam">
+ 			Constant representing the intensity of the light, measured in Lumens when dealing with a [SpotLight3D] or [OmniLight3D], or measured in Lux with a [DirectionalLight3D]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
+ 		</constant>
+-		<constant name="LIGHT_PARAM_MAX" value="21" enum="LightParam">
++		<constant name="LIGHT_PARAM_CONTACT_SHADOW_OPACITY" value="21" enum="LightParam">
++			Changes the opacity of the lights screen-space contact shadows. A value of [code]1.0[/code] uses the same opacity as [constant LIGHT_PARAM_SHADOW_OPACITY], a value of [code]0.5[/code] would be 50% of the opacity of [constant LIGHT_PARAM_SHADOW_OPACITY].
++		</constant>
++		<constant name="LIGHT_PARAM_CONTACT_SHADOW_BLUR" value="22" enum="LightParam">
++			Blurs the edges of the contact shadow. [code]0.0[/code] produces sharp shadows; higher values increase the noise magnitude.
++		</constant>
++		<constant name="LIGHT_PARAM_MAX" value="23" enum="LightParam">
+ 			Represents the size of the [enum LightParam] enum.
+ 		</constant>
+ 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">
+diff --git a/drivers/gles3/storage/light_storage.cpp b/drivers/gles3/storage/light_storage.cpp
+index 94c31ae..10fe957 100644
+--- a/drivers/gles3/storage/light_storage.cpp
++++ b/drivers/gles3/storage/light_storage.cpp
+@@ -89,6 +89,8 @@ void LightStorage::_light_initialize(RID p_light, RSE::LightType p_type) {
+ 	light.param[RSE::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
+ 	light.param[RSE::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
+ 	light.param[RSE::LIGHT_PARAM_INTENSITY] = p_type == RSE::LIGHT_DIRECTIONAL ? 100000.0 : 1000.0;
++	light.param[RSE::LIGHT_PARAM_CONTACT_SHADOW_OPACITY] = 1.0;
++	light.param[RSE::LIGHT_PARAM_CONTACT_SHADOW_BLUR] = 1.0;
+ 
+ 	light_owner.initialize_rid(p_light, light);
+ }
+diff --git a/drivers/gles3/storage/light_storage.h b/drivers/gles3/storage/light_storage.h
+index 10d31a7..d37bead 100644
+--- a/drivers/gles3/storage/light_storage.h
++++ b/drivers/gles3/storage/light_storage.h
+@@ -70,6 +70,7 @@ struct Light {
+ 	bool area_normalize_energy = true;
+ 	RID area_texture;
+ 	uint64_t version = 0;
++	bool allow_contact_shadows = true;
+ 
+ 	Dependency dependency;
+ };
+@@ -335,6 +336,8 @@ public:
+ 	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const override;
+ 	virtual void light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) override;
+ 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) override {}
++	virtual void light_set_allow_contact_shadows(RID p_light, bool p_enable) override {}
++	virtual bool light_get_allow_contact_shadows(RID p_light) const override { return false; }
+ 
+ 	virtual void light_omni_set_shadow_mode(RID p_light, RSE::LightOmniShadowMode p_mode) override;
+ 
+diff --git a/scene/3d/light_3d.cpp b/scene/3d/light_3d.cpp
+index 8dccf8b..b24bfa8 100644
+--- a/scene/3d/light_3d.cpp
++++ b/scene/3d/light_3d.cpp
+@@ -159,6 +159,15 @@ uint32_t Light3D::get_shadow_caster_mask() const {
+ 	return shadow_caster_mask;
+ }
+ 
++void Light3D::set_allow_contact_shadows(bool p_enable) {
++	allow_contact_shadows = p_enable;
++	RS::get_singleton()->light_set_allow_contact_shadows(light, p_enable);
++}
++
++bool Light3D::get_allow_contact_shadows() const {
++	return allow_contact_shadows;
++}
++
+ AABB Light3D::get_aabb() const {
+ 	if (type == RSE::LIGHT_DIRECTIONAL) {
+ 		return AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
+@@ -344,6 +353,9 @@ void Light3D::_validate_property(PropertyInfo &p_property) const {
+ 		p_property.usage = PROPERTY_USAGE_NONE;
+ 	} else if (get_light_type() == RSE::LIGHT_AREA && p_property.name == "light_projector") {
+ 		p_property.usage = PROPERTY_USAGE_NONE;
++	} else if (get_light_type() != RSE::LIGHT_DIRECTIONAL && (p_property.name == "shadow_contact_shadows_allow" || p_property.name == "shadow_contact_shadows_opacity" || p_property.name == "shadow_contact_shadows_blur")) {
++		// Contact shadows are currently only supported on DirectionalLight3D.
++		p_property.usage = PROPERTY_USAGE_NONE;
+ 	}
+ }
+ 
+@@ -384,6 +396,9 @@ void Light3D::_bind_methods() {
+ 	ClassDB::bind_method(D_METHOD("set_shadow_caster_mask", "caster_mask"), &Light3D::set_shadow_caster_mask);
+ 	ClassDB::bind_method(D_METHOD("get_shadow_caster_mask"), &Light3D::get_shadow_caster_mask);
+ 
++	ClassDB::bind_method(D_METHOD("set_allow_contact_shadows", "enabled"), &Light3D::set_allow_contact_shadows);
++	ClassDB::bind_method(D_METHOD("get_allow_contact_shadows"), &Light3D::get_allow_contact_shadows);
++
+ 	ClassDB::bind_method(D_METHOD("set_bake_mode", "bake_mode"), &Light3D::set_bake_mode);
+ 	ClassDB::bind_method(D_METHOD("get_bake_mode"), &Light3D::get_bake_mode);
+ 
+@@ -420,6 +435,11 @@ void Light3D::_bind_methods() {
+ 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_opacity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SHADOW_OPACITY);
+ 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_blur", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_SHADOW_BLUR);
+ 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_caster_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_shadow_caster_mask", "get_shadow_caster_mask");
++	ADD_SUBGROUP("Contact Shadows", "shadow_contact_shadows_");
++	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_contact_shadows_allow", PROPERTY_HINT_GROUP_ENABLE), "set_allow_contact_shadows", "get_allow_contact_shadows");
++	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_contact_shadows_opacity", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_CONTACT_SHADOW_OPACITY);
++	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_contact_shadows_blur", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_CONTACT_SHADOW_BLUR);
++	ADD_SUBGROUP("", "");
+ 
+ 	ADD_GROUP("Distance Fade", "distance_fade_");
+ 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_fade_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_enable_distance_fade", "is_distance_fade_enabled");
+@@ -453,6 +473,8 @@ void Light3D::_bind_methods() {
+ 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BLUR);
+ 	BIND_ENUM_CONSTANT(PARAM_TRANSMITTANCE_BIAS);
+ 	BIND_ENUM_CONSTANT(PARAM_INTENSITY);
++	BIND_ENUM_CONSTANT(PARAM_CONTACT_SHADOW_OPACITY);
++	BIND_ENUM_CONSTANT(PARAM_CONTACT_SHADOW_BLUR);
+ 	BIND_ENUM_CONSTANT(PARAM_MAX);
+ 
+ 	BIND_ENUM_CONSTANT(BAKE_DISABLED);
+@@ -507,6 +529,8 @@ Light3D::Light3D(RSE::LightType p_type) {
+ 	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
+ 	set_param(PARAM_TRANSMITTANCE_BIAS, 0.05);
+ 	set_param(PARAM_SHADOW_FADE_START, 1);
++	set_param(PARAM_CONTACT_SHADOW_OPACITY, 1.0);
++	set_param(PARAM_CONTACT_SHADOW_BLUR, 1.0);
+ 	// For OmniLight3D and SpotLight3D, specified in Lumens.
+ 	set_param(PARAM_INTENSITY, 1000.0);
+ 	set_temperature(6500.0); // Nearly white.
+diff --git a/scene/3d/light_3d.h b/scene/3d/light_3d.h
+index 224aece..74bcb1c 100644
+--- a/scene/3d/light_3d.h
++++ b/scene/3d/light_3d.h
+@@ -58,6 +58,8 @@ public:
+ 		PARAM_SHADOW_BLUR = RSE::LIGHT_PARAM_SHADOW_BLUR,
+ 		PARAM_TRANSMITTANCE_BIAS = RSE::LIGHT_PARAM_TRANSMITTANCE_BIAS,
+ 		PARAM_INTENSITY = RSE::LIGHT_PARAM_INTENSITY,
++		PARAM_CONTACT_SHADOW_OPACITY = RSE::LIGHT_PARAM_CONTACT_SHADOW_OPACITY,
++		PARAM_CONTACT_SHADOW_BLUR = RSE::LIGHT_PARAM_CONTACT_SHADOW_BLUR,
+ 		PARAM_MAX = RSE::LIGHT_PARAM_MAX
+ 	};
+ 
+@@ -86,6 +88,7 @@ private:
+ 	Ref<Texture2D> projector;
+ 	Color correlated_color = Color(1.0, 1.0, 1.0);
+ 	float temperature = 6500.0;
++	bool allow_contact_shadows = true;
+ 	// bind helpers
+ 
+ 	virtual void owner_changed_notify() override;
+@@ -138,6 +141,9 @@ public:
+ 	void set_shadow_caster_mask(uint32_t p_caster_mask);
+ 	uint32_t get_shadow_caster_mask() const;
+ 
++	void set_allow_contact_shadows(bool p_enable);
++	bool get_allow_contact_shadows() const;
++
+ 	void set_bake_mode(BakeMode p_mode);
+ 	BakeMode get_bake_mode() const;
+ 
+diff --git a/servers/rendering/dummy/storage/light_storage.h b/servers/rendering/dummy/storage/light_storage.h
+index 1f72281..38a1191 100644
+--- a/servers/rendering/dummy/storage/light_storage.h
++++ b/servers/rendering/dummy/storage/light_storage.h
+@@ -84,6 +84,8 @@ public:
+ 	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const override { return 0xFFFFFFFF; }
+ 	virtual void light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) override {}
+ 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) override {}
++	virtual void light_set_allow_contact_shadows(RID p_light, bool p_enable) override {}
++	virtual bool light_get_allow_contact_shadows(RID p_light) const override { return false; }
+ 
+ 	virtual void light_omni_set_shadow_mode(RID p_light, RSE::LightOmniShadowMode p_mode) override {}
+ 
+diff --git a/servers/rendering/renderer_rd/effects/ss_effects.cpp b/servers/rendering/renderer_rd/effects/ss_effects.cpp
+index 9ac2819..c3fe14d 100644
+--- a/servers/rendering/renderer_rd/effects/ss_effects.cpp
++++ b/servers/rendering/renderer_rd/effects/ss_effects.cpp
+@@ -342,6 +342,32 @@ SSEffects::SSEffects() {
+ 		}
+ 	}
+ 
++	// Screen Space Shadows
++	{
++		RD::SamplerState sampler_state;
++		sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
++		sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
++		sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER;
++		sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER;
++		sampler_state.border_color = RD::SAMPLER_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK; // = 0.0
++		RID border_sampler = RD::get_singleton()->sampler_create(sampler_state);
++
++		{
++			Vector<String> sscs_modes;
++			sscs_modes.push_back("\n#define READ_COUNT 2\n");
++			sscs_modes.push_back("\n#define READ_COUNT 3\n");
++			sscs_modes.push_back("\n#define READ_COUNT 4\n");
++			sscs.sscs_shader.initialize(sscs_modes);
++			sscs.sscs_shader_version = sscs.sscs_shader.version_create();
++
++			for (uint32_t i = 0; i < SCREEN_SPACE_CONTACT_SHADOWS_MAX; i++) {
++				sscs.sscs_pipelines[i].create_compute_pipeline(sscs.sscs_shader.version_get_shader(sscs.sscs_shader_version, i));
++			}
++
++			sscs.border_sampler = border_sampler;
++		}
++	}
++
+ 	// Subsurface scattering
+ 	sss_quality = RSE::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_quality")));
+ 	sss_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_scale");
+@@ -444,6 +470,15 @@ SSEffects::~SSEffects() {
+ 		}
+ 	}
+ 
++	{
++		for (int i = 0; i < SCREEN_SPACE_CONTACT_SHADOWS_MAX; i++) {
++			sscs.sscs_pipelines[i].free();
++		}
++		sscs.sscs_shader.version_free(sscs.sscs_shader_version);
++
++		RD::get_singleton()->free_rid(sscs.border_sampler);
++	}
++
+ 	{
+ 		// Cleanup SS downsampler
+ 		for (int i = 0; i < SS_EFFECTS_MAX; i++) {
+@@ -1727,6 +1762,124 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
+ 	}
+ }
+ 
++/* Screen Space Shadows */
++void SSEffects::sscs_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSCSRenderBuffers &p_sscs_buffers, uint32_t p_contact_shadow_count) {
++	if (p_sscs_buffers.light_count != p_contact_shadow_count) {
++		p_render_buffers->clear_context(RB_SCOPE_SSCS);
++	}
++
++	p_sscs_buffers.size = p_render_buffers->get_internal_size();
++	p_sscs_buffers.light_count = p_contact_shadow_count;
++
++	uint32_t view_count = p_render_buffers->get_view_count();
++
++	if (p_contact_shadow_count > 0) {
++		RD::TextureFormat tf;
++		tf.format = RD::DATA_FORMAT_R8_UNORM;
++		tf.width = p_sscs_buffers.size.width;
++		tf.height = p_sscs_buffers.size.height;
++		tf.array_layers = p_contact_shadow_count * view_count;
++		tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
++		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
++
++		p_render_buffers->create_texture_from_format(RB_SCOPE_SSCS, RB_SSCS, tf);
++
++		{
++			RID sscs_texture = p_render_buffers->get_texture(RB_SCOPE_SSCS, RB_SSCS);
++			RD::get_singleton()->texture_clear(sscs_texture, Color(1, 0, 0, 0.0), 0, 1, 0, view_count * p_sscs_buffers.light_count);
++		}
++	}
++}
++
++void SSEffects::screen_space_contact_shadows(Ref<RenderSceneBuffersRD> p_render_buffers, SSCSRenderBuffers &p_sscs_buffers, const SSCSSettings &p_settings, const Projection *p_projections, Vector3 p_light_direction, uint32_t p_light_index, float p_opacity, float p_blur, float p_taa_frame_count) {
++	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
++	ERR_FAIL_NULL(uniform_set_cache);
++	MaterialStorage *material_storage = MaterialStorage::get_singleton();
++	ERR_FAIL_NULL(material_storage);
++
++	RD::get_singleton()->draw_command_begin_label("SSCS Main");
++
++	uint32_t view_count = p_render_buffers->get_view_count();
++	RID sscs_shader = sscs.sscs_shader.version_get_shader(sscs.sscs_shader_version, 0);
++
++	Projection correction;
++	correction.set_depth_correction(true);
++
++	for (uint32_t v = 0; v < view_count; v++) {
++		// Calculate light coordinate in screen space
++		Projection projection = correction * p_projections[v];
++		Vector4 projected_light = projection.xform(Vector4(p_light_direction.x, p_light_direction.y, p_light_direction.z, 0));
++
++		const int wave_size = 64;
++		Vector4 light;
++		Vector2i bound_start;
++		Vector2i bound_end;
++		if (Math::abs(projected_light.w) > 1e-6) {
++			// Need precise XY pixel coordinates of the light
++			light = Vector4(
++					(projected_light.x / projected_light.w * 0.5f + 0.5f) * p_sscs_buffers.size.width,
++					(projected_light.y / projected_light.w * 0.5f + 0.5f) * p_sscs_buffers.size.height,
++					projected_light.z / projected_light.w,
++					projected_light.w > 0 ? 1 : -1);
++			bound_start = Vector2i(
++					Math::floor(-light.x / wave_size) - 1,
++					Math::floor(-light.y / wave_size) - 1);
++			bound_end = Vector2i(
++					Math::ceil((p_sscs_buffers.size.width - light.x) / wave_size) + 2,
++					Math::ceil((p_sscs_buffers.size.height - light.y) / wave_size) + 2);
++		} else {
++			// Light rays are (or nearly) parallel lines in screen space. This is a special case and requires special handling in the SSCS shader as well.
++			light = Vector4(
++					projected_light.x * p_sscs_buffers.size.width * 0.5,
++					projected_light.y * p_sscs_buffers.size.height * 0.5,
++					projected_light.z,
++					0);
++			light = light / MAX(Math::abs(light.x), Math::abs(light.y));
++
++			bound_start = Vector2i(
++					light.x > 0 && light.x < Math::abs(light.y) ? -1 : 0,
++					light.y > 0 && light.y < Math::abs(light.x) ? -1 : 0);
++			bound_end = Vector2i(
++					Math::ceil(p_sscs_buffers.size.width / float(wave_size)) + (light.x < 0 ? 1 : 0),
++					Math::ceil(p_sscs_buffers.size.height / float(wave_size)) + (light.y < 0 ? 1 : 0));
++		}
++
++		Size2i bound_size = bound_end - bound_start;
++
++		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
++		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sscs.sscs_pipelines[p_settings.quality].get_rid());
++
++		ScreenSpaceContactShadowsPushConstant push_constant;
++		push_constant.screen_size[0] = p_sscs_buffers.size.width;
++		push_constant.screen_size[1] = p_sscs_buffers.size.height;
++		push_constant.surface_thickness = p_settings.surface_thickness;
++		push_constant.opacity = p_opacity;
++		push_constant.blur = p_blur;
++		push_constant.taa_frame_count = p_taa_frame_count;
++		push_constant.light_coordinates[0] = light.x;
++		push_constant.light_coordinates[1] = light.y;
++		push_constant.light_coordinates[2] = light.z;
++		push_constant.light_coordinates[3] = light.w;
++		push_constant.light_offset[0] = bound_start.x * wave_size;
++		push_constant.light_offset[1] = bound_start.y * wave_size;
++
++		RID depth_buffer = p_render_buffers->get_depth_texture(v);
++		uint32_t layer = p_light_index * view_count + v;
++		RID sscs_texture = p_render_buffers->get_texture_slice(RB_SCOPE_SSCS, RB_SSCS, layer, 0);
++
++		RD::Uniform u_depth_buffer(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>{ sscs.border_sampler, depth_buffer });
++		RD::Uniform u_sscs(RD::UNIFORM_TYPE_IMAGE, 1, sscs_texture);
++
++		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(sscs_shader, 0, u_depth_buffer, u_sscs), 0);
++
++		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
++		RD::get_singleton()->compute_list_dispatch(compute_list, wave_size, bound_size.x, bound_size.y);
++		RD::get_singleton()->compute_list_end();
++	}
++
++	RD::get_singleton()->draw_command_end_label();
++}
++
+ /* Subsurface scattering */
+ 
+ void SSEffects::sss_set_quality(RSE::SubSurfaceScatteringQuality p_quality) {
+diff --git a/servers/rendering/renderer_rd/effects/ss_effects.h b/servers/rendering/renderer_rd/effects/ss_effects.h
+index de44afa..c78fb53 100644
+--- a/servers/rendering/renderer_rd/effects/ss_effects.h
++++ b/servers/rendering/renderer_rd/effects/ss_effects.h
+@@ -31,6 +31,7 @@
+ #pragma once
+ 
+ #include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
++#include "servers/rendering/renderer_rd/shaders/effects/screen_space_contact_shadows.glsl.gen.h"
+ #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection.glsl.gen.h"
+ #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection_downsample.glsl.gen.h"
+ #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection_filter.glsl.gen.h"
+@@ -52,6 +53,7 @@
+ #define RB_SCOPE_SSIL SNAME("rb_ssil")
+ #define RB_SCOPE_SSAO SNAME("rb_ssao")
+ #define RB_SCOPE_SSR SNAME("rb_ssr")
++#define RB_SCOPE_SSCS SNAME("rb_sscs")
+ 
+ #define RB_LINEAR_DEPTH SNAME("linear_depth")
+ #define RB_FINAL SNAME("final")
+@@ -67,6 +69,8 @@
+ #define RB_SSR SNAME("ssr")
+ #define RB_MIP_LEVEL SNAME("mip_level")
+ 
++#define RB_SSCS SNAME("sscs")
++
+ class RenderSceneBuffersRD;
+ 
+ namespace RendererRD {
+@@ -159,6 +163,20 @@ public:
+ 
+ 	void sub_surface_scattering(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_diffuse, RID p_depth, const Projection &p_camera, const Size2i &p_screen_size);
+ 
++	/* Screen Space Shadows */
++	struct SSCSRenderBuffers {
++		Size2i size;
++		uint32_t light_count = 0;
++	};
++
++	struct SSCSSettings {
++		RSE::ScreenSpaceContactShadowsLength quality = RSE::SCREEN_SPACE_CONTACT_SHADOWS_LENGTH_MEDIUM;
++		float surface_thickness = 0.01f;
++	};
++
++	void sscs_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSCSRenderBuffers &p_sscs_buffers, uint32_t p_contact_shadow_count);
++	void screen_space_contact_shadows(Ref<RenderSceneBuffersRD> p_render_buffers, SSCSRenderBuffers &p_sscs_buffers, const SSCSSettings &p_settings, const Projection *p_projections, Vector3 p_light_direction, uint32_t p_light_index, float p_opacity, float p_blur, float p_taa_frame_count);
++
+ private:
+ 	/* Settings */
+ 
+@@ -497,6 +515,33 @@ private:
+ 		PipelineDeferredRD resolve_pipeline;
+ 	} ssr;
+ 
++	/* Screen Space Shadows */
++
++	enum ScreenSpaceContactShadowsMode {
++		SCREEN_SPACE_CONTACT_SHADOWS_LOW_QUALITY,
++		SCREEN_SPACE_CONTACT_SHADOWS_MEDIUM_QUALITY,
++		SCREEN_SPACE_CONTACT_SHADOWS_HIGH_QUALITY,
++		SCREEN_SPACE_CONTACT_SHADOWS_MAX
++	};
++
++	struct ScreenSpaceContactShadows {
++		ScreenSpaceContactShadowsShaderRD sscs_shader;
++		RID sscs_shader_version;
++		PipelineDeferredRD sscs_pipelines[SCREEN_SPACE_CONTACT_SHADOWS_MAX];
++		RID border_sampler;
++
++	} sscs;
++
++	struct ScreenSpaceContactShadowsPushConstant {
++		int32_t screen_size[2];
++		int32_t light_offset[2];
++		float light_coordinates[4];
++		float surface_thickness;
++		float opacity;
++		float blur;
++		float taa_frame_count;
++	};
++
+ 	/* Subsurface scattering */
+ 
+ 	enum SSSMode {
+diff --git a/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.cpp b/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.cpp
+index 370d3b6..05e38c8 100644
+--- a/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.cpp
++++ b/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.cpp
+@@ -117,6 +117,7 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::free_data() {
+ 		render_buffers->clear_context(RB_SCOPE_SSIL);
+ 		render_buffers->clear_context(RB_SCOPE_SSAO);
+ 		render_buffers->clear_context(RB_SCOPE_SSR);
++		render_buffers->clear_context(RB_SCOPE_SSCS);
+ 	}
+ 
+ 	if (cluster_builder) {
+@@ -757,15 +758,16 @@ uint32_t RenderForwardClustered::_setup_environment(const RenderDataRD *p_render
+ 		scene_state.ubo.ssao_light_affect = environment_get_ssao_direct_light_affect(p_render_data->environment);
+ 		uint32_t ss_flags = 0;
+ 		if (p_opaque_render_buffers) {
+-			ss_flags |= environment_get_ssao_enabled(p_render_data->environment) ? (1 << 0) : 0;
+-			ss_flags |= environment_get_ssil_enabled(p_render_data->environment) ? (1 << 1) : 0;
+-			ss_flags |= environment_get_ssr_enabled(p_render_data->environment) ? (1 << 2) : 0;
++			ss_flags |= environment_get_ssao_enabled(p_render_data->environment) ? SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO : 0;
++			ss_flags |= environment_get_ssil_enabled(p_render_data->environment) ? SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL : 0;
++			ss_flags |= environment_get_ssr_enabled(p_render_data->environment) ? SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR : 0;
++			ss_flags |= bool(GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/contact_shadow/enabled")) ? SCREEN_SPACE_EFFECTS_FLAGS_USE_SSCS : 0;
+ 
+ 			if (rd.is_valid()) {
+ 				Ref<RenderBufferDataForwardClustered> rb_data;
+ 				if (rd->has_custom_data(RB_SCOPE_FORWARD_CLUSTERED)) {
+ 					rb_data = rd->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
+-					ss_flags |= (rb_data.is_valid() && !rb_data->ss_effects_data.ssr.half_size) ? (1 << 3) : 0;
++					ss_flags |= (rb_data.is_valid() && !rb_data->ss_effects_data.ssr.half_size) ? SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR : 0;
+ 				}
+ 			}
+ 		}
+@@ -1507,6 +1509,42 @@ void RenderForwardClustered::_process_ssr(Ref<RenderSceneBuffersRD> p_render_buf
+ 	ss_effects->screen_space_reflection(p_render_buffers, rb_data->ss_effects_data.ssr, p_normal_slices, environment_get_ssr_max_steps(p_environment), environment_get_ssr_fade_in(p_environment), environment_get_ssr_fade_out(p_environment), environment_get_ssr_depth_tolerance(p_environment), p_projections, reprojections, p_eye_offsets, *copy_effects);
+ }
+ 
++void RenderForwardClustered::_process_sscs(Ref<RenderSceneBuffersRD> p_render_buffers, const Projection *p_projections, const Transform3D &p_transform, const LocalVector<int> &p_contact_shadows, const RenderShadowData *p_render_shadows, const float p_taa_frame_count) {
++	ERR_FAIL_NULL(ss_effects);
++	ERR_FAIL_COND(p_render_buffers.is_null());
++
++	Ref<RenderBufferDataForwardClustered> rb_data = p_render_buffers->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
++	ERR_FAIL_COND(rb_data.is_null());
++
++	RENDER_TIMESTAMP("Process SSCS");
++
++	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
++
++	RendererRD::SSEffects::SSCSSettings settings;
++	settings.quality = RSE::ScreenSpaceContactShadowsLength(GLOBAL_GET_CACHED(int, "rendering/lights_and_shadows/contact_shadow/shadow_length"));
++	settings.surface_thickness = GLOBAL_GET_CACHED(float, "rendering/lights_and_shadows/contact_shadow/surface_thickness");
++
++	Transform3D inverse_transform = p_transform.affine_inverse();
++
++	ss_effects->sscs_allocate_buffers(p_render_buffers, rb_data->ss_effects_data.sscs, p_contact_shadows.size());
++
++	for (uint32_t i = 0; i < p_contact_shadows.size(); i++) {
++		RID light_instance = p_render_shadows[p_contact_shadows[i]].light;
++		RID base = light_storage->light_instance_get_base_light(light_instance);
++		if (!light_storage->light_get_allow_contact_shadows(base)) {
++			continue;
++		}
++
++		Transform3D light_transform = light_storage->light_instance_get_base_transform(light_instance);
++		Vector3 light_direction = inverse_transform.basis.xform(light_transform.basis.xform(Vector3(0, 0, 1))).normalized();
++
++		float opacity = light_storage->light_get_param(base, RSE::LIGHT_PARAM_CONTACT_SHADOW_OPACITY);
++		float blur = light_storage->light_get_param(base, RSE::LIGHT_PARAM_CONTACT_SHADOW_BLUR);
++
++		ss_effects->screen_space_contact_shadows(p_render_buffers, rb_data->ss_effects_data.sscs, settings, p_projections, light_direction, i, opacity, blur, p_taa_frame_count);
++	}
++}
++
+ void RenderForwardClustered::_copy_framebuffer_to_ss_effects(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr) {
+ 	ERR_FAIL_NULL(ss_effects);
+ 	ERR_FAIL_COND(p_render_buffers.is_null());
+@@ -1514,7 +1552,7 @@ void RenderForwardClustered::_copy_framebuffer_to_ss_effects(Ref<RenderSceneBuff
+ 	ss_effects->copy_internal_texture_to_last_frame(p_render_buffers, *copy_effects);
+ }
+ 
+-void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_ssr, bool p_use_gi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer) {
++void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_ssr, bool p_use_sscs, bool p_use_gi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer) {
+ 	// Render shadows while GI is rendering, due to how barriers are handled, this should happen at the same time
+ 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
+ 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+@@ -1542,6 +1580,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
+ 	p_render_data->cube_shadows.clear();
+ 	p_render_data->shadows.clear();
+ 	p_render_data->directional_shadows.clear();
++	p_render_data->contact_shadows.clear();
+ 
+ 	float lod_distance_multiplier = p_render_data->scene_data->cam_projection.get_lod_multiplier();
+ 	{
+@@ -1551,6 +1590,15 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
+ 
+ 			if (light_storage->light_get_type(base) == RSE::LIGHT_DIRECTIONAL) {
+ 				p_render_data->directional_shadows.push_back(i);
++
++				if (rb_data.is_valid() && ss_effects) {
++					// Add contact shadows to be processed
++					if (p_render_data->render_shadows[i].pass == 0 && light_storage->light_get_allow_contact_shadows(base)) {
++						// Contact shadows only need one pass
++						p_render_data->contact_shadows.push_back(i);
++					}
++				}
++
+ 			} else if (light_storage->light_get_type(base) == RSE::LIGHT_OMNI && light_storage->light_omni_get_shadow_mode(base) == RSE::LIGHT_OMNI_SHADOW_CUBE) {
+ 				p_render_data->cube_shadows.push_back(i);
+ 			} else {
+@@ -1636,6 +1684,10 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
+ 			}
+ 		}
+ 
++		if (p_use_sscs) {
++			_process_sscs(rb, p_render_data->scene_data->view_projection, p_render_data->scene_data->cam_transform, p_render_data->contact_shadows, p_render_data->render_shadows, p_render_data->scene_data->taa_frame_count);
++		}
++
+ 		if (p_use_ssr) {
+ 			_process_ssr(rb, p_render_data->environment, p_normal_roughness_slices, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform);
+ 		}
+@@ -1663,6 +1715,13 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
+ 		light_storage->update_reflection_probe_buffer(p_render_data, *p_render_data->reflection_probes, p_render_data->scene_data->cam_transform.affine_inverse(), p_render_data->environment);
+ 	}
+ 
++	if (p_use_sscs) {
++		// Contact shadow layer i belongs to contact_shadows[i] (see _process_sscs()).
++		for (uint32_t i = 0; i < p_render_data->contact_shadows.size(); i++) {
++			light_storage->light_instance_set_sscs_layer(p_render_data->render_shadows[p_render_data->contact_shadows[i]].light, i);
++		}
++	}
++
+ 	uint32_t directional_light_count = 0;
+ 	uint32_t positional_light_count = 0;
+ 	light_storage->update_light_buffers(p_render_data, *p_render_data->lights, p_render_data->scene_data->cam_transform, p_render_data->shadow_atlas, using_shadows, directional_light_count, positional_light_count, p_render_data->directional_light_soft_shadows);
+@@ -1833,6 +1892,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
+ 	Vector<Color> depth_pass_clear;
+ 	bool using_separate_specular = false;
+ 	bool using_ssr = false;
++	bool using_sscs = false;
+ 	bool using_sdfgi = false;
+ 	bool using_voxelgi = false;
+ 	bool reverse_cull = p_render_data->scene_data->cam_transform.basis.determinant() < 0;
+@@ -1885,6 +1945,10 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
+ 			}
+ 		}
+ 
++		if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/contact_shadow/enabled")) {
++			using_sscs = true;
++		}
++
+ 		if (p_render_data->scene_data->view_count > 1) {
+ 			color_pass_flags |= COLOR_PASS_FLAG_MULTIVIEW;
+ 			// Try enabling here in case is_xr_enabled() returns false.
+@@ -2116,6 +2180,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
+ 	base_specialization.use_depth_fog = p_render_data->environment.is_valid() && environment_get_fog_mode(p_render_data->environment) == RSE::EnvironmentFogMode::ENV_FOG_MODE_DEPTH;
+ 
+ 	bool using_ssao = depth_pre_pass && !is_reflection_probe && p_render_data->environment.is_valid() && environment_get_ssao_enabled(p_render_data->environment);
++	// Contact shadows only sample the (resolved) depth buffer, which only exists with a depth pre-pass.
++	using_sscs = using_sscs && depth_pre_pass;
+ 
+ 	if (depth_pre_pass) { //depth pre pass
+ 		bool needs_pre_resolve = _needs_post_prepass_render(p_render_data, using_sdfgi || using_voxelgi);
+@@ -2136,7 +2202,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
+ 
+ 		RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, nullptr, RID(), samplers, depth_prepass_uniform_buffer_index);
+ 
+-		bool finish_depth = using_ssao || using_ssil || using_sdfgi || using_voxelgi || ce_pre_opaque_resolved_depth || ce_post_opaque_resolved_depth;
++		bool finish_depth = using_ssao || using_ssil || using_sscs || using_sdfgi || using_voxelgi || ce_pre_opaque_resolved_depth || ce_post_opaque_resolved_depth;
+ 		RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, depth_pass_mode, 0, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count, 0, base_specialization);
+ 		_render_list_with_draw_list(&render_list_params, depth_framebuffer, RD::DrawFlags(needs_pre_resolve ? RD::DRAW_DEFAULT_ALL : RD::DRAW_CLEAR_ALL), depth_pass_clear, 0.0f, 0u, p_render_data->render_region);
+ 
+@@ -2179,7 +2245,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
+ 			normal_roughness_views[v] = rb_data->get_normal_roughness(v);
+ 		}
+ 	}
+-	_pre_opaque_render(p_render_data, using_ssao, using_ssil, using_ssr, using_sdfgi || using_voxelgi, normal_roughness_views, rb_data.is_valid() && rb_data->has_voxelgi() ? rb_data->get_voxelgi() : RID());
++	_pre_opaque_render(p_render_data, using_ssao, using_ssil, using_ssr, using_sscs, using_sdfgi || using_voxelgi, normal_roughness_views, rb_data.is_valid() && rb_data->has_voxelgi() ? rb_data->get_voxelgi() : RID());
+ 
+ 	if (current_cluster_builder) {
+ 		base_specialization.cluster_has_area_light = current_cluster_builder->get_cluster_count_by_type(ClusterBuilderRD::ELEMENT_TYPE_AREA_LIGHT) != 0;
+@@ -3761,6 +3827,22 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
+ 		u.append_id(texture);
+ 		uniforms.push_back(u);
+ 	}
++	{
++		RD::Uniform u;
++		u.binding = 37;
++		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
++
++		RID sscs;
++		if (rb_data.is_valid()) {
++			if (rb->has_texture(RB_SCOPE_SSCS, RB_SSCS)) {
++				sscs = rb->get_texture(RB_SCOPE_SSCS, RB_SSCS);
++			}
++		}
++
++		RID texture = sscs.is_valid() ? sscs : texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK);
++		u.append_id(texture);
++		uniforms.push_back(u);
++	}
+ 
+ 	return UniformSetCacheRD::get_singleton()->get_cache_vec(scene_shader.default_shader_rd, RENDER_PASS_UNIFORM_SET, uniforms);
+ }
+diff --git a/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h b/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h
+index be97ee2..5288f3d 100644
+--- a/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h
++++ b/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h
+@@ -113,6 +113,7 @@ public:
+ 			RendererRD::SSEffects::SSILRenderBuffers ssil;
+ 			RendererRD::SSEffects::SSAORenderBuffers ssao;
+ 			RendererRD::SSEffects::SSRRenderBuffers ssr;
++			RendererRD::SSEffects::SSCSRenderBuffers sscs;
+ 		} ss_effects_data;
+ 
+ 		enum DepthFrameBufferType {
+@@ -291,6 +292,15 @@ private:
+ 		INSTANCE_DATA_FLAGS_FADE_MASK = 0xFFUL << INSTANCE_DATA_FLAGS_FADE_SHIFT
+ 	};
+ 
++	// When changing any of these enums, remember to change the corresponding enums in the shader files as well.
++	enum {
++		SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO = (1 << 0),
++		SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL = (1 << 1),
++		SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR = (1 << 2),
++		SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR = (1 << 3),
++		SCREEN_SPACE_EFFECTS_FLAGS_USE_SSCS = (1 << 4),
++	};
++
+ 	struct SceneState {
+ 		// This struct is loaded into Set 1 - Binding 1, populated at start of rendering a frame, must match with shader code
+ 		struct UBO {
+@@ -776,8 +786,9 @@ private:
+ 	void _process_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_buffers, const Projection *p_projections);
+ 	void _process_ssil(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_buffers, const Projection *p_projections, const Transform3D &p_transform);
+ 	void _process_ssr(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_slices, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_transform);
++	void _process_sscs(Ref<RenderSceneBuffersRD> p_render_buffers, const Projection *p_projections, const Transform3D &p_transform, const LocalVector<int> &p_contact_shadows, const RenderShadowData *p_render_shadows, float p_taa_frame_count);
+ 	void _copy_framebuffer_to_ss_effects(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr);
+-	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_ssr, bool p_use_gi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer);
++	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_ssr, bool p_use_sscs, bool p_use_gi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer);
+ 	void _process_sss(Ref<RenderSceneBuffersRD> p_render_buffers, const Projection &p_camera);
+ 
+ 	/* Debug */
+diff --git a/servers/rendering/renderer_rd/shaders/effects/screen_space_contact_shadows.glsl b/servers/rendering/renderer_rd/shaders/effects/screen_space_contact_shadows.glsl
+new file mode 100644
+index 0000000..236b4d4
+--- /dev/null
++++ b/servers/rendering/renderer_rd/shaders/effects/screen_space_contact_shadows.glsl
+@@ -0,0 +1,237 @@
++#[compute]
++
++#version 450
++
++#VERSION_DEFINES
++
++layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
++
++layout(set = 0, binding = 0) uniform sampler2D depth_buffer;
++layout(r8, set = 0, binding = 1) uniform restrict writeonly image2D output_shadow;
++
++layout(push_constant, std430) uniform Params {
++	ivec2 screen_size;
++	ivec2 light_offset;
++	vec4 light_coordinate;
++	float surface_thickness;
++	float opacity;
++	float blur;
++	float taa_frame_count;
++}
++params;
++
++#define WAVE_SIZE 64
++#ifndef READ_COUNT
++#define READ_COUNT 2
++#endif
++#define SAMPLE_COUNT ((READ_COUNT - 1) * WAVE_SIZE - 1)
++#define HARD_SHADOW_SAMPLES 4
++#define FADE_OUT_SAMPLES 8
++
++// Reverse-Z
++#define DEPTH_NEAR 1.0
++#define DEPTH_FAR 0.0
++#define Z_SIGN -1.0
++
++#define BILINEAR_THRESHOLD 0.02
++
++shared float DepthData[READ_COUNT * WAVE_SIZE];
++
++// https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
++float interleaved_gradient_noise(vec2 screen_pos) {
++	const vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
++	return fract(magic.z * fract(dot(screen_pos, magic.xy)));
++}
++
++void organise_groups(vec4 light, in float converging, int group_id, ivec2 group_offset, int thread_id, out bool x_major_axis, out vec2 group_start, out vec2 group_end, out vec2 group_delta, out float pixel_distance, out vec2 pixel_pos) {
++	vec2 light_xy = floor(light.xy) + 0.5;
++	vec2 light_xy_fraction = light.xy - light_xy;
++
++	ivec2 xy = group_offset * WAVE_SIZE + params.light_offset;
++	ivec2 sign_xy = ivec2(sign(vec2(xy)));
++
++	// Determine group orientation and direction
++	bool horizontal = abs(xy.y) > abs(xy.x) || xy.x == xy.y;
++	ivec2 axis = horizontal ? ivec2(-sign_xy.y, 0.0) : ivec2(0.0, sign_xy.x);
++
++	xy += axis * group_id;
++	vec2 xy_f = vec2(xy);
++
++	x_major_axis = abs(xy_f.x) > abs(xy_f.y);
++	float main_axis = x_major_axis ? xy_f.x : xy_f.y;
++
++	float ma_light_frac = x_major_axis ? light_xy_fraction.x : light_xy_fraction.y;
++	ma_light_frac = main_axis > 0.0 ? -ma_light_frac : ma_light_frac;
++
++	float main_axis_start = abs(main_axis) + ma_light_frac;
++	float main_axis_end = max(main_axis_start - float(WAVE_SIZE), 0.0);
++
++	group_start = xy_f + light_xy;
++	group_end = mix(light.xy, group_start, main_axis_end / main_axis_start);
++
++	// Bake direction into delta so caller can use: pixel_pos += out_delta (same as custom version)
++	float thread_step = float(thread_id ^ (converging > 0.0 ? (WAVE_SIZE - 1) : 0));
++
++	pixel_pos = mix(group_start, group_end, thread_step / float(WAVE_SIZE));
++	pixel_distance = main_axis_start - thread_step;
++	group_delta = converging * (group_start - group_end);
++}
++
++void organise_groups_orthogonal(vec4 light, int group_id, ivec2 group_offset, int thread_id, out bool x_major_axis, out vec2 group_start, out vec2 group_end, out vec2 group_delta, out float pixel_distance, out vec2 pixel_pos) {
++	ivec2 xy = group_offset * WAVE_SIZE + params.light_offset;
++
++	// Determine group orientation and direction
++	bool horizontal = abs(light.x) > abs(light.y);
++	ivec2 axis = horizontal ? ivec2(0.0, 1.0) : ivec2(1.0, 0.0);
++	x_major_axis = horizontal;
++
++	// Offset groups
++	xy += axis * group_id;
++	vec2 xy_f = vec2(xy);
++
++	group_start = xy_f;
++	group_end = group_start + WAVE_SIZE * light.xy;
++
++	// Bake direction into delta so caller can use: pixel_pos += out_delta (same as custom version)
++	pixel_pos = mix(group_start, group_end, thread_id / float(WAVE_SIZE));
++	pixel_distance = thread_id;
++	group_delta = group_end - group_start;
++}
++
++void main() {
++	int group_id = int(gl_WorkGroupID.x);
++	int thread_id = int(gl_LocalInvocationID.x);
++	ivec2 group_offset = ivec2(gl_WorkGroupID.yz);
++	vec4 light = params.light_coordinate;
++
++	float converging = -(light.w); // 1 converging rays, -1 diverging rays, 0 parrella rays (orthogonal)
++	vec2 group_start, group_end;
++	vec2 pixel_pos;
++	vec2 group_delta;
++	float pixel_distance;
++	bool x_major_axis;
++	if (converging != 0) {
++		organise_groups(light, converging, group_id, group_offset, thread_id, x_major_axis, group_start, group_end, group_delta, pixel_distance, pixel_pos);
++	} else {
++		organise_groups_orthogonal(light, group_id, group_offset, thread_id, x_major_axis, group_start, group_end, group_delta, pixel_distance, pixel_pos);
++	}
++
++	bvec2 group_below_zero = lessThan(max(group_start, group_end), vec2(0.0));
++	bvec2 group_above_screen = greaterThan(min(group_start, group_end), params.screen_size);
++
++	// Groups entirely offscreen can exit early
++	if (any(group_below_zero) || any(group_above_screen)) {
++		return;
++	}
++
++	float sampling_depth[READ_COUNT];
++	float shadowing_depth[READ_COUNT];
++	float sample_distance[READ_COUNT];
++	float depth_thickness_scale[READ_COUNT];
++
++	bool is_edge = false;
++	ivec2 write_xy = ivec2(pixel_pos);
++	const float edge_skip = 1e20;
++	for (int i = 0; i < READ_COUNT; i++) {
++		vec2 read_xy = floor(pixel_pos);
++		float minor_axis = x_major_axis ? pixel_pos.y : pixel_pos.x;
++		float bilinear = fract(minor_axis) - 0.5;
++		int neighbor_bias = bilinear > 0 ? 1 : -1;
++		ivec2 neighbor_offset = x_major_axis ? ivec2(0, neighbor_bias) : ivec2(neighbor_bias, 0);
++
++		vec2 depths;
++		vec2 uv = (read_xy + 0.5) / vec2(params.screen_size);
++		depths.x = textureLod(depth_buffer, uv, 0.0).x;
++
++		vec2 uv_neighbor = (vec2(ivec2(read_xy) + neighbor_offset) + 0.5) / vec2(params.screen_size);
++		depths.y = textureLod(depth_buffer, uv_neighbor, 0.0).x;
++
++		depth_thickness_scale[i] = abs(DEPTH_FAR - depths.x);
++		bool use_point_filter = abs(depths.x - depths.y) > depth_thickness_scale[i] * BILINEAR_THRESHOLD;
++		if (i == 0) {
++			is_edge = use_point_filter;
++		}
++
++		// The pixel starts sampling at this depth
++		sampling_depth[i] = depths.x;
++
++		float edge_depth = depths.x;
++		// Any sample in this wavefront is possibly interpolated towards the bilinear sample
++		// So use should use a shadowing depth that is further away, based on the difference between the two samples
++		float shadow_depth = depths.x + abs(depths.x - depths.y) * Z_SIGN;
++
++		// Shadows cast from this depth
++		shadowing_depth[i] = use_point_filter ? edge_depth : shadow_depth;
++
++		float stored_depth;
++		if (converging != 0) {
++			sample_distance[i] = pixel_distance + (WAVE_SIZE * i) * converging;
++			stored_depth = (shadowing_depth[i] - light.z) / sample_distance[i];
++		} else {
++			sample_distance[i] = pixel_distance + (WAVE_SIZE * i);
++			stored_depth = shadowing_depth[i] - light.z * sample_distance[i];
++		}
++
++		if (i != 0) {
++			stored_depth = sample_distance[i] > 0.0 ? stored_depth : 1e10;
++		}
++
++		int idx = (i * WAVE_SIZE) + thread_id;
++		DepthData[idx] = stored_depth;
++		pixel_pos += group_delta;
++	}
++
++	memoryBarrierShared();
++	barrier();
++
++	// Check if a pixel is beyond the far plane (can't be shaded)
++	if (sampling_depth[0] <= DEPTH_FAR) {
++		return;
++	}
++
++	float depth_scale;
++	float start_depth = sampling_depth[0];
++	if (converging != 0) {
++		depth_scale = (1.0 / params.surface_thickness) * sample_distance[0] / depth_thickness_scale[0];
++		start_depth = (start_depth - light.z) / sample_distance[0];
++		start_depth = start_depth * depth_scale - Z_SIGN;
++	} else {
++		// In orthogonal case it no longer makes sense to use sample distance in depth_scaling
++		// 10x is used because it looked best visually
++		depth_scale = (10.0 / params.surface_thickness) / depth_thickness_scale[0];
++		start_depth = (start_depth - light.z * sample_distance[0]) * depth_scale - Z_SIGN;
++	}
++
++	start_depth += params.blur * interleaved_gradient_noise(vec2(write_xy) + vec2(params.taa_frame_count * 5.588238));
++
++	int sample_index = thread_id + 1;
++	vec4 shadow_value = vec4(1.0);
++	float hard_shadow = 1.0;
++
++	for (int i = 0; i < HARD_SHADOW_SAMPLES; i++) {
++		float depth_delta = abs(start_depth - DepthData[sample_index + i] * depth_scale);
++		hard_shadow = min(hard_shadow, depth_delta);
++	}
++
++	// Main averaged samples — accumulated into 4 buckets to soften aliasing
++	for (int i = HARD_SHADOW_SAMPLES; i < SAMPLE_COUNT - FADE_OUT_SAMPLES; i++) {
++		float depth_delta = abs(start_depth - DepthData[sample_index + i] * depth_scale);
++		shadow_value[i & 3] = min(shadow_value[i & 3], depth_delta);
++	}
++
++	// Fade out samples — push distant shadow edge toward lit
++	for (int i = SAMPLE_COUNT - FADE_OUT_SAMPLES; i < SAMPLE_COUNT; i++) {
++		float depth_delta = abs(start_depth - DepthData[sample_index + i] * depth_scale);
++		float fade_out = float(i + 1 - (SAMPLE_COUNT - FADE_OUT_SAMPLES)) / float(FADE_OUT_SAMPLES + 1) * 0.75;
++		shadow_value[i & 3] = min(shadow_value[i & 3], depth_delta + fade_out);
++	}
++
++	// Increase base shadow contrast
++	shadow_value = clamp(shadow_value * 2.0 - 1, 0.0, 1.0);
++	hard_shadow = clamp(hard_shadow * 2.0 - 1, 0.0, 1.0);
++
++	// Average the 4 buckets, then take the harder of hard_shadow and averaged result
++	float shadow = min(hard_shadow, dot(shadow_value, vec4(0.25)));
++	shadow = mix(1.0, shadow, params.opacity);
++	imageStore(output_shadow, write_xy, vec4(shadow, 0.0, 0.0, 0.0));
++}
+diff --git a/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered.glsl b/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered.glsl
+index 431f480..40a6421 100644
+--- a/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered.glsl
++++ b/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered.glsl
+@@ -2543,6 +2543,18 @@ void fragment_shader(in SceneData scene_data) {
+ #endif
+ 
+ #undef BIAS_FUNC
++
++					//process sscs
++					if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSCS) && directional_lights.data[i].sscs_index != 0xFFFFFFFF) {
++#ifdef USE_MULTIVIEW
++						float sscs_layer = float(directional_lights.data[i].sscs_index * 2u + uint(ViewIndex));
++#else
++					float sscs_layer = float(directional_lights.data[i].sscs_index);
++#endif // USE_MULTIVIEW
++						float sscs_shadow = textureLod(sampler2DArray(sscs_buffer, SAMPLER_LINEAR_CLAMP), vec3(screen_uv, sscs_layer), 0.0).r;
++
++						shadow = min(shadow, sscs_shadow);
++					}
+ 				} // shadows
+ 
+ 				if (i < 4) {
+diff --git a/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered_inc.glsl b/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered_inc.glsl
+index 4fc3ce2..a87cb20 100644
+--- a/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered_inc.glsl
++++ b/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered_inc.glsl
+@@ -193,6 +193,7 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
+ #define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL (1 << 1)
+ #define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR (1 << 2)
+ #define SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR (1 << 3)
++#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSCS (1 << 4)
+ 
+ layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
+ 	LightData data[];
+@@ -474,10 +475,12 @@ layout(set = 1, binding = 33) uniform texture3D volumetric_fog_texture;
+ layout(set = 1, binding = 34) uniform texture2DArray ssil_buffer;
+ layout(set = 1, binding = 35) uniform texture2DArray ssr_buffer;
+ layout(set = 1, binding = 36) uniform texture2DArray ssr_mip_level_buffer;
++layout(set = 1, binding = 37) uniform texture2DArray sscs_buffer;
+ #else
+ layout(set = 1, binding = 34) uniform texture2D ssil_buffer;
+ layout(set = 1, binding = 35) uniform texture2D ssr_buffer;
+ layout(set = 1, binding = 36) uniform texture2D ssr_mip_level_buffer;
++layout(set = 1, binding = 37) uniform texture2DArray sscs_buffer;
+ #endif // USE_MULTIVIEW
+ 
+ #endif
+diff --git a/servers/rendering/renderer_rd/shaders/light_data_inc.glsl b/servers/rendering/renderer_rd/shaders/light_data_inc.glsl
+index e6bfa9f..95e6723 100644
+--- a/servers/rendering/renderer_rd/shaders/light_data_inc.glsl
++++ b/servers/rendering/renderer_rd/shaders/light_data_inc.glsl
+@@ -72,7 +72,8 @@ struct DirectionalLightData {
+ 	float shadow_opacity;
+ 	float fade_from;
+ 	float fade_to;
+-	uvec2 pad;
++	uint sscs_index;
++	uint pad;
+ 	uint bake_mode;
+ 	float volumetric_fog_energy;
+ 	vec4 shadow_bias;
+diff --git a/servers/rendering/renderer_rd/storage_rd/light_storage.cpp b/servers/rendering/renderer_rd/storage_rd/light_storage.cpp
+index 48ec434..d44624e 100644
+--- a/servers/rendering/renderer_rd/storage_rd/light_storage.cpp
++++ b/servers/rendering/renderer_rd/storage_rd/light_storage.cpp
+@@ -163,6 +163,8 @@ void LightStorage::_light_initialize(RID p_light, RSE::LightType p_type) {
+ 	light.param[RSE::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
+ 	light.param[RSE::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
+ 	light.param[RSE::LIGHT_PARAM_INTENSITY] = p_type == RSE::LIGHT_DIRECTIONAL ? 100000.0 : 1000.0;
++	light.param[RSE::LIGHT_PARAM_CONTACT_SHADOW_OPACITY] = 1.0;
++	light.param[RSE::LIGHT_PARAM_CONTACT_SHADOW_BLUR] = 1.0;
+ 
+ 	light_owner.initialize_rid(p_light, light);
+ }
+@@ -359,6 +361,20 @@ void LightStorage::light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade)
+ 	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+ }
+ 
++void LightStorage::light_set_allow_contact_shadows(RID p_light, bool p_enable) {
++	Light *light = light_owner.get_or_null(p_light);
++	ERR_FAIL_NULL(light);
++
++	light->allow_contact_shadows = p_enable;
++}
++
++bool LightStorage::light_get_allow_contact_shadows(RID p_light) const {
++	const Light *light = light_owner.get_or_null(p_light);
++	ERR_FAIL_NULL_V(light, true);
++
++	return light->allow_contact_shadows;
++}
++
+ void LightStorage::light_omni_set_shadow_mode(RID p_light, RSE::LightOmniShadowMode p_mode) {
+ 	Light *light = light_owner.get_or_null(p_light);
+ 	ERR_FAIL_NULL(light);
+@@ -737,6 +753,11 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
+ 
+ 		switch (light->type) {
+ 			case RSE::LIGHT_DIRECTIONAL: {
++				// The contact shadow layer must match the order of the renderer's contact shadow list (only shadowed
++				// lights with a cascade 0 pass this frame are in it), not a count of all lights that allow contact shadows.
++				// Consume it before any early-out so a stale layer can't leak into a later frame or another viewport.
++				const uint32_t sscs_layer = light_instance->sscs_layer;
++				light_instance->sscs_layer = 0xFFFFFFFF;
+ 				if (r_directional_light_count >= max_directional_lights || light->directional_sky_mode == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
+ 					continue;
+ 				}
+@@ -781,6 +802,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
+ 				light_data.shadow_opacity = (p_using_shadows && light->shadow)
+ 						? light->param[RSE::LIGHT_PARAM_SHADOW_OPACITY]
+ 						: 0.0;
++				light_data.sscs_index = sscs_layer;
+ 
+ 				float angular_diameter = light->param[RSE::LIGHT_PARAM_SIZE];
+ 				if (angular_diameter > 0.0) {
+diff --git a/servers/rendering/renderer_rd/storage_rd/light_storage.h b/servers/rendering/renderer_rd/storage_rd/light_storage.h
+index 71043e4..5b90c1d 100644
+--- a/servers/rendering/renderer_rd/storage_rd/light_storage.h
++++ b/servers/rendering/renderer_rd/storage_rd/light_storage.h
+@@ -82,6 +82,7 @@ private:
+ 		bool area_normalize_energy = true;
+ 		RID area_texture;
+ 		uint64_t version = 0;
++		bool allow_contact_shadows = true;
+ 
+ 		Dependency dependency;
+ 	};
+@@ -117,6 +118,9 @@ private:
+ 		float linear_att = 0.0;
+ 
+ 		uint64_t shadow_pass = 0;
++		// Contact shadow (SSCS) texture layer for this frame, or 0xFFFFFFFF.
++		// Set by the renderer from its contact shadow list right before update_light_buffers(), which consumes it.
++		uint32_t sscs_layer = 0xFFFFFFFF;
+ 		uint64_t last_scene_pass = 0;
+ 		uint64_t last_scene_shadow_pass = 0;
+ 		uint64_t last_pass = 0;
+@@ -208,7 +212,8 @@ private:
+ 		float shadow_opacity;
+ 		float fade_from;
+ 		float fade_to;
+-		uint32_t pad[2];
++		uint32_t sscs_index;
++		uint32_t pad;
+ 		uint32_t bake_mode;
+ 		float volumetric_fog_energy;
+ 		float shadow_bias[4];
+@@ -513,6 +518,14 @@ public:
+ 	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const override;
+ 	virtual void light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) override;
+ 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) override;
++	virtual void light_set_allow_contact_shadows(RID p_light, bool p_enable) override;
++	virtual bool light_get_allow_contact_shadows(RID p_light) const override;
++	// Assign the SSCS layer of a directional light instance for the next update_light_buffers() call.
++	void light_instance_set_sscs_layer(RID p_light_instance, uint32_t p_layer) {
++		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
++		ERR_FAIL_NULL(li);
++		li->sscs_layer = p_layer;
++	}
+ 
+ 	virtual void light_omni_set_shadow_mode(RID p_light, RSE::LightOmniShadowMode p_mode) override;
+ 
+diff --git a/servers/rendering/renderer_rd/storage_rd/render_data_rd.h b/servers/rendering/renderer_rd/storage_rd/render_data_rd.h
+index b11ed36..8bd2d43 100644
+--- a/servers/rendering/renderer_rd/storage_rd/render_data_rd.h
++++ b/servers/rendering/renderer_rd/storage_rd/render_data_rd.h
+@@ -90,6 +90,7 @@ public:
+ 	LocalVector<int> cube_shadows;
+ 	LocalVector<int> shadows;
+ 	LocalVector<int> directional_shadows;
++	LocalVector<int> contact_shadows;
+ 
+ 	/* GI info */
+ 	const RendererSceneRender::RenderSDFGIData *render_sdfgi_regions = nullptr;
+diff --git a/servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.cpp b/servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.cpp
+index 610ab92..f395807 100644
+--- a/servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.cpp
++++ b/servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.cpp
+@@ -444,19 +444,20 @@ RID RenderSceneBuffersRD::get_texture_slice_view(const StringName &p_context, co
+ 
+ 	// asking the whole thing? just return the original
+ 	RD::TextureView default_view = RD::TextureView();
+-	if (p_layer == 0 && p_mipmap == 0 && named_texture.format.array_layers == p_layers && named_texture.format.mipmaps == p_mipmaps && p_view == default_view) {
++	RD::TextureSliceType slice_type = (p_layers > 1 ? RD::TEXTURE_SLICE_2D_ARRAY : RD::TEXTURE_SLICE_2D);
++	if (p_layer == 0 && p_mipmap == 0 && named_texture.format.array_layers == p_layers && named_texture.format.mipmaps == p_mipmaps && p_view == default_view && ((named_texture.format.texture_type == RD::TEXTURE_TYPE_2D && slice_type == RD::TEXTURE_SLICE_2D) || (named_texture.format.texture_type == RD::TEXTURE_TYPE_2D_ARRAY && slice_type == RD::TEXTURE_SLICE_2D_ARRAY))) {
+ 		return named_texture.texture;
+ 	}
+ 
+ 	// see if we have this
+-	NTSliceKey slice_key(p_layer, p_layers, p_mipmap, p_mipmaps, p_view);
++	NTSliceKey slice_key(p_layer, p_layers, p_mipmap, p_mipmaps, p_view, slice_type);
+ 	if (named_texture.slices.has(slice_key)) {
+ 		return named_texture.slices[slice_key];
+ 	}
+ 
+ 	// create our slice
+ 	RID &slice = named_texture.slices[slice_key];
+-	slice = RD::get_singleton()->texture_create_shared_from_slice(p_view, named_texture.texture, p_layer, p_mipmap, p_mipmaps, p_layers > 1 ? RD::TEXTURE_SLICE_2D_ARRAY : RD::TEXTURE_SLICE_2D, p_layers);
++	slice = RD::get_singleton()->texture_create_shared_from_slice(p_view, named_texture.texture, p_layer, p_mipmap, p_mipmaps, slice_type, p_layers);
+ 
+ 	Array arr = {
+ 		p_context,
+diff --git a/servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h b/servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h
+index cae09e1..b3afe3c 100644
+--- a/servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h
++++ b/servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h
+@@ -127,9 +127,10 @@ private:
+ 		uint32_t mipmap;
+ 		uint32_t mipmaps;
+ 		RD::TextureView texture_view;
++		RD::TextureSliceType slice_type;
+ 
+ 		bool operator==(const NTSliceKey &p_val) const {
+-			return (layer == p_val.layer) && (layers == p_val.layers) && (mipmap == p_val.mipmap) && (mipmaps == p_val.mipmaps) && (texture_view == p_val.texture_view);
++			return (layer == p_val.layer) && (layers == p_val.layers) && (mipmap == p_val.mipmap) && (mipmaps == p_val.mipmaps) && (texture_view == p_val.texture_view) && (slice_type == p_val.slice_type);
+ 		}
+ 
+ 		static uint32_t hash(const NTSliceKey &p_val) {
+@@ -142,16 +143,18 @@ private:
+ 			h = hash_murmur3_one_32(p_val.texture_view.swizzle_g, h);
+ 			h = hash_murmur3_one_32(p_val.texture_view.swizzle_b, h);
+ 			h = hash_murmur3_one_32(p_val.texture_view.swizzle_a, h);
++			h = hash_murmur3_one_32(p_val.slice_type, h);
+ 			return hash_fmix32(h);
+ 		}
+ 
+ 		NTSliceKey() {}
+-		NTSliceKey(uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps, RD::TextureView p_texture_view) {
++		NTSliceKey(uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps, RD::TextureView p_texture_view, RD::TextureSliceType p_slice_type) {
+ 			layer = p_layer;
+ 			layers = p_layers;
+ 			mipmap = p_mipmap;
+ 			mipmaps = p_mipmaps;
+ 			texture_view = p_texture_view;
++			slice_type = p_slice_type;
+ 		}
+ 	};
+ 
+diff --git a/servers/rendering/rendering_server.cpp b/servers/rendering/rendering_server.cpp
+index d2b235f..0a675a9 100644
+--- a/servers/rendering/rendering_server.cpp
++++ b/servers/rendering/rendering_server.cpp
+@@ -2530,6 +2530,7 @@ void RenderingServer::_bind_methods() {
+ 	ClassDB::bind_method(D_METHOD("light_set_shadow_caster_mask", "light", "mask"), &RenderingServer::light_set_shadow_caster_mask);
+ 	ClassDB::bind_method(D_METHOD("light_set_bake_mode", "light", "bake_mode"), &RenderingServer::light_set_bake_mode);
+ 	ClassDB::bind_method(D_METHOD("light_set_max_sdfgi_cascade", "light", "cascade"), &RenderingServer::light_set_max_sdfgi_cascade);
++	ClassDB::bind_method(D_METHOD("light_set_allow_contact_shadows", "light", "enable"), &RenderingServer::light_set_allow_contact_shadows);
+ 
+ 	ClassDB::bind_method(D_METHOD("light_omni_set_shadow_mode", "light", "mode"), &RenderingServer::light_omni_set_shadow_mode);
+ 
+@@ -2576,6 +2577,8 @@ void RenderingServer::_bind_methods() {
+ 	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_SHADOW_BLUR);
+ 	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_TRANSMITTANCE_BIAS);
+ 	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_INTENSITY);
++	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_CONTACT_SHADOW_OPACITY);
++	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_CONTACT_SHADOW_BLUR);
+ 	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_MAX);
+ 
+ 	BIND_ENUM_CONSTANT(RSE::LIGHT_BAKE_DISABLED);
+@@ -3670,6 +3673,10 @@ void RenderingServer::init() {
+ 
+ 	GLOBAL_DEF_RST("rendering/lights_and_shadows/use_physical_light_units", false);
+ 
++	GLOBAL_DEF("rendering/lights_and_shadows/contact_shadow/enabled", false);
++	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/contact_shadow/shadow_length", PROPERTY_HINT_ENUM, "Short (Fast),Medium (Average),Long (Slow)"), 1);
++	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/lights_and_shadows/contact_shadow/surface_thickness", PROPERTY_HINT_RANGE, "0.001,0.1,0.001"), 0.01);
++
+ 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/directional_shadow/size", PROPERTY_HINT_RANGE, "256,16384"), 4096);
+ 	GLOBAL_DEF("rendering/lights_and_shadows/directional_shadow/size.mobile", 2048);
+ 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"), 2);
+diff --git a/servers/rendering/rendering_server.h b/servers/rendering/rendering_server.h
+index 4a5f852..8a0ded7 100644
+--- a/servers/rendering/rendering_server.h
++++ b/servers/rendering/rendering_server.h
+@@ -314,6 +314,7 @@ public:
+ 	virtual void light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) = 0;
+ 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) = 0;
+ 	virtual void light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) = 0;
++	virtual void light_set_allow_contact_shadows(RID p_light, bool p_enable) = 0;
+ 
+ 	virtual void light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) = 0;
+ 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) = 0;
+diff --git a/servers/rendering/rendering_server_default.h b/servers/rendering/rendering_server_default.h
+index 30d52d8..56c9589 100644
+--- a/servers/rendering/rendering_server_default.h
++++ b/servers/rendering/rendering_server_default.h
+@@ -494,6 +494,7 @@ public:
+ 	FUNC2(light_set_shadow_caster_mask, RID, uint32_t)
+ 	FUNC2(light_set_bake_mode, RID, RSE::LightBakeMode)
+ 	FUNC2(light_set_max_sdfgi_cascade, RID, uint32_t)
++	FUNC2(light_set_allow_contact_shadows, RID, bool)
+ 
+ 	FUNC2(light_omni_set_shadow_mode, RID, RSE::LightOmniShadowMode)
+ 
+diff --git a/servers/rendering/rendering_server_enums.h b/servers/rendering/rendering_server_enums.h
+index 47d4dbf..6700110 100644
+--- a/servers/rendering/rendering_server_enums.h
++++ b/servers/rendering/rendering_server_enums.h
+@@ -261,6 +261,8 @@ enum LightParam {
+ 	LIGHT_PARAM_SHADOW_BLUR,
+ 	LIGHT_PARAM_TRANSMITTANCE_BIAS,
+ 	LIGHT_PARAM_INTENSITY,
++	LIGHT_PARAM_CONTACT_SHADOW_OPACITY,
++	LIGHT_PARAM_CONTACT_SHADOW_BLUR,
+ 	LIGHT_PARAM_MAX,
+ };
+ 
+@@ -297,6 +299,13 @@ enum ShadowQuality {
+ 	SHADOW_QUALITY_MAX,
+ };
+ 
++enum ScreenSpaceContactShadowsLength {
++	SCREEN_SPACE_CONTACT_SHADOWS_LENGTH_SHORT,
++	SCREEN_SPACE_CONTACT_SHADOWS_LENGTH_MEDIUM,
++	SCREEN_SPACE_CONTACT_SHADOWS_LENGTH_LONG,
++	SCREEN_SPACE_CONTACT_SHADOWS_LENGTH_MAX,
++};
++
+ enum LightProjectorFilter {
+ 	LIGHT_PROJECTOR_FILTER_NEAREST,
+ 	LIGHT_PROJECTOR_FILTER_LINEAR,
+diff --git a/servers/rendering/storage/light_storage.h b/servers/rendering/storage/light_storage.h
+index fe2f4db..0d3f789 100644
+--- a/servers/rendering/storage/light_storage.h
++++ b/servers/rendering/storage/light_storage.h
+@@ -65,6 +65,8 @@ public:
+ 	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const = 0;
+ 	virtual void light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) = 0;
+ 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) = 0;
++	virtual void light_set_allow_contact_shadows(RID p_light, bool p_enable) = 0;
++	virtual bool light_get_allow_contact_shadows(RID p_light) const = 0;
+ 
+ 	virtual void light_omni_set_shadow_mode(RID p_light, RSE::LightOmniShadowMode p_mode) = 0;
+ 
+-- 
+2.55.0
+

@@ -1,0 +1,23 @@
+{
+ "file": "ripple_field.bin",
+ "N": 2000,
+ "half": 1000.0,
+ "cell": 1.0,
+ "H": 0.3,
+ "波高模型": "文献 H/λ",
+ "比": [
+  0.05,
+  0.11
+ ],
+ "冠暗": true,
+ "lee": 0.3,
+ "lam_lo": 1.0,
+ "lam_hi": 5.0,
+ "rho": [
+  0.15,
+  0.6
+ ],
+ "wind_az": 200.0,
+ "来源": "scripts/Godot/80_沙纹场.py（HiRISE 正射 JEZ_hirise_soc_007）",
+ "覆盖": 0.068
+}

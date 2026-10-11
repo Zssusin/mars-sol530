@@ -1,0 +1,720 @@
+{
+ "版本": 1,
+ "生成": "scripts/Godot/75_兴趣点.py",
+ "时间": "2026-10-07 22:46:36",
+ "原点": "站 26/1222 导航点（LOCAL_LEVEL_26_1222，站点系 [68.4117, -21.7435, -11.5649]）；ENU：E 东、N 北、U 上（m）",
+ "说明": "照片在 兴趣点/（75 生成，不进 git）。类：近 = 开到发现半径内发现；远 = 拍照时在画面中央一半视场内发现。",
+ "兴趣点": [
+  {
+   "id": "wildcat_ridge",
+   "名": "Wildcat Ridge 磨蚀斑",
+   "英": "Wildcat Ridge · Berry Hollow abrasion patch",
+   "类": "近",
+   "发现半径": 6.0,
+   "坐标来源": "Mastcam-Z ZCAM03405 视线落地点（站点系 67.3 N、−24.0 E，docs/NASA补充数据.md §2.2）",
+   "说明": "Wildcat Ridge 是一块约 1 米宽的岩石，可能是几十亿年前泥沙在一个正在蒸发的咸水湖里沉积而成。2022 年 7 月 20 日毅力号在它表面磨出磨蚀斑 Berry Hollow，SHERLOC 测到了任务迄今最丰富的有机物信号。随后在这块岩石上取了两根岩芯：Hazeltop（sol 509）和 Bearwallow（sol 516）。",
+   "E": -2.26,
+   "N": -1.11,
+   "U": 0.0,
+   "区域": "Navcam 精细区（±50 m）",
+   "照片": [
+    {
+     "文件": "兴趣点/wildcat_1.jpg",
+     "产品": "ZL0_0505_0711770325_474EBY_N0261222ZCAM03405_1100LMJ",
+     "相机": "Mastcam-Z 左",
+     "sol": 505,
+     "lmst": "12:10",
+     "utc": "2022-07-22",
+     "署名": "NASA/JPL-Caltech/ASU",
+     "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/ZL0_0505_0711770325_474EBY_N0261222ZCAM03405_1100LMJ",
+     "尺寸": [
+      960,
+      699
+     ]
+    }
+   ],
+   "事实来源": [
+    {
+     "题": "NASA's Perseverance Rover Investigates Geologically Rich Mars Terrain（JPL，2022-09-15）",
+     "url": "https://www.jpl.nasa.gov/news/nasas-perseverance-rover-investigates-geologically-rich-mars-terrain/"
+    },
+    {
+     "题": "Mars Rock Samples（NASA 样品表）",
+     "url": "https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples"
+    },
+    {
+     "题": "Sol 0505: Berry Hollow abrasion, Wildcat Ridge（ASU Mastcam-Z 图库）",
+     "url": "https://mastcamz.asu.edu/galleries/sol-0505-berry-hollow-abrasion-wildcat-ridge-mastcam-z-mosaic/"
+    }
+   ],
+   "en": {
+    "名": "Wildcat Ridge",
+    "说明": "A rock about 1 m wide, probably laid down as mud and sand in an evaporating salt lake billions of years ago. On 20 July 2022 Perseverance abraded its surface (Berry Hollow), and SHERLOC found the richest organic signal of the mission so far. Two cores followed: Hazeltop (sol 509) and Bearwallow (sol 516)."
+   }
+  },
+  {
+   "id": "skinner_ridge",
+   "名": "Skinner Ridge 取样点",
+   "英": "Skinner Ridge",
+   "类": "近",
+   "发现半径": 6.0,
+   "坐标来源": "MMGIS 航点 26/1004（sol 477–501 停车处；取样在机械臂工作区，离车约 2 m）",
+   "说明": "三角洲前缘的一处岩石露头。毅力号在这里取了 Swift Run（sol 490，2022-07-07）和 Skyland（sol 495）两根沉积岩岩芯，这是它在古河流三角洲取到的第一批岩石样品。Skyland 后来被放进了 Three Forks 样品库。",
+   "E": 13.65,
+   "N": 14.7,
+   "U": 2.32,
+   "区域": "Navcam 精细区（±50 m）",
+   "照片": [
+    {
+     "文件": "兴趣点/skinner_1.jpg",
+     "产品": "NLF_0490_0710456117_926ECM_N0261004NCAM00709_05_095J",
+     "相机": "Navcam 左",
+     "sol": 490,
+     "lmst": "16:52",
+     "utc": "2022-07-07",
+     "署名": "NASA/JPL-Caltech",
+     "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/NLF_0490_0710456117_926ECM_N0261004NCAM00709_05_095J",
+     "尺寸": [
+      960,
+      721
+     ]
+    },
+    {
+     "文件": "兴趣点/skinner_2.jpg",
+     "产品": "ZL0_0490_0710454524_239EBY_N0261004ZCAM05068_1100LMJ",
+     "相机": "Mastcam-Z 左",
+     "sol": 490,
+     "lmst": "16:26",
+     "utc": "2022-07-07",
+     "署名": "NASA/JPL-Caltech/ASU",
+     "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/ZL0_0490_0710454524_239EBY_N0261004ZCAM05068_1100LMJ",
+     "尺寸": [
+      960,
+      699
+     ]
+    }
+   ],
+   "事实来源": [
+    {
+     "题": "Mars Rock Samples（NASA 样品表）",
+     "url": "https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples"
+    },
+    {
+     "题": "NASA's Perseverance Rover Investigates Geologically Rich Mars Terrain（JPL，2022-09-15）",
+     "url": "https://www.jpl.nasa.gov/news/nasas-perseverance-rover-investigates-geologically-rich-mars-terrain/"
+    }
+   ],
+   "en": {
+    "名": "Skinner Ridge",
+    "说明": "A rock outcrop on the delta front. Here Perseverance cored two sedimentary rocks, Swift Run (sol 490, 2022-07-07) and Skyland (sol 495): its first rock samples from the ancient river delta. Skyland was later placed in the Three Forks depot."
+   }
+  },
+  {
+   "id": "hogwallow_flats",
+   "名": "Hogwallow Flats",
+   "英": "Hogwallow Flats",
+   "类": "近",
+   "发现半径": 6.0,
+   "坐标来源": "MMGIS 航点 26/756（sol 464–473 停车处；NASA 博客说 sol 472 时这片区域就在车周围）",
+   "说明": "一片浅色、颗粒很细的岩层。团队起初按 HiRISE 图上的样子叫它「培根条」（Bacon Strip），因为浅色条纹像一片培根。细颗粒岩石往往含较多黏土矿物，最有可能保存古代的有机分子。Wildcat Ridge 就属于这套岩层。",
+   "E": 4.94,
+   "N": 8.67,
+   "U": 1.08,
+   "区域": "Navcam 精细区（±50 m）",
+   "照片": [
+    {
+     "文件": "兴趣点/hogwallow_1.jpg",
+     "产品": "ZL0_0472_0708840281_848EBY_N0260756ZCAM03384_1100LMJ",
+     "相机": "Mastcam-Z 左",
+     "sol": 472,
+     "lmst": "12:02",
+     "utc": "2022-06-18",
+     "署名": "NASA/JPL-Caltech/ASU",
+     "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/ZL0_0472_0708840281_848EBY_N0260756ZCAM03384_1100LMJ",
+     "尺寸": [
+      960,
+      699
+     ]
+    }
+   ],
+   "事实来源": [
+    {
+     "题": "Fine-Grained Rocks at Hogwallow Flats（NASA 博客，2022-06-23）",
+     "url": "https://science.nasa.gov/blogs/fine-grained-rocks-at-hogwallow-flats"
+    },
+    {
+     "题": "Diagenetic History and Biosignature Preservation Potential of Fine-Grained Rocks at Hogwallow Flats, Jezero Crater, Mars（Caltech 论文库）",
+     "url": "https://authors.library.caltech.edu/records/qxxth-75h49"
+    },
+    {
+     "题": "NASA's Perseverance Rover Investigates Geologically Rich Mars Terrain（JPL，2022-09-15）",
+     "url": "https://www.jpl.nasa.gov/news/nasas-perseverance-rover-investigates-geologically-rich-mars-terrain/"
+    }
+   ],
+   "en": {
+    "名": "Hogwallow Flats",
+    "说明": "A pale, fine-grained rock layer. The team first called it the \"Bacon Strip\" after the light stripes in HiRISE images. Fine-grained rock tends to hold more clay minerals, the best bet for preserving ancient organic molecules. Wildcat Ridge belongs to this layer."
+   }
+  },
+  {
+   "id": "sol535_tracks",
+   "名": "sol 535 第一站的车辙",
+   "英": "Tracks at 26/1652, sol 535",
+   "类": "近",
+   "发现半径": 12.0,
+   "坐标来源": "PDS Navcam 标签车姿 26/1652（位姿表.csv，站点系）",
+   "说明": "sol 535 毅力号离开 Wildcat Ridge，向东开了约 85 m 停在这里，Navcam 回头拍下了自己的车辙。在游戏里的 sol 530，这段路还没有开出来。",
+   "E": 80.39,
+   "N": -17.29,
+   "U": -2.81,
+   "区域": "HiRISE 区（±1 km）",
+   "照片": [
+    {
+     "文件": "兴趣点/tracks_1.jpg",
+     "产品": "NLF_0535_0714445546_383ECM_N0261652NCAM02535_01_195J",
+     "相机": "Navcam 左",
+     "sol": 535,
+     "lmst": "15:24",
+     "utc": "2022-08-22",
+     "署名": "NASA/JPL-Caltech",
+     "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/NLF_0535_0714445546_383ECM_N0261652NCAM02535_01_195J",
+     "尺寸": [
+      960,
+      720
+     ]
+    }
+   ],
+   "事实来源": [
+    {
+     "题": "MMGIS「Where is Perseverance」航点与路线（M20_waypoints.json / M20_traverse.json）",
+     "url": "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json"
+    }
+   ],
+   "en": {
+    "名": "Sol 535 tracks",
+    "说明": "On sol 535 Perseverance left Wildcat Ridge and drove about 85 m east to stop here, then turned Navcam back on its own tracks. At sol 530 in the game, this drive has not happened yet."
+   }
+  },
+  {
+   "id": "hawksbill_gap",
+   "名": "Hawksbill Gap",
+   "英": "Hawksbill Gap",
+   "类": "近",
+   "发现半径": 15.0,
+   "坐标来源": "MMGIS 航点 24/3900（sol 436）；按 NASA 博客，5 月中旬毅力号在 Hawksbill Gap 附近开始上三角洲，推断",
+   "说明": "三角洲前缘的一个缺口。2022 年 5 月中旬，毅力号在这一带开始爬上三角洲前缘，计划沿途在不同的地层做五次近距离科学考察，一直走到 Rocky Top。",
+   "E": 142.78,
+   "N": -158.05,
+   "U": -20.07,
+   "区域": "HiRISE 区（±1 km）",
+   "照片": [
+    {
+     "文件": "兴趣点/hawksbill_1.jpg",
+     "产品": "ZL0_0436_0705645706_223EBY_N0243290ZCAM08453_1100LMJ",
+     "相机": "Mastcam-Z 左",
+     "sol": 436,
+     "lmst": "12:24",
+     "utc": "2022-05-12",
+     "署名": "NASA/JPL-Caltech/ASU",
+     "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/ZL0_0436_0705645706_223EBY_N0243290ZCAM08453_1100LMJ",
+     "尺寸": [
+      960,
+      699
+     ]
+    }
+   ],
+   "事实来源": [
+    {
+     "题": "Next Stop: Hawksbill Gap（NASA 博客，2022-05-16）",
+     "url": "https://science.nasa.gov/blog/next-stop-hawksbill-gap"
+    },
+    {
+     "题": "MMGIS「Where is Perseverance」航点与路线（M20_waypoints.json / M20_traverse.json）",
+     "url": "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json"
+    }
+   ],
+   "en": {
+    "名": "Hawksbill Gap",
+    "说明": "A gap in the delta front. In mid-May 2022 Perseverance started climbing the delta front here, planning five close-up science stops in different layers on the way to Rocky Top."
+   }
+  },
+  {
+   "id": "three_forks",
+   "名": "Three Forks 样品库",
+   "英": "Three Forks sample depot",
+   "类": "近",
+   "发现半径": 15.0,
+   "坐标来源": "MMGIS 航点 32/148（sol 652–653，第一根样品管 Malay 放下的地方）；十根管之字形排开，彼此相隔 5–15 m",
+   "说明": "人类在别的星球上建的第一个样品库。2022 年 12 月 21 日（sol 653）毅力号放下第一根样品管 Malay，到 2023 年 1 月 28 日（sol 690）共放下 10 根，之字形排开、彼此相隔 5–15 m，留给未来的任务来取。在这里取的 Skyland 和 Bearwallow 也在其中。在游戏里的 sol 530，样品库还没有建。",
+   "E": 102.96,
+   "N": -356.88,
+   "U": -22.12,
+   "区域": "HiRISE 区（±1 km）",
+   "照片": [
+    {
+     "文件": "兴趣点/three_forks_1.jpg",
+     "产品": "SI1_0653_0724915290_933ECM_N0320148SRLC08040_0000LMJ",
+     "相机": "WATSON（SHERLOC）",
+     "sol": 653,
+     "lmst": "13:52",
+     "utc": "2022-12-21",
+     "署名": "NASA/JPL-Caltech",
+     "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/SI1_0653_0724915290_933ECM_N0320148SRLC08040_0000LMJ",
+     "尺寸": [
+      960,
+      699
+     ]
+    }
+   ],
+   "事实来源": [
+    {
+     "题": "NASA's Perseverance Rover Deposits First Sample on Mars Surface（2022-12-21）",
+     "url": "https://phys.org/news/2022-12-nasa-perseverance-rover-deposits-sample.html"
+    },
+    {
+     "题": "PIA25682: Perseverance's Three Forks Sample Depot Map",
+     "url": "https://www.jpl.nasa.gov/images/pia25682-perseverances-three-forks-sample-depot-map/"
+    },
+    {
+     "题": "Mars Rock Samples（NASA 样品表）",
+     "url": "https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples"
+    }
+   ],
+   "en": {
+    "名": "Three Forks Sample Depot",
+    "说明": "The first sample depot built by humans on another world. On 21 December 2022 (sol 653) Perseverance set down the first tube, Malay; by 28 January 2023 (sol 690) it had laid out 10, zigzagged 5-15 m apart, for a future mission to collect. Skyland and Bearwallow are among them. At sol 530 in the game, the depot does not exist yet."
+   }
+  },
+  {
+   "id": "amalik",
+   "名": "Amalik 露头",
+   "英": "Amalik outcrop",
+   "类": "近",
+   "发现半径": 15.0,
+   "坐标来源": "MMGIS 航点 29/0（sol 565–591 停车处，sol 575 取 Shuyak）",
+   "说明": "三角洲前缘的一处沉积岩露头。毅力号 2022 年 10 月 2 日（sol 575）在这里取了岩芯 Shuyak；同一露头的另一根岩芯 Mageik 放进了 Three Forks 样品库。",
+   "E": -252.16,
+   "N": -469.51,
+   "U": -3.4,
+   "区域": "HiRISE 区（±1 km）",
+   "照片": [
+    {
+     "文件": "兴趣点/amalik_1.jpg",
+     "产品": "ZL0_0575_0717996047_178EBY_N0290000ZCAM05068_1100LMJ",
+     "相机": "Mastcam-Z 左",
+     "sol": 575,
+     "lmst": "15:16",
+     "utc": "2022-10-02",
+     "署名": "NASA/JPL-Caltech/ASU",
+     "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/ZL0_0575_0717996047_178EBY_N0290000ZCAM05068_1100LMJ",
+     "尺寸": [
+      960,
+      699
+     ]
+    }
+   ],
+   "事实来源": [
+    {
+     "题": "Mars Rock Samples（NASA 样品表）",
+     "url": "https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples"
+    },
+    {
+     "题": "MMGIS「Where is Perseverance」航点与路线（M20_waypoints.json / M20_traverse.json）",
+     "url": "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json"
+    }
+   ],
+   "en": {
+    "名": "Amalik Outcrop",
+    "说明": "A sedimentary outcrop on the delta front. On 2 October 2022 (sol 575) Perseverance cored Shuyak here; Mageik, another core from the same outcrop, went into the Three Forks depot."
+   }
+  },
+  {
+   "id": "observation_mountain",
+   "名": "Observation Mountain 沙波",
+   "英": "Observation Mountain",
+   "类": "近",
+   "发现半径": 15.0,
+   "坐标来源": "MMGIS 航点 31/0（sol 632–640 停车处，旁边就是这道沙波）",
+   "说明": "一道风吹成的大沙波。毅力号在旁边取了 Atmo Mountain（2022-12-02）和 Crosswind Lake（2022-12-07）两份风化层样品，是任务的第一批松散沙土样品，里面有尘、沙和小石子。风能把细颗粒吹很远，所以一管沙土能反映很大范围的地貌。",
+   "E": -262.46,
+   "N": -433.66,
+   "U": -2.15,
+   "区域": "HiRISE 区（±1 km）",
+   "照片": [
+    {
+     "文件": "兴趣点/obsmtn_1.jpg",
+     "产品": "NLF_0634_0723238492_135ECM_N0310000NCAM00709_05_095J",
+     "相机": "Navcam 左",
+     "sol": 634,
+     "lmst": "16:33",
+     "utc": "2022-12-02",
+     "署名": "NASA/JPL-Caltech",
+     "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/NLF_0634_0723238492_135ECM_N0310000NCAM00709_05_095J",
+     "尺寸": [
+      960,
+      721
+     ]
+    },
+    {
+     "文件": "兴趣点/obsmtn_2.jpg",
+     "产品": "ZL0_0634_0723237410_895EBY_N0310000ZCAM05135_1100LMJ",
+     "相机": "Mastcam-Z 左",
+     "sol": 634,
+     "lmst": "16:16",
+     "utc": "2022-12-02",
+     "署名": "NASA/JPL-Caltech/ASU",
+     "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/ZL0_0634_0723237410_895EBY_N0310000ZCAM05135_1100LMJ",
+     "尺寸": [
+      960,
+      699
+     ]
+    }
+   ],
+   "事实来源": [
+    {
+     "题": "Reading the Ripples at Observation Mountain（NASA 博客）",
+     "url": "https://science.nasa.gov/blog/reading-the-ripples-at-observation-mountain/"
+    },
+    {
+     "题": "Meet the Mars Samples: Atmo Mountain and Crosswind Lake（JPL）",
+     "url": "https://www.jpl.nasa.gov/videos/meet-the-mars-samples-atmo-mountain-and-crosswind-lake-samples-17-and-18/"
+    },
+    {
+     "题": "Mars Rock Samples（NASA 样品表）",
+     "url": "https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples"
+    }
+   ],
+   "en": {
+    "名": "Observation Mountain",
+    "说明": "A large wind-blown sand ridge (megaripple). Beside it Perseverance collected two regolith samples, Atmo Mountain (2022-12-02) and Crosswind Lake (2022-12-07): the mission's first loose-soil samples, holding dust, sand and small pebbles. Wind carries fine grains far, so one tube reflects a wide area."
+   }
+  },
+  {
+   "id": "enchanted_lake",
+   "名": "Enchanted Lake 观察点",
+   "英": "Enchanted Lake (remote science)",
+   "类": "近",
+   "发现半径": 15.0,
+   "坐标来源": "MMGIS 航点 24/1328（sol 427 停车处）；露头本身在远处，位置没有公开坐标",
+   "说明": "毅力号在这一带远距离观察了 Enchanted Lake：一片层理很细的岩石，可能是三角洲最底部的沉积。sol 428 左右完成观察后，它出发前往 Hawksbill Gap。",
+   "E": -80.2,
+   "N": -512.65,
+   "U": -15.97,
+   "区域": "HiRISE 区（±1 km）",
+   "照片": [
+    {
+     "文件": "兴趣点/enchanted_1.jpg",
+     "产品": "NLF_0427_0704853485_885ECM_N0241328NCAM03427_01_195J",
+     "相机": "Navcam 左",
+     "sol": 427,
+     "lmst": "14:13",
+     "utc": "2022-05-03",
+     "署名": "NASA/JPL-Caltech",
+     "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/NLF_0427_0704853485_885ECM_N0241328NCAM03427_01_195J",
+     "尺寸": [
+      960,
+      720
+     ]
+    }
+   ],
+   "事实来源": [
+    {
+     "题": "Next Stop: Hawksbill Gap（NASA 博客，2022-05-16）",
+     "url": "https://science.nasa.gov/blog/next-stop-hawksbill-gap"
+    },
+    {
+     "题": "MMGIS「Where is Perseverance」航点与路线（M20_waypoints.json / M20_traverse.json）",
+     "url": "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json"
+    }
+   ],
+   "en": {
+    "名": "Enchanted Lake",
+    "说明": "From around here Perseverance made remote observations of Enchanted Lake, a finely layered rock that may be some of the oldest delta deposits. After finishing near sol 428 it set off for Hawksbill Gap."
+   }
+  },
+  {
+   "id": "jezero_rim",
+   "名": "杰泽罗陨石坑坑缘",
+   "英": "Jezero crater rim",
+   "类": "远",
+   "发现半径": 0.0,
+   "坐标来源": "按维基百科的坑中心 18.38°N 77.58°E、直径 45 km 做圆形近似，取方位 215°（sol 530 那张 Navcam 的朝向）上的坑缘点，约 18 km；实际坑缘不是正圆",
+   "说明": "杰泽罗陨石坑直径约 45 km。约 35 亿年前这里是一个湖，一条河从西边流进来，在湖边堆出了毅力号脚下这片三角洲。地平线上的远山就是坑缘。拍照时把它放进画面中央即可记入图鉴。",
+   "E": -10334.16,
+   "N": -14721.27,
+   "U": 0.0,
+   "区域": "CTX 区（±40 km）",
+   "照片": [
+    {
+     "文件": "兴趣点/jezero_1.jpg",
+     "产品": "NLF_0530_0713995558_005ECM_N0261222NCAM00215_01_295J",
+     "相机": "Navcam 左",
+     "sol": 530,
+     "lmst": "13:45",
+     "utc": "2022-08-17",
+     "署名": "NASA/JPL-Caltech",
+     "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/NLF_0530_0713995558_005ECM_N0261222NCAM00215_01_295J",
+     "尺寸": [
+      960,
+      720
+     ]
+    }
+   ],
+   "事实来源": [
+    {
+     "题": "Jezero (crater)（维基百科：直径约 45 km，中心 18.38°N 77.58°E）",
+     "url": "https://en.wikipedia.org/wiki/Jezero_(crater)"
+    },
+    {
+     "题": "NASA's Perseverance Rover Investigates Geologically Rich Mars Terrain（JPL，2022-09-15）",
+     "url": "https://www.jpl.nasa.gov/news/nasas-perseverance-rover-investigates-geologically-rich-mars-terrain/"
+    }
+   ],
+   "en": {
+    "名": "Jezero Crater Rim",
+    "说明": "Jezero crater is about 45 km across. About 3.5 billion years ago it held a lake fed by a river from the west, which built the delta Perseverance is standing on. The distant hills on the horizon are the crater rim. Put it in the middle of the frame to log it."
+   }
+  },
+  {
+   "id": "butler_landing",
+   "名": "Octavia E. Butler 着陆点",
+   "英": "Octavia E. Butler Landing",
+   "类": "远",
+   "发现半径": 0.0,
+   "坐标来源": "MMGIS 最早的航点 3/0（sol 13，第一次行驶前，18.4446°N 77.4509°E，与维基百科的着陆点坐标一致）",
+   "说明": "2021 年 2 月 18 日毅力号在这里着陆。同年 3 月 5 日，NASA 以科幻作家奥克塔维娅·E·巴特勒的名字命名了这个着陆点。照片是着陆当天前避障相机拍的。",
+   "E": 2528.13,
+   "N": -831.04,
+   "U": -47.78,
+   "区域": "CTX 区（±40 km）",
+   "照片": [
+    {
+     "文件": "兴趣点/landing_1.jpg",
+     "产品": "FLF_0000_0666958339_058EBY_N0010052AUT_04096_00_0LLJ",
+     "相机": "前避障相机 左",
+     "sol": 0,
+     "lmst": "17:20",
+     "utc": "2021-02-19",
+     "署名": "NASA/JPL-Caltech",
+     "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/FLF_0000_0666958339_058EBY_N0010052AUT_04096_00_0LLJ",
+     "尺寸": [
+      960,
+      720
+     ]
+    }
+   ],
+   "事实来源": [
+    {
+     "题": "PIA24483: Welcome to 'Octavia E. Butler Landing'",
+     "url": "https://www.jpl.nasa.gov/images/pia24483-welcome-to-octavia-e-butler-landing/"
+    },
+    {
+     "题": "MMGIS「Where is Perseverance」航点与路线（M20_waypoints.json / M20_traverse.json）",
+     "url": "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json"
+    }
+   ],
+   "en": {
+    "名": "Octavia E. Butler Landing",
+    "说明": "Perseverance landed here on 18 February 2021. On 5 March 2021 NASA named the site for the science fiction writer Octavia E. Butler. The photo is from a front hazard camera on landing day."
+   }
+  }
+ ],
+ "挑战": [
+  {
+   "id": "tracks535",
+   "名": "回望车辙（sol 535）",
+   "提示": "离开 Wildcat Ridge 后的第一站，往回看自己的车辙。",
+   "产品": "NLF_0535_0714445546_383ECM_N0261652NCAM02535_01_195J",
+   "相机": "Navcam 左",
+   "sol": 535,
+   "lmst": "15:24",
+   "ltst": "14:51",
+   "utc": "2022-08-22",
+   "署名": "NASA/JPL-Caltech",
+   "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/NLF_0535_0714445546_383ECM_N0261652NCAM02535_01_195J",
+   "图": "兴趣点/挑战_tracks535.jpg",
+   "W": 960,
+   "H": 720,
+   "区域": "HiRISE 区（±1 km）",
+   "图针孔": "兴趣点/挑战_tracks535_针孔.jpg",
+   "针孔有效": 1.0,
+   "原图视场": 96.6,
+   "位姿": {
+    "pos": [
+     80.007,
+     -18.441,
+     -0.978
+    ],
+    "fwd": [
+     -0.60369,
+     0.62207,
+     -0.49859
+    ],
+    "up": [
+     -0.35803,
+     0.34724,
+     0.86674
+    ],
+    "hfov": 81.9,
+    "离地": 1.831
+   },
+   "车": {
+    "E": 80.39,
+    "N": -17.29,
+    "航向": 159.9,
+    "站": "26/1652"
+   },
+   "en": {
+    "名": "Looking back at tracks (sol 535)",
+    "提示": "First stop after Wildcat Ridge: look back at your own tracks."
+   }
+  },
+  {
+   "id": "skinner490",
+   "名": "Skinner Ridge 工作区（sol 490）",
+   "提示": "停车点东北 20 m，Navcam 低头看机械臂前的岩石和沙纹。",
+   "产品": "NLF_0490_0710456117_926ECM_N0261004NCAM00709_05_095J",
+   "相机": "Navcam 左",
+   "sol": 490,
+   "lmst": "16:52",
+   "ltst": "16:49",
+   "utc": "2022-07-07",
+   "署名": "NASA/JPL-Caltech",
+   "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/NLF_0490_0710456117_926ECM_N0261004NCAM00709_05_095J",
+   "图": "兴趣点/挑战_skinner490.jpg",
+   "W": 960,
+   "H": 721,
+   "区域": "Navcam 精细区（±50 m）",
+   "图针孔": "兴趣点/挑战_skinner490_针孔.jpg",
+   "针孔有效": 1.0,
+   "原图视场": 37.1,
+   "位姿": {
+    "pos": [
+     13.876,
+     15.555,
+     3.948
+    ],
+    "fwd": [
+     -0.19917,
+     0.87014,
+     -0.45076
+    ],
+    "up": [
+     -0.10999,
+     0.43723,
+     0.8926
+    ],
+    "hfov": 31.5,
+    "离地": 1.97
+   },
+   "车": {
+    "E": 13.33,
+    "N": 15.21,
+    "航向": 8.4,
+    "站": "26/1004"
+   },
+   "en": {
+    "名": "Skinner Ridge workspace (sol 490)",
+    "提示": "20 m northeast of the parking spot; Navcam looks down at the rock and ripples in front of the arm."
+   }
+  },
+  {
+   "id": "sol530",
+   "名": "sol 530 的机械臂与远山",
+   "提示": "就在出发点，Navcam 越过机械臂朝西南看。",
+   "产品": "NLF_0530_0713995558_005ECM_N0261222NCAM00215_01_295J",
+   "相机": "Navcam 左",
+   "sol": 530,
+   "lmst": "13:45",
+   "ltst": "13:15",
+   "utc": "2022-08-17",
+   "署名": "NASA/JPL-Caltech",
+   "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/NLF_0530_0713995558_005ECM_N0261222NCAM00215_01_295J",
+   "图": "兴趣点/挑战_sol530.jpg",
+   "W": 960,
+   "H": 720,
+   "区域": "Navcam 精细区（±50 m）",
+   "图针孔": "兴趣点/挑战_sol530_针孔.jpg",
+   "针孔有效": 1.0,
+   "原图视场": 96.6,
+   "位姿": {
+    "pos": [
+     -0.748,
+     -0.435,
+     1.976
+    ],
+    "fwd": [
+     -0.57241,
+     -0.81541,
+     -0.08634
+    ],
+    "up": [
+     0.09897,
+     -0.17323,
+     0.9799
+    ],
+    "hfov": 81.9,
+    "离地": 1.976
+   },
+   "车": {
+    "E": 0.0,
+    "N": 0.0,
+    "航向": 252.2,
+    "站": "26/1222"
+   },
+   "en": {
+    "名": "Arm and far hills (sol 530)",
+    "提示": "At the start point: Navcam looks southwest past the robotic arm."
+   }
+  },
+  {
+   "id": "enchanted427",
+   "名": "三角洲前缘（sol 427）",
+   "提示": "停车点西南约 520 m，朝北看三角洲前缘的陡坎。",
+   "产品": "NLF_0427_0704853485_885ECM_N0241328NCAM03427_01_195J",
+   "相机": "Navcam 左",
+   "sol": 427,
+   "lmst": "14:13",
+   "ltst": "14:44",
+   "utc": "2022-05-03",
+   "署名": "NASA/JPL-Caltech",
+   "url": "https://mars.nasa.gov/mars2020/multimedia/raw-images/NLF_0427_0704853485_885ECM_N0241328NCAM03427_01_195J",
+   "图": "兴趣点/挑战_enchanted427.jpg",
+   "W": 960,
+   "H": 720,
+   "区域": "HiRISE 区（±1 km）",
+   "图针孔": "兴趣点/挑战_enchanted427_针孔.jpg",
+   "针孔有效": 1.0,
+   "原图视场": 96.6,
+   "位姿": {
+    "pos": [
+     -78.848,
+     -512.229,
+     -14.22
+    ],
+    "fwd": [
+     0.27025,
+     -0.82342,
+     -0.49894
+    ],
+    "up": [
+     0.28341,
+     -0.42723,
+     0.85858
+    ],
+    "hfov": 81.9,
+    "离地": 1.752
+   },
+   "车": {
+    "E": -80.2,
+    "N": -512.65,
+    "航向": 35.5,
+    "站": "24/1328"
+   },
+   "en": {
+    "名": "Delta front (sol 427)",
+    "提示": "About 520 m southwest of the parking spot, looking north at the delta-front scarp."
+   }
+  }
+ ]
+}

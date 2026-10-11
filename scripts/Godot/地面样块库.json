@@ -1,0 +1,6387 @@
+{
+ "说明": "真火星地面材质样块库（74_多站样块.py 库 生成，勿手改）。每块是一张可平铺的细节图块：反照率细节（逐通道均值 1）+ 高度（米，零均值，去平面和 0.5 m 低频），都做了 Moisan 周期分解（贴花除外）。类型定义、放置线索见 类型；站点见 站点；方法和质量见 docs/地面材质/样块库.md。",
+ "格式": {
+  "albedo": "PNG RGB8，存 A/gain（第 0 行在南，同 57/61）；解码 A = 像素/255 × gain。gain = 全图最大值向上取到 0.01（同 61.albedo_gain），不截断",
+  "height": "<id>_height.bin：int32 宽、高，然后 float32 高度（米）行优先，第 0 行在南（同 61）",
+  "size_m": "整块边长（米）；px_m 格距（米）",
+  "可信频段": "Navcam 全分辨率：高度只到约 1 cm 波长（更细的是平滑），反照率到约 2 mm；Navcam 半分辨率：高度约 2 cm、反照率约 4 mm；Mastcam-Z 110 mm：高度约 3–5 mm、反照率 0.5–1 mm；好奇号 Navcam：见站点 note",
+  "h_rms_mm": "高度细节的标准差",
+  "albedo_contrast": "反照率细节 log 亮度的标准差",
+  "rb_contrast": "log(R/B) 的标准差",
+  "slope_rms_1cm_deg": "高度平滑到 1 cm 后的坡度 RMS",
+  "lam_dom_cm": "2 cm–0.5 m 内方差最大的 1/4 倍频程带中心",
+  "psd_beta": "2D 高度谱在 2–20 cm 的斜率",
+  "rgb_rel_station": "块平均线性 RGB（分离后的反照率）÷ 本站整片有效地面的中值（Mastcam 块：÷ 本块所在帧中值）：同站内的相对亮度与颜色",
+  "rgb_rel_type": "rgb_rel_station ÷ 同类各块的几何平均：同类变体之间的颜色差",
+  "quality": "hole_frac 补洞比例；shadow_frac 每帧都在投射阴影里的格的比例；frames 分离用帧数；illuminations 光照簇数；nframes_med 块内参与的帧数中值；range_m 块中心离车距离；footprint_mm 顺距离方向的像素足迹（近边、中心、远边）；seam_step_log / seam_step_mm 块内帧接缝两侧的反照率（log）/高度（毫米）中位台阶（切块时超过站点 cut.max_seam_step 的候选不要）；shading_leak_r 分离后反照率与明暗模型的高通相关（站级，|r| 越小越干净）",
+  "flags": "质量标记（中文短语）"
+ },
+ "生成": "scripts/Godot/74_多站样块.py 库",
+ "日期": "2026-10-07",
+ "类型说明": "粗糙度：PBR 粗糙度区间（火星地面都很亚光；新鲜磨蚀面最低）。高度混合.对比：0–1，高度混合时这一类边界的硬度（1 = 硬边、盖在高处；0 = 软、填低处）。放置：坡度区间（度）、曲率、相对高程、背风等线索，给程序化生成器挑子类用。现有地类：游戏现有 4 个地类里对应哪一个。程序化=True 的类没有真火星样块。",
+ "类型": {
+  "M1": {
+   "名称": "暗色细沙 / 风化层（板间、低处）",
+   "英文": "dark fine sand / regolith",
+   "现有地类": "沙",
+   "粗糙度": [
+    0.92,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.25,
+    "角色": "填低处",
+    "说明": "高度混合里优先占低处、裂隙和凹处；边缘柔和"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     20
+    ],
+    "曲率": "凹（负）",
+    "相对高程": "低于 1 m 均值",
+    "背风": "是（石块背风、坑内）",
+    "其他": "基岩岛之间、裂隙里"
+   },
+   "变体数": 4,
+   "贴花数": 0
+  },
+  "M2": {
+   "名称": "浅色裂隙基岩板（硫酸盐胶结粉砂岩）",
+   "英文": "fractured light-toned bedrock slabs",
+   "现有地类": "基岩",
+   "粗糙度": [
+    0.75,
+    0.9
+   ],
+   "高度混合": {
+    "对比": 0.8,
+    "角色": "盖高处",
+    "说明": "板面平、板缘锐利，混合边界要硬；缝里让给 M1"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     20
+    ],
+    "曲率": "凸（正）",
+    "相对高程": "高出周围 1–10 cm",
+    "背风": "否",
+    "其他": "成岛 + 缝，不宜大面积平铺"
+   },
+   "变体数": 3,
+   "贴花数": 0
+  },
+  "M3": {
+   "名称": "棱角碎片砾石裙",
+   "英文": "angular fragment gravel apron",
+   "现有地类": "砾石风化层",
+   "粗糙度": [
+    0.85,
+    0.95
+   ],
+   "高度混合": {
+    "对比": 0.6,
+    "角色": "中间",
+    "说明": "碎片突出于沙面，混合边界中等"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     25
+    ],
+    "曲率": "任意，坡下侧更多",
+    "相对高程": "基岩岛周围 0.5–3 m",
+    "背风": "否",
+    "其他": "离 M2 板缘距离指数衰减"
+   },
+   "变体数": 2,
+   "贴花数": 0
+  },
+  "M4": {
+   "名称": "冲击波纹沙（厘米级沙纹）",
+   "英文": "impact ripples",
+   "现有地类": "沙",
+   "粗糙度": [
+    0.95,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.3,
+    "角色": "填低处",
+    "说明": "平地和槽地，按风向旋转"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     8
+    ],
+    "曲率": "平或凹",
+    "相对高程": "低处、槽地",
+    "背风": "石块背风侧接 M9",
+    "其他": "方向 = 局部风向"
+   },
+   "变体数": 5,
+   "贴花数": 0
+  },
+  "M5": {
+   "名称": "大波纹 / TAR 脊与槽",
+   "英文": "megaripple / TAR crest and trough",
+   "现有地类": "沙",
+   "粗糙度": [
+    0.9,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.4,
+    "角色": "按印章曲率",
+    "说明": "脊（正曲率）用颗粒装甲，槽（负曲率）用积尘细沙"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     15
+    ],
+    "曲率": "脊：正；槽：负",
+    "相对高程": "TAR 区",
+    "背风": "迎风坡偏脊材质",
+    "其他": "需要米级起伏（印章）"
+   },
+   "变体数": 6,
+   "贴花数": 0
+  },
+  "M6": {
+   "名称": "车辙",
+   "英文": "wheel tracks",
+   "现有地类": "—",
+   "程序化": true,
+   "粗糙度": [
+    0.9,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.0,
+    "角色": "运行时贴",
+    "说明": "运行时生成"
+   },
+   "放置": {
+    "其他": "车轮轨迹"
+   },
+   "变体数": 2,
+   "贴花数": 0
+  },
+  "M7": {
+   "名称": "灰色浮石 / 卵石地面",
+   "英文": "grey float rocks",
+   "现有地类": "暗色岩块",
+   "粗糙度": [
+    0.8,
+    0.9
+   ],
+   "高度混合": {
+    "对比": 0.7,
+    "角色": "盖高处"
+   },
+   "放置": {
+    "其他": "均匀稀疏撒布，坡下平原多"
+   },
+   "变体数": 0,
+   "贴花数": 0
+  },
+  "M8": {
+   "名称": "片状纹层 / 台阶层理岩",
+   "英文": "platy laminated bedrock",
+   "现有地类": "基岩",
+   "粗糙度": [
+    0.75,
+    0.9
+   ],
+   "高度混合": {
+    "对比": 0.8,
+    "角色": "盖高处"
+   },
+   "放置": {
+    "坡度_deg": [
+     15,
+     60
+    ],
+    "曲率": "凸、坎",
+    "相对高程": "露头面、板缘",
+    "其他": "层面近水平，用世界 z 做层序"
+   },
+   "变体数": 1,
+   "贴花数": 0
+  },
+  "M9": {
+   "名称": "背风积沙尾",
+   "英文": "wind tails",
+   "现有地类": "沙",
+   "程序化": true,
+   "粗糙度": [
+    0.95,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.2,
+    "角色": "印章"
+   },
+   "放置": {
+    "背风": "石块背风侧",
+    "其他": "长 1–3 倍石径"
+   },
+   "变体数": 0,
+   "贴花数": 0
+  },
+  "M10": {
+   "名称": "积尘层（修饰）",
+   "英文": "dust mantle (modifier)",
+   "现有地类": "—",
+   "程序化": true,
+   "粗糙度": [
+    0.95,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.0,
+    "角色": "着色器参数"
+   },
+   "放置": {
+    "其他": "朝上、天空可见度高、背风"
+   },
+   "变体数": 0,
+   "贴花数": 0
+  },
+  "M11": {
+   "名称": "崖脚碎石裙 / 崖锥",
+   "英文": "talus apron",
+   "现有地类": "砾石风化层",
+   "粗糙度": [
+    0.85,
+    0.95
+   ],
+   "高度混合": {
+    "对比": 0.7,
+    "角色": "盖高处"
+   },
+   "放置": {
+    "坡度_deg": [
+     20,
+     35
+    ],
+    "曲率": "凹（坡脚）",
+    "相对高程": "崖面下方",
+    "其他": "石径随离坡脚距离增大"
+   },
+   "变体数": 5,
+   "贴花数": 0
+  },
+  "M12": {
+   "名称": "磨蚀斑 / 钻孔（贴花）",
+   "英文": "abrasion patch / borehole decal",
+   "现有地类": "基岩",
+   "贴花": true,
+   "粗糙度": [
+    0.6,
+    0.8
+   ],
+   "高度混合": {
+    "对比": 1.0,
+    "角色": "贴花"
+   },
+   "放置": {
+    "其他": "只放真实位置"
+   },
+   "变体数": 0,
+   "贴花数": 3
+  },
+  "M13": {
+   "名称": "坑底富橄榄石堆晶岩（Séítah）",
+   "英文": "olivine-rich cumulate bedrock (Séítah)",
+   "现有地类": "基岩",
+   "新增": true,
+   "粗糙度": [
+    0.8,
+    0.92
+   ],
+   "高度混合": {
+    "对比": 0.75,
+    "角色": "盖高处",
+    "说明": "块状、风蚀成的鳞片/棱面，岩面之间积暗沙"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     30
+    ],
+    "曲率": "凸",
+    "相对高程": "岩脊、露头",
+    "背风": "沙在背风处积",
+    "其他": "坑底 Séítah 单元；与 M18/M5 沙波相间"
+   },
+   "变体数": 2,
+   "贴花数": 0
+  },
+  "M14": {
+   "名称": "Máaz 玄武质坑底基岩（含铺路石）",
+   "英文": "Máaz basaltic crater-floor bedrock / pavers",
+   "现有地类": "基岩",
+   "新增": true,
+   "粗糙度": [
+    0.8,
+    0.92
+   ],
+   "高度混合": {
+    "对比": 0.7,
+    "角色": "盖高处",
+    "说明": "平顶板块、多孔面、积尘"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     15
+    ],
+    "曲率": "平到凸",
+    "相对高程": "平原上略高",
+    "其他": "坑底 Máaz 单元；板块间是 M16/M17"
+   },
+   "变体数": 5,
+   "贴花数": 0
+  },
+  "M15": {
+   "名称": "多边形裂隙地面（干裂/六边形纹）",
+   "英文": "polygonally fractured ground",
+   "现有地类": "基岩",
+   "新增": true,
+   "粗糙度": [
+    0.8,
+    0.95
+   ],
+   "高度混合": {
+    "对比": 0.6,
+    "角色": "中间",
+    "说明": "多边形板面平，缝里填沙；缝的位置要和高度一致"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     10
+    ],
+    "曲率": "平",
+    "相对高程": "平坦露头",
+    "其他": "泥岩/硫酸盐层面；多边形 5–50 cm"
+   },
+   "变体数": 3,
+   "贴花数": 0
+  },
+  "M16": {
+   "名称": "亮色积尘平原",
+   "英文": "bright dust-mantled plain",
+   "现有地类": "沙",
+   "新增": true,
+   "粗糙度": [
+    0.95,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.15,
+    "角色": "填低处",
+    "说明": "平滑、对比低、偏亮偏红"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     8
+    ],
+    "曲率": "平",
+    "相对高程": "平原",
+    "背风": "是",
+    "其他": "着陆区一带的坑底平原；与 M17 卵石混"
+   },
+   "变体数": 3,
+   "贴花数": 0
+  },
+  "M17": {
+   "名称": "卵石 / 砾石滞留铺面",
+   "英文": "pebble / cobble lag pavement",
+   "现有地类": "砾石风化层",
+   "新增": true,
+   "粗糙度": [
+    0.88,
+    0.97
+   ],
+   "高度混合": {
+    "对比": 0.55,
+    "角色": "中间",
+    "说明": "卵石突出于细粒基底"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     12
+    ],
+    "曲率": "平到凸",
+    "相对高程": "风蚀面、平原",
+    "背风": "否（迎风、风蚀处）",
+    "其他": "细沙被吹走后留下的粗颗粒层"
+   },
+   "变体数": 7,
+   "贴花数": 0
+  },
+  "M18": {
+   "名称": "暗色玄武质沙丘沙（带沙纹）",
+   "英文": "dark basaltic dune sand with ripples",
+   "现有地类": "沙",
+   "新增": true,
+   "粗糙度": [
+    0.95,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.2,
+    "角色": "填低处",
+    "说明": "沙丘迎风坡上的厘米–分米级沙纹，干净无尘"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     30
+    ],
+    "曲率": "任意",
+    "相对高程": "沙丘场",
+    "背风": "背风坡更平滑",
+    "其他": "活动沙丘；沙纹方向随局部风"
+   },
+   "变体数": 9,
+   "贴花数": 0
+  },
+  "M19": {
+   "名称": "颗粒波纹沙席 / 沙影",
+   "英文": "granule-ripple sand sheet / sand shadow",
+   "现有地类": "沙",
+   "新增": true,
+   "粗糙度": [
+    0.92,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.35,
+    "角色": "填低处",
+    "说明": "毫米级颗粒铺面上的低矮颗粒波纹"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     10
+    ],
+    "曲率": "凹或背风",
+    "相对高程": "石块背风侧、低处",
+    "背风": "是",
+    "其他": "沙影、沙席"
+   },
+   "变体数": 6,
+   "贴花数": 0
+  },
+  "M20": {
+   "名称": "层状硫酸盐基岩（板状、细裂）",
+   "英文": "layered sulfate-bearing bedrock",
+   "现有地类": "基岩",
+   "新增": true,
+   "粗糙度": [
+    0.75,
+    0.9
+   ],
+   "高度混合": {
+    "对比": 0.75,
+    "角色": "盖高处",
+    "说明": "平板 + 填沙的节理；层面近水平"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     25
+    ],
+    "曲率": "凸",
+    "相对高程": "露头",
+    "其他": "Gale Mt Sharp 硫酸盐单元；与 M2 同族，颜色更浅、板更大"
+   },
+   "变体数": 9,
+   "贴花数": 0
+  },
+  "M21": {
+   "名称": "块状碎屑 / 块石场",
+   "英文": "blocky debris / boulder field",
+   "现有地类": "暗色岩块",
+   "新增": true,
+   "粗糙度": [
+    0.82,
+    0.92
+   ],
+   "高度混合": {
+    "对比": 0.85,
+    "角色": "盖高处",
+    "说明": "棱角块石 0.1–1 m 坐在沙上；块大于样块的部分应走石块实例"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     30
+    ],
+    "曲率": "凹（沟、坡脚）",
+    "相对高程": "河道、坡脚、坑缘",
+    "其他": "与 M11 崖锥衔接"
+   },
+   "变体数": 3,
+   "贴花数": 0
+  },
+  "M22": {
+   "名称": "坑缘角砾岩",
+   "英文": "crater-rim breccia",
+   "现有地类": "基岩",
+   "新增": true,
+   "粗糙度": [
+    0.8,
+    0.92
+   ],
+   "高度混合": {
+    "对比": 0.75,
+    "角色": "盖高处"
+   },
+   "放置": {
+    "坡度_deg": [
+     5,
+     35
+    ],
+    "曲率": "凸",
+    "相对高程": "坑缘",
+    "其他": "杂色岩块嵌在基质里"
+   },
+   "变体数": 3,
+   "贴花数": 0
+  }
+ },
+ "站点": {
+  "s0530": {
+   "name": "Wildcat Ridge / Hogwallow Flats（三角洲前缘，第一批）",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 1222,
+   "sols": [
+    520,
+    521,
+    526,
+    527,
+    528,
+    529,
+    530,
+    531,
+    532
+   ],
+   "types": [
+    "M1",
+    "M2",
+    "M3",
+    "M4",
+    "M8",
+    "M12"
+   ],
+   "note": "第一批（71_地面样块.py）的同一套设置，74 复现核对用。Navcam NCAM00712 工作区全分辨率 9 帧（7 帧正午 + 14:33 + 15:49）；Mastcam-Z ZCAM08544/08547。",
+   "lat": 18.458647,
+   "lon": 77.405925,
+   "elev_m": -2523.17
+  },
+  "s0538": {
+   "name": "三角洲前缘下坡沙地（风成床面）",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 2548,
+   "sols": [
+    538
+   ],
+   "types": [
+    "M5",
+    "M17",
+    "M6"
+   ],
+   "note": "批3 到站环拍：5 帧 2576×1936，方位一圈、俯仰约 −30°，同一 sol 下午单一光照。",
+   "lat": 18.456828,
+   "lon": 77.408651,
+   "elev_m": -2540.95
+  },
+  "s0539": {
+   "name": "下坡沙地大波纹（sol 539 落点）",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 3008,
+   "sols": [
+    539
+   ],
+   "types": [
+    "M5"
+   ],
+   "note": "批3 到站环拍：5 帧 2576×1936，方位一圈、俯仰约 −30°，同一 sol 下午单一光照。",
+   "lat": 18.455319,
+   "lon": 77.407909,
+   "elev_m": -2543.65
+  },
+  "m105_418": {
+   "name": "Mt Sharp 硫酸盐单元，Gediz Vallis 前的裂隙板（合日期间驻留）",
+   "rover": "MSL",
+   "site": 105,
+   "drive": 418,
+   "sols": [
+    4002,
+    4003,
+    4004,
+    4005,
+    4006,
+    4007,
+    4008,
+    4009
+   ],
+   "types": [
+    "M20"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：Upper 60% of ncam00400 frame: bright cross-laminated slabs 0.2-1 m with dark sand/granule-filled joints (very clean); lower 30%: dark granule sand; bottom-right: rover wheel + deck hardware (masked in XYZ). 42 identical repeats: 14x each at LTST ~11:02, ~14:04, ~17:21 -> 3 illuminations with noise-averaging. Ring frames sols 3974/3984 add 2 more LTSTs over a wider slab field.（NCAM00400 同一指向 42 次重拍，按 11:0x / 14:0x / 17:2x 三簇各取前 5 帧）",
+   "lat": null,
+   "lon": null,
+   "elev_m": null
+  },
+  "m95_3152": {
+   "name": "Mt Sharp 硫酸盐单元，平整浅色层状基岩（细裂纹）",
+   "rover": "MSL",
+   "site": 95,
+   "drive": 3152,
+   "sols": [
+    3511,
+    3512,
+    3513,
+    3515,
+    3527
+   ],
+   "types": [
+    "M20"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：az~136 el~-42 frame (ncam00323) repeated at 6 LTSTs (10:06, 10:59, 11:57, 13:44, 14:56, 15:59) over 5 sols: flat light bedrock with hairline fractures + sparse dark sand; right-bottom quarter is rover wheel (masked) and rover shadow at some LTSTs. Distant layered ledges at top (beyond 5 m). Very clean bedrock in left/centre.",
+   "lat": null,
+   "lon": null,
+   "elev_m": null
+  },
+  "m87_2578": {
+   "name": "黏土–硫酸盐过渡带，平板状层状基岩",
+   "rover": "MSL",
+   "site": 87,
+   "drive": 2578,
+   "sols": [
+    3088,
+    3092,
+    3104,
+    3107
+   ],
+   "types": [
+    "M20"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：Post-drive ring (5 az) imaged at sols 3088 (~15:19), 3104 (~12:29), 3107 (~12:49): same ground, 3 illuminations; workspace pair at 6 LTSTs but arm/turret intrudes in 3088/3094/3104 frames. Flat platy bedrock with loose slab fragments; very clean beyond rover hardware.",
+   "lat": null,
+   "lon": null,
+   "elev_m": null
+  },
+  "m105_106": {
+   "name": "Gediz Vallis 附近，沙上的棱角块石/卵石场",
+   "rover": "MSL",
+   "site": 105,
+   "drive": 106,
+   "sols": [
+    3960,
+    3962
+   ],
+   "types": [
+    "M21"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：Angular to subrounded blocks 0.1-1 m, densely packed, with dark sand between; ring sol 3960 ~14:53 plus az~90 frame sol 3961 12:04 (2 illuminations at one pointing). Rover hardware only at ring ends.",
+   "lat": null,
+   "lon": null,
+   "elev_m": null
+  },
+  "m106_660": {
+   "name": "Gediz Vallis 河道边缘：块状碎屑 + 板 + 小沙纹",
+   "rover": "MSL",
+   "site": 106,
+   "drive": 660,
+   "sols": [
+    4116
+   ],
+   "types": [
+    "M21",
+    "M11"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：Two pointings (az~115 & ~149, el -34/-38) each imaged at 09:51, 12:02-12:06, 15:25-15:28, ~16:45 on sol 4116 -> 4 illuminations same sol (no surface change). Mixed scene: tilted laminated slabs, loose blocks, small dark ripples; wheel at right edge of az149 frames. Lower el -> coarser px (~3-5 mm).",
+   "lat": null,
+   "lon": null,
+   "elev_m": null
+  },
+  "m52_1162": {
+   "name": "Bagnold 沙丘 Namib Dune（暗色玄武质沙，沙纹）",
+   "rover": "MSL",
+   "site": 52,
+   "drive": 1162,
+   "sols": [
+    1221,
+    1224,
+    1226,
+    1228,
+    1231
+   ],
+   "types": [
+    "M18"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：Ring frames sol 1221 16:28 az 30-60 el-47: pristine ripple field (cm-scale ripples clearly resolved) + scoop/wheel scuffs near bottom. Workspace az-23 el-53 at 6 LTSTs (14:01-16:54, sols 1224-1231): upper third pristine ripples, middle has scoop pits/scuffs, lower third rover hardware.",
+   "lat": null,
+   "lon": null,
+   "elev_m": null
+  },
+  "m5_104": {
+   "name": "Rocknest 沙影（颗粒波纹沙席）",
+   "rover": "MSL",
+   "site": 5,
+   "drive": 104,
+   "sols": [
+    60
+   ],
+   "types": [
+    "M19"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：Sol 60 12:12-12:13 ring (az 222-312, el -50): smooth sand shadow surface with faint granule ripples, scattered pebbles, wheel tracks; arm in some. Workspace az-15 el-54 over sols 66-93 at many LTSTs but CHIMRA/arm and scoop pits dominate; only pit-free strips usable. Sun el ~80 deg at noon (sol 60) -> low shading contrast.",
+   "lat": null,
+   "lon": null,
+   "elev_m": null
+  },
+  "m2_0": {
+   "name": "Bradbury 着陆点，卵石/颗粒滞留铺面",
+   "rover": "MSL",
+   "site": 2,
+   "drive": 0,
+   "sols": [
+    2
+   ],
+   "types": [
+    "M17"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：Very clean pebble/granule pavement over whole frame (az 160-220, el -47); only rover shadow (low sun, 16:12, sun el ~25) and a wheel at frame corner. Single illumination. Landing-site blast zones nearby (Goulburn) - avoid az ~180+ far field.",
+   "lat": null,
+   "lon": null,
+   "elev_m": null
+  },
+  "m89_724": {
+   "name": "Pontours 多边形（六边形）裂纹面",
+   "rover": "MSL",
+   "site": 89,
+   "drive": 724,
+   "sols": [
+    3154
+   ],
+   "types": [
+    "M15"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：Workspace + 4-frame partial ring, single sol (13:32-13:44), near-identical illumination. Bedrock with mm-cm polygonal texture visible in the test-read RAS NLB_677490876 (see sheets/test_ras_z_NLB_677490876.png) plus white veins and dark sand strips; arm in the az-23 frame.",
+   "lat": null,
+   "lon": null,
+   "elev_m": null
+  },
+  "p7_2050": {
+   "name": "Séítah 边缘的 Máaz 多边形铺路石（合日驻留）",
+   "rover": "M2020",
+   "site": 7,
+   "drive": 2050,
+   "sols": [
+    210,
+    213,
+    236
+   ],
+   "types": [
+    "M14",
+    "M15"
+   ],
+   "note": "毅力号 Navcam 立体（4 帧全分辨率 / 2 帧半分辨率或 3840 宽）。调研：az70/az142: flat light-toned polygonally fractured paver plates with dark sand in the cracks, ~85% clean; mast/rover shadow in lower-right near field, wheel in az142 corner. az286: dense dark-sand ripple field 4-15 m beyond the rover deck (deck fills lower half). Measured from thumbnails (sheets/A_7-2050.jpg).",
+   "lat": 18.433785,
+   "lon": 77.442121,
+   "elev_m": -2573.32
+  },
+  "p22_788": {
+   "name": "坑底积尘卵石平原（快速行驶去三角洲途中）",
+   "rover": "M2020",
+   "site": 22,
+   "drive": 788,
+   "sols": [
+    413,
+    414
+   ],
+   "types": [
+    "M16",
+    "M17"
+   ],
+   "note": "毅力号 Navcam 立体（3 帧全分辨率 / 3 帧半分辨率或 3840 宽）。调研：Very uniform fine regolith with mm-cm pebbles, few cobbles; ~90% clean in az235/az306 (morning) and az200/az272 (evening); rover arm/deck in lower-left of az162, mast shadow in az306 lower-right, deck in right half of az344. (sheets/T_22-788.jpg)",
+   "lat": 18.453161,
+   "lon": 77.408552,
+   "elev_m": -2545.27
+  },
+  "p8_0": {
+   "name": "Séítah Brac 露头（Salette/Coulettes 取样）：富橄榄石堆晶岩",
+   "rover": "M2020",
+   "site": 8,
+   "drive": 0,
+   "sols": [
+    248,
+    253,
+    262,
+    271
+   ],
+   "types": [
+    "M13",
+    "M1"
+   ],
+   "note": "毅力号 Navcam 立体（0 帧全分辨率 / 5 帧半分辨率或 3840 宽）。调研：Workspace (az53 el-44): upper ~55% is layered/fractured Séítah slabs and dark sand; lower-left is arm/turret/deck (~35%) and arm shadow; sol 253 frames show abrasion patch (white). Ring az94: Séítah slabs + sand, rover shadow+wheel at bottom; az166: sand with ripples + slabs, wheel at bottom. Half-res only. (sheets/A_seitah_8-0.jpg)",
+   "lat": 18.433964,
+   "lon": 77.443019,
+   "elev_m": -2569.15
+  },
+  "p82_2866": {
+   "name": "坑缘外沙席：颗粒/装甲沙纹（WATSON Elephant_Plains / Lion_Sands 同址）",
+   "rover": "M2020",
+   "site": 82,
+   "drive": 2866,
+   "sols": [
+    1704
+   ],
+   "types": [
+    "M19"
+   ],
+   "note": "毅力号 Navcam 立体（0 帧全分辨率 / 4 帧半分辨率或 3840 宽）。调研：Bright sand sheet with low ripples, almost no rocks: >90% clean in az359/az71/az287 apart from wheel/deck at frame edges; low contrast because all Navcam frames are near noon (sun el 62-66). (sheets/E_sand_82-2866.jpg)",
+   "lat": 18.428103,
+   "lon": 77.241632,
+   "elev_m": -1973.88
+  },
+  "p56_1010": {
+   "name": "坑缘脚下的棱角碎屑（角砾状）",
+   "rover": "M2020",
+   "site": 56,
+   "drive": 1010,
+   "sols": [
+    1220,
+    1221,
+    1222
+   ],
+   "types": [
+    "M22",
+    "M11"
+   ],
+   "note": "毅力号 Navcam 立体（0 帧全分辨率 / 8 帧半分辨率或 3840 宽）。调研：Dense angular cm-dm clasts of mixed tone on sand/regolith with small light bedrock plates; ~85% clean in workspace upper-right and in ring az210/az198/az270; arm in workspace left third, wheel corners. (sheets/T_56-1010.jpg, R3.jpg)",
+   "lat": 18.495296,
+   "lon": 77.303723,
+   "elev_m": -2360.05
+  },
+  "p52_0": {
+   "name": "Mount Washburn 一带的暗沙床面与块石",
+   "rover": "M2020",
+   "site": 52,
+   "drive": 0,
+   "sols": [
+    1129
+   ],
+   "types": [
+    "M18"
+   ],
+   "note": "毅力号 Navcam 立体（4 帧全分辨率 / 0 帧半分辨率或 3840 宽）。调研：az126: rounded sand bedforms (dm-high, m-scale) and troughs filling the frame beyond the turret; az198/az270: sand drift with fine ripples, scattered angular blocks; arm/turret in az126 lower-left, deck in az54. ~70% clean. (sheets/T_52-0.jpg)",
+   "lat": 18.489512,
+   "lon": 77.320215,
+   "elev_m": -2356.1
+  },
+  "p9_2818": {
+   "name": "Séítah 南出口：暗沙、细沙纹与小砾（傍晚/上午两种光照）",
+   "rover": "M2020",
+   "site": 9,
+   "drive": 2818,
+   "sols": [
+    341,
+    342
+   ],
+   "types": [
+    "M18"
+   ],
+   "note": "毅力号 Navcam 立体（2 帧全分辨率 / 2 帧半分辨率或 3840 宽）。调研：Dark sand with cm ripples, scattered pebbles/cobbles, ~85% clean in az155/az227/az200; old rover tracks at az272/299 (excluded); mast shadow in az155 at 16:38. (sheets/T_9-2818.jpg)",
+   "lat": 18.42977,
+   "lon": 77.446748,
+   "elev_m": -2580.7
+  },
+  "p61_376": {
+   "name": "坑缘 Witch Hazel Hill 一带：浅色基岩上的暗色棱角卵石/块石（崖锥）",
+   "rover": "M2020",
+   "site": 61,
+   "drive": 376,
+   "sols": [
+    1302,
+    1303
+   ],
+   "types": [
+    "M11",
+    "M21"
+   ],
+   "note": "毅力号 Navcam 立体（0 帧全分辨率 / 6 帧半分辨率或 3840 宽）。调研：Angular dark clasts 5-60 cm scattered on pale regolith, one 0.5 m boulder in workspace; ~80% clean (arm left third of workspace; rover shadow bottom of az36). (sheets/T_61-376.jpg)",
+   "lat": 18.469477,
+   "lon": 77.293055,
+   "elev_m": -2056.1
+  }
+ },
+ "样块": [
+  {
+   "id": "p8_0_M1_1",
+   "type": "M1",
+   "station": "p8_0",
+   "rover": "M2020",
+   "site": 8,
+   "drive": 0,
+   "sols": [
+    248,
+    253,
+    262,
+    271
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    2.673,
+    -0.506
+   ],
+   "size_m": 0.9,
+   "px_m": 0.003,
+   "n_px": 300,
+   "gain": 1.58,
+   "height_range_m": 0.03271,
+   "h_rms_mm": 10.82,
+   "albedo_contrast": 0.105,
+   "rb_contrast": 0.0412,
+   "slope_rms_1cm_deg": 10.94,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 4.47,
+   "rgb_rel_station": [
+    0.9435,
+    0.9417,
+    0.9442
+   ],
+   "decal": false,
+   "sub": "Séítah 板间暗沙",
+   "note": "Séítah Brac 露头脚下：暗色细沙/风化层，零星小砾和浅色碎屑",
+   "quality": {
+    "hole_frac": 0.0013,
+    "shadow_frac": 0.0,
+    "frames": 5,
+    "illuminations": 3,
+    "nframes_med": 3.0,
+    "range_m": 3.12,
+    "footprint_mm": [
+     3.7,
+     4.6,
+     5.6
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.108
+   },
+   "flags": [
+    "半分辨率",
+    "去光影效果差（光照一致性 0.25/0.38 → 0.24/0.33；sol 257–271 间有磨蚀、取芯，地面有变化）",
+    "岩面陡，残余明暗"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p8_0/godot/p8_0_M1_1_albedo.png",
+    "height": "资料/地面材质/样块库/p8_0/godot/p8_0_M1_1_height.bin",
+    "npz": "资料/地面材质/样块库/p8_0/切块/p8_0_M1_1.npz",
+    "photo": "资料/地面材质/样块库/p8_0/切块/p8_0_M1_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0696,
+    1.0603,
+    1.0592
+   ]
+  },
+  {
+   "id": "p8_0_M1_2",
+   "type": "M1",
+   "station": "p8_0",
+   "rover": "M2020",
+   "site": 8,
+   "drive": 0,
+   "sols": [
+    249
+   ],
+   "camera": "Mastcam-Z 110 mm",
+   "enu_x0y0": [
+    2.166,
+    1.26
+   ],
+   "size_m": 0.256,
+   "px_m": 0.0005,
+   "n_px": 512,
+   "gain": 2.5,
+   "height_range_m": 0.01605,
+   "h_rms_mm": 4.86,
+   "albedo_contrast": 0.1789,
+   "rb_contrast": 0.0498,
+   "slope_rms_1cm_deg": 12.7,
+   "lam_dom_cm": 28.1,
+   "psd_beta": 3.5,
+   "rgb_rel_station": [
+    0.7776,
+    0.7777,
+    0.7777
+   ],
+   "decal": false,
+   "sub": null,
+   "note": "Mastcam-Z 110 mm zcam08272 拼图，亚毫米：Brac 脚下的细粒风化层，带浅色碎屑条带（不是岩面）",
+   "quality": {
+    "hole_frac": 0.2611,
+    "shadow_frac": 0.0016,
+    "frames": 1,
+    "illuminations": 1,
+    "nframes_med": null,
+    "range_m": null,
+    "footprint_mm": null,
+    "seam_step_log": null,
+    "seam_step_mm": null,
+    "shading_leak_r": null
+   },
+   "flags": [
+    "空洞多",
+    "单光照近似去光影",
+    "半分辨率",
+    "去光影效果差（光照一致性 0.25/0.38 → 0.24/0.33；sol 257–271 间有磨蚀、取芯，地面有变化）",
+    "岩面陡，残余明暗"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p8_0/godot/p8_0_M1_2_albedo.png",
+    "height": "资料/地面材质/样块库/p8_0/godot/p8_0_M1_2_height.bin",
+    "npz": "资料/地面材质/样块库/p8_0/切块/p8_0_M1_2.npz",
+    "photo": "资料/地面材质/样块库/p8_0/切块/p8_0_M1_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.8816,
+    0.8757,
+    0.8724
+   ]
+  },
+  {
+   "id": "s0530_M1_1",
+   "type": "M1",
+   "station": "s0530",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 1222,
+   "sols": [
+    520,
+    521,
+    526,
+    527,
+    528,
+    529,
+    530,
+    531,
+    532
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -4.542,
+    -3.572
+   ],
+   "size_m": 1.536,
+   "px_m": 0.002,
+   "n_px": 768,
+   "gain": 2.5,
+   "height_range_m": 0.0269,
+   "h_rms_mm": 8.385,
+   "albedo_contrast": 0.0879,
+   "rb_contrast": 0.03,
+   "slope_rms_1cm_deg": 8.54,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 3.44,
+   "rgb_rel_station": [
+    0.9238,
+    0.9442,
+    0.9527
+   ],
+   "decal": false,
+   "sub": null,
+   "note": "暗沙（含风成小波纹与零星小砾）",
+   "quality": {
+    "hole_frac": 0.0035,
+    "shadow_frac": 0.0004,
+    "frames": 9,
+    "illuminations": 3,
+    "nframes_med": 8.0,
+    "range_m": 4.7,
+    "footprint_mm": [
+     3.3,
+     4.4,
+     5.7
+    ],
+    "seam_step_log": 0.0106,
+    "seam_step_mm": 0.62,
+    "shading_leak_r": 0.125
+   },
+   "flags": [
+    "残余明暗（高通相关 0.12）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0530/godot/s0530_M1_1_albedo.png",
+    "height": "资料/地面材质/样块库/s0530/godot/s0530_M1_1_height.bin",
+    "npz": "资料/地面材质/样块库/s0530/切块/s0530_M1_1.npz",
+    "photo": "资料/地面材质/样块库/s0530/切块/s0530_M1_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0473,
+    1.0631,
+    1.0687
+   ]
+  },
+  {
+   "id": "s0530_M1_2",
+   "type": "M1",
+   "station": "s0530",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 1222,
+   "sols": [
+    520,
+    521,
+    526,
+    527,
+    528,
+    529,
+    530,
+    531,
+    532
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -2.924,
+    -3.948
+   ],
+   "size_m": 1.536,
+   "px_m": 0.002,
+   "n_px": 768,
+   "gain": 2.5,
+   "height_range_m": 0.03389,
+   "h_rms_mm": 9.239,
+   "albedo_contrast": 0.0973,
+   "rb_contrast": 0.0349,
+   "slope_rms_1cm_deg": 8.69,
+   "lam_dom_cm": 28.1,
+   "psd_beta": 3.35,
+   "rgb_rel_station": [
+    0.8932,
+    0.8997,
+    0.9026
+   ],
+   "decal": false,
+   "sub": null,
+   "note": "暗沙（含风成小波纹与零星小砾）",
+   "quality": {
+    "hole_frac": 0.0066,
+    "shadow_frac": 0.0009,
+    "frames": 9,
+    "illuminations": 3,
+    "nframes_med": 7.0,
+    "range_m": 3.84,
+    "footprint_mm": [
+     2.2,
+     3.1,
+     4.2
+    ],
+    "seam_step_log": 0.0161,
+    "seam_step_mm": 0.36,
+    "shading_leak_r": 0.125
+   },
+   "flags": [
+    "残余明暗（高通相关 0.12）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0530/godot/s0530_M1_2_albedo.png",
+    "height": "资料/地面材质/样块库/s0530/godot/s0530_M1_2_height.bin",
+    "npz": "资料/地面材质/样块库/s0530/切块/s0530_M1_2.npz",
+    "photo": "资料/地面材质/样块库/s0530/切块/s0530_M1_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0126,
+    1.013,
+    1.0125
+   ]
+  },
+  {
+   "id": "s0530_M2_1",
+   "type": "M2",
+   "station": "s0530",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 1222,
+   "sols": [
+    520,
+    521,
+    526,
+    527,
+    528,
+    529,
+    530,
+    531,
+    532
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -5.138,
+    -0.718
+   ],
+   "size_m": 1.024,
+   "px_m": 0.002,
+   "n_px": 512,
+   "gain": 2.5,
+   "height_range_m": 0.02993,
+   "h_rms_mm": 9.92,
+   "albedo_contrast": 0.2746,
+   "rb_contrast": 0.0514,
+   "slope_rms_1cm_deg": 13.72,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 4.26,
+   "rgb_rel_station": [
+    1.4145,
+    1.3659,
+    1.3278
+   ],
+   "decal": false,
+   "sub": null,
+   "note": "浅色裂隙岩板岛 + 板间沙；边框过板比例 25%",
+   "quality": {
+    "hole_frac": 0.0164,
+    "shadow_frac": 0.0018,
+    "frames": 9,
+    "illuminations": 3,
+    "nframes_med": 9.0,
+    "range_m": 4.63,
+    "footprint_mm": [
+     3.5,
+     4.3,
+     5.1
+    ],
+    "seam_step_log": 0.0027,
+    "seam_step_mm": 0.4,
+    "shading_leak_r": 0.125
+   },
+   "flags": [
+    "残余明暗（高通相关 0.12）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0530/godot/s0530_M2_1_albedo.png",
+    "height": "资料/地面材质/样块库/s0530/godot/s0530_M2_1_height.bin",
+    "npz": "资料/地面材质/样块库/s0530/切块/s0530_M2_1.npz",
+    "photo": "资料/地面材质/样块库/s0530/切块/s0530_M2_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0465,
+    1.0457,
+    1.0441
+   ]
+  },
+  {
+   "id": "s0530_M2_2",
+   "type": "M2",
+   "station": "s0530",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 1222,
+   "sols": [
+    520,
+    521,
+    526,
+    527,
+    528,
+    529,
+    530,
+    531,
+    532
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -2.876,
+    -0.688
+   ],
+   "size_m": 1.024,
+   "px_m": 0.002,
+   "n_px": 512,
+   "gain": 2.5,
+   "height_range_m": 0.03605,
+   "h_rms_mm": 11.754,
+   "albedo_contrast": 0.2787,
+   "rb_contrast": 0.0595,
+   "slope_rms_1cm_deg": 15.47,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 3.78,
+   "rgb_rel_station": [
+    1.3111,
+    1.2696,
+    1.2405
+   ],
+   "decal": false,
+   "sub": null,
+   "note": "浅色裂隙岩板岛 + 板间沙；边框过板比例 14%",
+   "quality": {
+    "hole_frac": 0.0248,
+    "shadow_frac": 0.0041,
+    "frames": 9,
+    "illuminations": 3,
+    "nframes_med": 9.0,
+    "range_m": 2.37,
+    "footprint_mm": [
+     1.2,
+     1.6,
+     2.0
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.125
+   },
+   "flags": [
+    "残余明暗（高通相关 0.12）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0530/godot/s0530_M2_2_albedo.png",
+    "height": "资料/地面材质/样块库/s0530/godot/s0530_M2_2_height.bin",
+    "npz": "资料/地面材质/样块库/s0530/切块/s0530_M2_2.npz",
+    "photo": "资料/地面材质/样块库/s0530/切块/s0530_M2_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.97,
+    0.972,
+    0.9754
+   ]
+  },
+  {
+   "id": "s0530_M2_3",
+   "type": "M2",
+   "station": "s0530",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 1222,
+   "sols": [
+    520,
+    521,
+    526,
+    527,
+    528,
+    529,
+    530,
+    531,
+    532
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -4.044,
+    -0.586
+   ],
+   "size_m": 1.024,
+   "px_m": 0.002,
+   "n_px": 512,
+   "gain": 2.5,
+   "height_range_m": 0.02856,
+   "h_rms_mm": 11.429,
+   "albedo_contrast": 0.2785,
+   "rb_contrast": 0.0528,
+   "slope_rms_1cm_deg": 13.95,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 3.76,
+   "rgb_rel_station": [
+    1.3314,
+    1.2851,
+    1.2488
+   ],
+   "decal": false,
+   "sub": null,
+   "note": "浅色裂隙岩板岛 + 板间沙；边框过板比例 7%",
+   "quality": {
+    "hole_frac": 0.0108,
+    "shadow_frac": 0.0021,
+    "frames": 9,
+    "illuminations": 3,
+    "nframes_med": 9.0,
+    "range_m": 3.53,
+    "footprint_mm": [
+     2.2,
+     2.8,
+     3.4
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.125
+   },
+   "flags": [
+    "残余明暗（高通相关 0.12）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0530/godot/s0530_M2_3_albedo.png",
+    "height": "资料/地面材质/样块库/s0530/godot/s0530_M2_3_height.bin",
+    "npz": "资料/地面材质/样块库/s0530/切块/s0530_M2_3.npz",
+    "photo": "资料/地面材质/样块库/s0530/切块/s0530_M2_3_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9851,
+    0.9839,
+    0.9819
+   ]
+  },
+  {
+   "id": "s0530_M3_1",
+   "type": "M3",
+   "station": "s0530",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 1222,
+   "sols": [
+    520,
+    521,
+    526,
+    527,
+    528,
+    529,
+    530,
+    531,
+    532
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -3.252,
+    -1.712
+   ],
+   "size_m": 1.024,
+   "px_m": 0.002,
+   "n_px": 512,
+   "gain": 2.5,
+   "height_range_m": 0.04847,
+   "h_rms_mm": 11.996,
+   "albedo_contrast": 0.2484,
+   "rb_contrast": 0.0578,
+   "slope_rms_1cm_deg": 17.23,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 3.54,
+   "rgb_rel_station": [
+    1.1278,
+    1.127,
+    1.1332
+   ],
+   "decal": false,
+   "sub": null,
+   "note": "棱角碎片砾石铺面",
+   "quality": {
+    "hole_frac": 0.0642,
+    "shadow_frac": 0.0019,
+    "frames": 9,
+    "illuminations": 3,
+    "nframes_med": 9.0,
+    "range_m": 2.99,
+    "footprint_mm": [
+     1.7,
+     2.2,
+     2.7
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.125
+   },
+   "flags": [
+    "残余明暗（高通相关 0.12）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0530/godot/s0530_M3_1_albedo.png",
+    "height": "资料/地面材质/样块库/s0530/godot/s0530_M3_1_height.bin",
+    "npz": "资料/地面材质/样块库/s0530/切块/s0530_M3_1.npz",
+    "photo": "资料/地面材质/样块库/s0530/切块/s0530_M3_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9574,
+    0.9806,
+    1.0004
+   ]
+  },
+  {
+   "id": "s0530_M3_2",
+   "type": "M3",
+   "station": "s0530",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 1222,
+   "sols": [
+    520,
+    521,
+    526,
+    527,
+    528,
+    529,
+    530,
+    531,
+    532
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -3.15,
+    0.23
+   ],
+   "size_m": 1.024,
+   "px_m": 0.002,
+   "n_px": 512,
+   "gain": 2.06,
+   "height_range_m": 0.01738,
+   "h_rms_mm": 5.041,
+   "albedo_contrast": 0.1865,
+   "rb_contrast": 0.033,
+   "slope_rms_1cm_deg": 7.83,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 3.23,
+   "rgb_rel_station": [
+    1.2303,
+    1.1721,
+    1.1322
+   ],
+   "decal": false,
+   "sub": null,
+   "note": "棱角碎片砾石铺面",
+   "quality": {
+    "hole_frac": 0.0408,
+    "shadow_frac": 0.0004,
+    "frames": 9,
+    "illuminations": 3,
+    "nframes_med": 9.0,
+    "range_m": 2.74,
+    "footprint_mm": [
+     1.5,
+     1.9,
+     2.4
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.125
+   },
+   "flags": [
+    "残余明暗（高通相关 0.12）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0530/godot/s0530_M3_2_albedo.png",
+    "height": "资料/地面材质/样块库/s0530/godot/s0530_M3_2_height.bin",
+    "npz": "资料/地面材质/样块库/s0530/切块/s0530_M3_2.npz",
+    "photo": "资料/地面材质/样块库/s0530/切块/s0530_M3_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0445,
+    1.0198,
+    0.9996
+   ]
+  },
+  {
+   "id": "m106_660_M4_1",
+   "type": "M4",
+   "station": "m106_660",
+   "rover": "MSL",
+   "site": 106,
+   "drive": 660,
+   "sols": [
+    4116
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -3.94,
+    -2.078
+   ],
+   "size_m": 0.8,
+   "px_m": 0.0025,
+   "n_px": 320,
+   "gain": 1.89,
+   "height_range_m": 0.03165,
+   "h_rms_mm": 8.643,
+   "albedo_contrast": 0.1183,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 9.51,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 5.5,
+   "rgb_rel_station": [
+    0.9933,
+    0.9933,
+    0.9933
+   ],
+   "decal": false,
+   "sub": "河道暗沙沙纹",
+   "note": "河道里的暗色沙，厘米–分米级沙纹",
+   "quality": {
+    "hole_frac": 0.0106,
+    "shadow_frac": 0.0,
+    "frames": 8,
+    "illuminations": 7,
+    "nframes_med": 4.0,
+    "range_m": 3.92,
+    "footprint_mm": [
+     6.9,
+     8.2,
+     9.6
+    ],
+    "seam_step_log": 0.0083,
+    "seam_step_mm": 0.41,
+    "shading_leak_r": 0.127
+   },
+   "flags": [
+    "残余明暗（高通相关 0.13）",
+    "远处像素足迹大于格距（反照率偏糊）",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m106_660/godot/m106_660_M4_1_albedo.png",
+    "height": "资料/地面材质/样块库/m106_660/godot/m106_660_M4_1_height.bin",
+    "npz": "资料/地面材质/样块库/m106_660/切块/m106_660_M4_1.npz",
+    "photo": "资料/地面材质/样块库/m106_660/切块/m106_660_M4_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.1222,
+    1.1222,
+    1.1234
+   ]
+  },
+  {
+   "id": "m106_660_M4_2",
+   "type": "M4",
+   "station": "m106_660",
+   "rover": "MSL",
+   "site": 106,
+   "drive": 660,
+   "sols": [
+    4116
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -3.438,
+    0.85
+   ],
+   "size_m": 0.8,
+   "px_m": 0.0025,
+   "n_px": 320,
+   "gain": 2.04,
+   "height_range_m": 0.04418,
+   "h_rms_mm": 12.997,
+   "albedo_contrast": 0.1298,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 11.59,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 4.92,
+   "rgb_rel_station": [
+    0.9129,
+    0.9129,
+    0.9129
+   ],
+   "decal": false,
+   "sub": "河道暗沙沙纹",
+   "note": "河道里的暗色沙，厘米–分米级沙纹",
+   "quality": {
+    "hole_frac": 0.0496,
+    "shadow_frac": 0.0007,
+    "frames": 8,
+    "illuminations": 7,
+    "nframes_med": 4.0,
+    "range_m": 3.28,
+    "footprint_mm": [
+     5.1,
+     6.2,
+     7.4
+    ],
+    "seam_step_log": 0.0084,
+    "seam_step_mm": 2.93,
+    "shading_leak_r": 0.127
+   },
+   "flags": [
+    "残余明暗（高通相关 0.13）",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m106_660/godot/m106_660_M4_2_albedo.png",
+    "height": "资料/地面材质/样块库/m106_660/godot/m106_660_M4_2_height.bin",
+    "npz": "资料/地面材质/样块库/m106_660/切块/m106_660_M4_2.npz",
+    "photo": "资料/地面材质/样块库/m106_660/切块/m106_660_M4_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0313,
+    1.0314,
+    1.0325
+   ]
+  },
+  {
+   "id": "m106_660_M4_3",
+   "type": "M4",
+   "station": "m106_660",
+   "rover": "MSL",
+   "site": 106,
+   "drive": 660,
+   "sols": [
+    4116
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -2.853,
+    -1.05
+   ],
+   "size_m": 0.8,
+   "px_m": 0.0025,
+   "n_px": 320,
+   "gain": 1.72,
+   "height_range_m": 0.03027,
+   "h_rms_mm": 8.814,
+   "albedo_contrast": 0.1392,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 8.82,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 6.12,
+   "rgb_rel_station": [
+    0.9754,
+    0.9754,
+    0.9754
+   ],
+   "decal": false,
+   "sub": "河道暗沙沙纹",
+   "note": "河道里的暗色沙，厘米–分米级沙纹",
+   "quality": {
+    "hole_frac": 0.0001,
+    "shadow_frac": 0.0,
+    "frames": 8,
+    "illuminations": 7,
+    "nframes_med": 8.0,
+    "range_m": 2.54,
+    "footprint_mm": [
+     3.5,
+     4.3,
+     5.3
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.127
+   },
+   "flags": [
+    "残余明暗（高通相关 0.13）",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m106_660/godot/m106_660_M4_3_albedo.png",
+    "height": "资料/地面材质/样块库/m106_660/godot/m106_660_M4_3_height.bin",
+    "npz": "资料/地面材质/样块库/m106_660/切块/m106_660_M4_3.npz",
+    "photo": "资料/地面材质/样块库/m106_660/切块/m106_660_M4_3_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.102,
+    1.102,
+    1.1031
+   ]
+  },
+  {
+   "id": "s0530_M4_1",
+   "type": "M4",
+   "station": "s0530",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 1222,
+   "sols": [
+    520
+   ],
+   "camera": "Mastcam-Z 110 mm",
+   "enu_x0y0": [
+    -6.02,
+    -2.665
+   ],
+   "size_m": 0.768,
+   "px_m": 0.001,
+   "n_px": 768,
+   "gain": 2.49,
+   "height_range_m": 0.01856,
+   "h_rms_mm": 6.796,
+   "albedo_contrast": 0.1027,
+   "rb_contrast": 0.0767,
+   "slope_rms_1cm_deg": 9.67,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 3.42,
+   "rgb_rel_station": [
+    0.7862,
+    0.7861,
+    0.784
+   ],
+   "decal": false,
+   "sub": null,
+   "note": "撞击沙纹（ZCAM08544）",
+   "quality": {
+    "hole_frac": 0.1539,
+    "shadow_frac": 0.1137,
+    "frames": 1,
+    "illuminations": 1,
+    "nframes_med": null,
+    "range_m": null,
+    "footprint_mm": null,
+    "seam_step_log": null,
+    "seam_step_mm": null,
+    "shading_leak_r": null
+   },
+   "flags": [
+    "空洞多",
+    "投射阴影多",
+    "单光照近似去光影"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0530/godot/s0530_M4_1_albedo.png",
+    "height": "资料/地面材质/样块库/s0530/godot/s0530_M4_1_height.bin",
+    "npz": "资料/地面材质/样块库/s0530/切块/s0530_M4_1.npz",
+    "photo": "资料/地面材质/样块库/s0530/切块/s0530_M4_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.8882,
+    0.8881,
+    0.8867
+   ]
+  },
+  {
+   "id": "s0530_M4_2",
+   "type": "M4",
+   "station": "s0530",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 1222,
+   "sols": [
+    531
+   ],
+   "camera": "Mastcam-Z 110 mm",
+   "enu_x0y0": [
+    -6.013,
+    -2.7
+   ],
+   "size_m": 0.768,
+   "px_m": 0.001,
+   "n_px": 768,
+   "gain": 2.4,
+   "height_range_m": 0.02041,
+   "h_rms_mm": 6.922,
+   "albedo_contrast": 0.098,
+   "rb_contrast": 0.0751,
+   "slope_rms_1cm_deg": 9.63,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 3.34,
+   "rgb_rel_station": [
+    0.7814,
+    0.7814,
+    0.7794
+   ],
+   "decal": false,
+   "sub": null,
+   "note": "撞击沙纹（ZCAM08544，11 天后同一块地）",
+   "quality": {
+    "hole_frac": 0.1518,
+    "shadow_frac": 0.1118,
+    "frames": 1,
+    "illuminations": 1,
+    "nframes_med": null,
+    "range_m": null,
+    "footprint_mm": null,
+    "seam_step_log": null,
+    "seam_step_mm": null,
+    "shading_leak_r": null
+   },
+   "flags": [
+    "空洞多",
+    "投射阴影多",
+    "单光照近似去光影"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0530/godot/s0530_M4_2_albedo.png",
+    "height": "资料/地面材质/样块库/s0530/godot/s0530_M4_2_height.bin",
+    "npz": "资料/地面材质/样块库/s0530/切块/s0530_M4_2.npz",
+    "photo": "资料/地面材质/样块库/s0530/切块/s0530_M4_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.8828,
+    0.8828,
+    0.8815
+   ]
+  },
+  {
+   "id": "s0538_M5_1",
+   "type": "M5",
+   "station": "s0538",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 2548,
+   "sols": [
+    538
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -2.885,
+    1.012
+   ],
+   "size_m": 1.2,
+   "px_m": 0.003,
+   "n_px": 400,
+   "gain": 2.5,
+   "height_range_m": 0.01556,
+   "h_rms_mm": 5.089,
+   "albedo_contrast": 0.076,
+   "rb_contrast": 0.0446,
+   "slope_rms_1cm_deg": 5.86,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 3.79,
+   "rgb_rel_station": [
+    0.9076,
+    0.9035,
+    0.8937
+   ],
+   "decal": false,
+   "sub": "槽/平滑细沙",
+   "note": "平滑浅色细沙面（大波纹间/坡面），零星小砾",
+   "quality": {
+    "hole_frac": 0.0,
+    "shadow_frac": 0.0,
+    "frames": 5,
+    "illuminations": 1,
+    "nframes_med": 2.0,
+    "range_m": 2.8,
+    "footprint_mm": [
+     2.9,
+     3.9,
+     5.2
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.037
+   },
+   "flags": [
+    "单一光照",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0538/godot/s0538_M5_1_albedo.png",
+    "height": "资料/地面材质/样块库/s0538/godot/s0538_M5_1_height.bin",
+    "npz": "资料/地面材质/样块库/s0538/切块/s0538_M5_1.npz",
+    "photo": "资料/地面材质/样块库/s0538/切块/s0538_M5_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.015,
+    1.0136,
+    1.0064
+   ]
+  },
+  {
+   "id": "s0538_M5_2",
+   "type": "M5",
+   "station": "s0538",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 2548,
+   "sols": [
+    538
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -3.098,
+    -1.346
+   ],
+   "size_m": 1.2,
+   "px_m": 0.003,
+   "n_px": 400,
+   "gain": 2.5,
+   "height_range_m": 0.02371,
+   "h_rms_mm": 6.164,
+   "albedo_contrast": 0.167,
+   "rb_contrast": 0.0925,
+   "slope_rms_1cm_deg": 8.1,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 4.22,
+   "rgb_rel_station": [
+    0.8197,
+    0.8128,
+    0.8107
+   ],
+   "decal": false,
+   "sub": "槽/平滑细沙",
+   "note": "平滑浅色细沙面（大波纹间/坡面），零星小砾",
+   "quality": {
+    "hole_frac": 0.0005,
+    "shadow_frac": 0.0,
+    "frames": 5,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 2.61,
+    "footprint_mm": [
+     2.7,
+     3.6,
+     4.8
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.037
+   },
+   "flags": [
+    "单一光照",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0538/godot/s0538_M5_2_albedo.png",
+    "height": "资料/地面材质/样块库/s0538/godot/s0538_M5_2_height.bin",
+    "npz": "资料/地面材质/样块库/s0538/切块/s0538_M5_2.npz",
+    "photo": "资料/地面材质/样块库/s0538/切块/s0538_M5_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9167,
+    0.9119,
+    0.913
+   ]
+  },
+  {
+   "id": "s0539_M5_1",
+   "type": "M5",
+   "station": "s0539",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 3008,
+   "sols": [
+    539
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -3.348,
+    -1.325
+   ],
+   "size_m": 1.2,
+   "px_m": 0.003,
+   "n_px": 400,
+   "gain": 2.5,
+   "height_range_m": 0.00678,
+   "h_rms_mm": 1.722,
+   "albedo_contrast": 0.2182,
+   "rb_contrast": 0.1259,
+   "slope_rms_1cm_deg": 5.47,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 3.79,
+   "rgb_rel_station": [
+    0.8229,
+    0.8139,
+    0.8113
+   ],
+   "decal": false,
+   "sub": "脊/颗粒装甲面",
+   "note": "下坡沙地：颗粒与小砾铺满的沙面，大波纹脊带（浅色条带）穿过",
+   "quality": {
+    "hole_frac": 0.0,
+    "shadow_frac": 0.0,
+    "frames": 5,
+    "illuminations": 1,
+    "nframes_med": 2.0,
+    "range_m": 2.84,
+    "footprint_mm": [
+     3.0,
+     4.0,
+     5.3
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.088
+   },
+   "flags": [
+    "单一光照",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0539/godot/s0539_M5_1_albedo.png",
+    "height": "资料/地面材质/样块库/s0539/godot/s0539_M5_1_height.bin",
+    "npz": "资料/地面材质/样块库/s0539/切块/s0539_M5_1.npz",
+    "photo": "资料/地面材质/样块库/s0539/切块/s0539_M5_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9203,
+    0.9131,
+    0.9136
+   ]
+  },
+  {
+   "id": "s0539_M5_2",
+   "type": "M5",
+   "station": "s0539",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 3008,
+   "sols": [
+    539
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -2.361,
+    1.504
+   ],
+   "size_m": 1.2,
+   "px_m": 0.003,
+   "n_px": 400,
+   "gain": 2.36,
+   "height_range_m": 0.00736,
+   "h_rms_mm": 1.993,
+   "albedo_contrast": 0.1405,
+   "rb_contrast": 0.0704,
+   "slope_rms_1cm_deg": 4.45,
+   "lam_dom_cm": 14.1,
+   "psd_beta": 4.35,
+   "rgb_rel_station": [
+    0.9595,
+    0.9613,
+    0.959
+   ],
+   "decal": false,
+   "sub": "脊/颗粒装甲面",
+   "note": "下坡沙地：颗粒与小砾铺满的沙面，大波纹脊带（浅色条带）穿过",
+   "quality": {
+    "hole_frac": 0.0,
+    "shadow_frac": 0.0,
+    "frames": 5,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 2.74,
+    "footprint_mm": [
+     2.8,
+     3.8,
+     5.1
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.088
+   },
+   "flags": [
+    "单一光照",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0539/godot/s0539_M5_2_albedo.png",
+    "height": "资料/地面材质/样块库/s0539/godot/s0539_M5_2_height.bin",
+    "npz": "资料/地面材质/样块库/s0539/切块/s0539_M5_2.npz",
+    "photo": "资料/地面材质/样块库/s0539/切块/s0539_M5_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0731,
+    1.0785,
+    1.08
+   ]
+  },
+  {
+   "id": "s0539_M5_3",
+   "type": "M5",
+   "station": "s0539",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 3008,
+   "sols": [
+    539
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -2.199,
+    -3.02
+   ],
+   "size_m": 1.2,
+   "px_m": 0.003,
+   "n_px": 400,
+   "gain": 2.5,
+   "height_range_m": 0.01084,
+   "h_rms_mm": 2.946,
+   "albedo_contrast": 0.213,
+   "rb_contrast": 0.1348,
+   "slope_rms_1cm_deg": 5.48,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 4.15,
+   "rgb_rel_station": [
+    0.8201,
+    0.8109,
+    0.7989
+   ],
+   "decal": false,
+   "sub": "脊/颗粒装甲面",
+   "note": "下坡沙地：颗粒与小砾铺满的沙面，大波纹脊带（浅色条带）穿过",
+   "quality": {
+    "hole_frac": 0.0,
+    "shadow_frac": 0.0,
+    "frames": 5,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 2.9,
+    "footprint_mm": [
+     3.1,
+     4.1,
+     5.4
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.088
+   },
+   "flags": [
+    "单一光照",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0539/godot/s0539_M5_3_albedo.png",
+    "height": "资料/地面材质/样块库/s0539/godot/s0539_M5_3_height.bin",
+    "npz": "资料/地面材质/样块库/s0539/切块/s0539_M5_3.npz",
+    "photo": "资料/地面材质/样块库/s0539/切块/s0539_M5_3_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9172,
+    0.9097,
+    0.8997
+   ]
+  },
+  {
+   "id": "s0539_M5_4",
+   "type": "M5",
+   "station": "s0539",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 3008,
+   "sols": [
+    539
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -2.172,
+    2.704
+   ],
+   "size_m": 1.2,
+   "px_m": 0.003,
+   "n_px": 400,
+   "gain": 2.45,
+   "height_range_m": 0.01259,
+   "h_rms_mm": 2.556,
+   "albedo_contrast": 0.1104,
+   "rb_contrast": 0.0579,
+   "slope_rms_1cm_deg": 4.86,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 4.57,
+   "rgb_rel_station": [
+    1.0609,
+    1.0764,
+    1.0886
+   ],
+   "decal": false,
+   "sub": "脊/颗粒装甲面",
+   "note": "下坡沙地：颗粒与小砾铺满的沙面，大波纹脊带（浅色条带）穿过",
+   "quality": {
+    "hole_frac": 0.0001,
+    "shadow_frac": 0.0,
+    "frames": 5,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 3.66,
+    "footprint_mm": [
+     4.5,
+     5.8,
+     7.4
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.088
+   },
+   "flags": [
+    "单一光照",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0539/godot/s0539_M5_4_albedo.png",
+    "height": "资料/地面材质/样块库/s0539/godot/s0539_M5_4_height.bin",
+    "npz": "资料/地面材质/样块库/s0539/切块/s0539_M5_4.npz",
+    "photo": "资料/地面材质/样块库/s0539/切块/s0539_M5_4_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.1865,
+    1.2076,
+    1.2259
+   ]
+  },
+  {
+   "id": "s0538_M6_1",
+   "type": "M6",
+   "station": "s0538",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 2548,
+   "sols": [
+    538
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -2.045,
+    -3.308
+   ],
+   "size_m": 1.2,
+   "px_m": 0.003,
+   "n_px": 400,
+   "gain": 2.5,
+   "height_range_m": 0.02896,
+   "h_rms_mm": 8.183,
+   "albedo_contrast": 0.2451,
+   "rb_contrast": 0.1259,
+   "slope_rms_1cm_deg": 10.13,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 4.56,
+   "rgb_rel_station": [
+    0.791,
+    0.7897,
+    0.7817
+   ],
+   "decal": false,
+   "sub": "车辙 + 卵石",
+   "note": "毅力号车辙压过的卵石沙面",
+   "quality": {
+    "hole_frac": 0.0042,
+    "shadow_frac": 0.0,
+    "frames": 5,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 3.07,
+    "footprint_mm": [
+     3.4,
+     4.5,
+     5.8
+    ],
+    "seam_step_log": 0.0319,
+    "seam_step_mm": 2.2,
+    "shading_leak_r": 0.037
+   },
+   "flags": [
+    "单一光照",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0538/godot/s0538_M6_1_albedo.png",
+    "height": "资料/地面材质/样块库/s0538/godot/s0538_M6_1_height.bin",
+    "npz": "资料/地面材质/样块库/s0538/切块/s0538_M6_1.npz",
+    "photo": "资料/地面材质/样块库/s0538/切块/s0538_M6_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9409,
+    0.9327,
+    0.9256
+   ]
+  },
+  {
+   "id": "s0538_M6_2",
+   "type": "M6",
+   "station": "s0538",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 2548,
+   "sols": [
+    538
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -3.05,
+    -4.451
+   ],
+   "size_m": 1.2,
+   "px_m": 0.003,
+   "n_px": 400,
+   "gain": 2.5,
+   "height_range_m": 0.01399,
+   "h_rms_mm": 4.203,
+   "albedo_contrast": 0.179,
+   "rb_contrast": 0.1145,
+   "slope_rms_1cm_deg": 6.9,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 4.49,
+   "rgb_rel_station": [
+    0.8934,
+    0.9077,
+    0.9125
+   ],
+   "decal": false,
+   "sub": "真实车辙",
+   "note": "毅力号车辙（sol 537→538 的行驶），两条平行辙带人字纹",
+   "quality": {
+    "hole_frac": 0.0028,
+    "shadow_frac": 0.0,
+    "frames": 5,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 4.56,
+    "footprint_mm": [
+     6.6,
+     8.3,
+     10.3
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.037
+   },
+   "flags": [
+    "远处像素足迹大于格距（反照率偏糊）",
+    "单一光照",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0538/godot/s0538_M6_2_albedo.png",
+    "height": "资料/地面材质/样块库/s0538/godot/s0538_M6_2_height.bin",
+    "npz": "资料/地面材质/样块库/s0538/切块/s0538_M6_2.npz",
+    "photo": "资料/地面材质/样块库/s0538/切块/s0538_M6_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0628,
+    1.0721,
+    1.0804
+   ]
+  },
+  {
+   "id": "s0530_M8_1",
+   "type": "M8",
+   "station": "s0530",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 1222,
+   "sols": [
+    523
+   ],
+   "camera": "Mastcam-Z 110 mm",
+   "enu_x0y0": [
+    0.786,
+    2.555
+   ],
+   "size_m": 0.32,
+   "px_m": 0.0005,
+   "n_px": 640,
+   "gain": 2.33,
+   "height_range_m": 0.00963,
+   "h_rms_mm": 3.278,
+   "albedo_contrast": 0.2296,
+   "rb_contrast": 0.1028,
+   "slope_rms_1cm_deg": 10.83,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 3.26,
+   "rgb_rel_station": [
+    0.9164,
+    0.9014,
+    0.8727
+   ],
+   "decal": false,
+   "sub": null,
+   "note": "片状纹层（ZCAM08547）",
+   "quality": {
+    "hole_frac": 0.2428,
+    "shadow_frac": 0.1027,
+    "frames": 1,
+    "illuminations": 1,
+    "nframes_med": null,
+    "range_m": null,
+    "footprint_mm": null,
+    "seam_step_log": null,
+    "seam_step_mm": null,
+    "shading_leak_r": null
+   },
+   "flags": [
+    "空洞多",
+    "投射阴影多",
+    "单光照近似去光影"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0530/godot/s0530_M8_1_albedo.png",
+    "height": "资料/地面材质/样块库/s0530/godot/s0530_M8_1_height.bin",
+    "npz": "资料/地面材质/样块库/s0530/切块/s0530_M8_1.npz",
+    "photo": "资料/地面材质/样块库/s0530/切块/s0530_M8_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0,
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "id": "p61_376_M11_1",
+   "type": "M11",
+   "station": "p61_376",
+   "rover": "M2020",
+   "site": 61,
+   "drive": 376,
+   "sols": [
+    1302,
+    1303
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    2.617,
+    -2.144
+   ],
+   "size_m": 0.999,
+   "px_m": 0.003,
+   "n_px": 333,
+   "gain": 1.86,
+   "height_range_m": 0.0157,
+   "h_rms_mm": 5.95,
+   "albedo_contrast": 0.1119,
+   "rb_contrast": 0.0588,
+   "slope_rms_1cm_deg": 7.08,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 4.53,
+   "rgb_rel_station": [
+    0.948,
+    0.938,
+    0.9271
+   ],
+   "decal": false,
+   "sub": "浅色风化层上的棱角岩屑",
+   "note": "坑缘 Witch Hazel Hill 一带：浅色细粒上散布 5–60 cm 暗色棱角岩屑",
+   "quality": {
+    "hole_frac": 0.0007,
+    "shadow_frac": 0.0,
+    "frames": 6,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 3.52,
+    "footprint_mm": [
+     4.4,
+     5.5,
+     6.8
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.256
+   },
+   "flags": [
+    "残余明暗（高通相关 0.26）",
+    "单一光照",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p61_376/godot/p61_376_M11_1_albedo.png",
+    "height": "资料/地面材质/样块库/p61_376/godot/p61_376_M11_1_height.bin",
+    "npz": "资料/地面材质/样块库/p61_376/切块/p61_376_M11_1.npz",
+    "photo": "资料/地面材质/样块库/p61_376/切块/p61_376_M11_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0479,
+    1.0384,
+    1.0281
+   ]
+  },
+  {
+   "id": "p61_376_M11_2",
+   "type": "M11",
+   "station": "p61_376",
+   "rover": "M2020",
+   "site": 61,
+   "drive": 376,
+   "sols": [
+    1302,
+    1303
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    2.035,
+    0.28
+   ],
+   "size_m": 0.999,
+   "px_m": 0.003,
+   "n_px": 333,
+   "gain": 2.25,
+   "height_range_m": 0.04048,
+   "h_rms_mm": 10.294,
+   "albedo_contrast": 0.113,
+   "rb_contrast": 0.0464,
+   "slope_rms_1cm_deg": 14.13,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 4.56,
+   "rgb_rel_station": [
+    0.9769,
+    0.9806,
+    0.979
+   ],
+   "decal": false,
+   "sub": "浅色风化层上的棱角岩屑",
+   "note": "坑缘 Witch Hazel Hill 一带：浅色细粒上散布 5–60 cm 暗色棱角岩屑",
+   "quality": {
+    "hole_frac": 0.0035,
+    "shadow_frac": 0.0,
+    "frames": 6,
+    "illuminations": 1,
+    "nframes_med": 2.0,
+    "range_m": 2.65,
+    "footprint_mm": [
+     2.9,
+     3.7,
+     4.6
+    ],
+    "seam_step_log": 0.0022,
+    "seam_step_mm": 0.25,
+    "shading_leak_r": 0.256
+   },
+   "flags": [
+    "残余明暗（高通相关 0.26）",
+    "单一光照",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p61_376/godot/p61_376_M11_2_albedo.png",
+    "height": "资料/地面材质/样块库/p61_376/godot/p61_376_M11_2_height.bin",
+    "npz": "资料/地面材质/样块库/p61_376/切块/p61_376_M11_2.npz",
+    "photo": "资料/地面材质/样块库/p61_376/切块/p61_376_M11_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0798,
+    1.0856,
+    1.0857
+   ]
+  },
+  {
+   "id": "p61_376_M11_3",
+   "type": "M11",
+   "station": "p61_376",
+   "rover": "M2020",
+   "site": 61,
+   "drive": 376,
+   "sols": [
+    1302,
+    1303
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -1.991,
+    2.947
+   ],
+   "size_m": 0.999,
+   "px_m": 0.003,
+   "n_px": 333,
+   "gain": 2.0,
+   "height_range_m": 0.06749,
+   "h_rms_mm": 12.584,
+   "albedo_contrast": 0.1314,
+   "rb_contrast": 0.0514,
+   "slope_rms_1cm_deg": 17.12,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 4.78,
+   "rgb_rel_station": [
+    0.9507,
+    0.953,
+    0.9575
+   ],
+   "decal": false,
+   "sub": "浅色风化层上的棱角岩屑",
+   "note": "坑缘 Witch Hazel Hill 一带：浅色细粒上散布 5–60 cm 暗色棱角岩屑",
+   "quality": {
+    "hole_frac": 0.0031,
+    "shadow_frac": 0.0,
+    "frames": 6,
+    "illuminations": 1,
+    "nframes_med": 4.0,
+    "range_m": 3.76,
+    "footprint_mm": [
+     4.9,
+     6.1,
+     7.4
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.256
+   },
+   "flags": [
+    "残余明暗（高通相关 0.26）",
+    "单一光照",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p61_376/godot/p61_376_M11_3_albedo.png",
+    "height": "资料/地面材质/样块库/p61_376/godot/p61_376_M11_3_height.bin",
+    "npz": "资料/地面材质/样块库/p61_376/切块/p61_376_M11_3.npz",
+    "photo": "资料/地面材质/样块库/p61_376/切块/p61_376_M11_3_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0509,
+    1.055,
+    1.0618
+   ]
+  },
+  {
+   "id": "p61_376_M11_4",
+   "type": "M11",
+   "station": "p61_376",
+   "rover": "M2020",
+   "site": 61,
+   "drive": 376,
+   "sols": [
+    1302,
+    1303
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    2.155,
+    -1.145
+   ],
+   "size_m": 0.999,
+   "px_m": 0.003,
+   "n_px": 333,
+   "gain": 2.0,
+   "height_range_m": 0.03968,
+   "h_rms_mm": 10.11,
+   "albedo_contrast": 0.1513,
+   "rb_contrast": 0.069,
+   "slope_rms_1cm_deg": 13.98,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 4.68,
+   "rgb_rel_station": [
+    0.9217,
+    0.9158,
+    0.9137
+   ],
+   "decal": false,
+   "sub": "浅色风化层上的棱角岩屑",
+   "note": "坑缘 Witch Hazel Hill 一带：浅色细粒上散布 5–60 cm 暗色棱角岩屑",
+   "quality": {
+    "hole_frac": 0.029,
+    "shadow_frac": 0.0,
+    "frames": 6,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 2.73,
+    "footprint_mm": [
+     3.0,
+     3.8,
+     4.8
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.256
+   },
+   "flags": [
+    "残余明暗（高通相关 0.26）",
+    "单一光照",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p61_376/godot/p61_376_M11_4_albedo.png",
+    "height": "资料/地面材质/样块库/p61_376/godot/p61_376_M11_4_height.bin",
+    "npz": "资料/地面材质/样块库/p61_376/切块/p61_376_M11_4.npz",
+    "photo": "资料/地面材质/样块库/p61_376/切块/p61_376_M11_4_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0188,
+    1.0139,
+    1.0133
+   ]
+  },
+  {
+   "id": "p61_376_M11_5",
+   "type": "M11",
+   "station": "p61_376",
+   "rover": "M2020",
+   "site": 61,
+   "drive": 376,
+   "sols": [
+    1303
+   ],
+   "camera": "Mastcam-Z 110 mm",
+   "enu_x0y0": [
+    1.373,
+    4.179
+   ],
+   "size_m": 0.512,
+   "px_m": 0.0005,
+   "n_px": 1024,
+   "gain": 2.5,
+   "height_range_m": 0.01708,
+   "h_rms_mm": 4.911,
+   "albedo_contrast": 0.1125,
+   "rb_contrast": 0.0706,
+   "slope_rms_1cm_deg": 9.76,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 3.29,
+   "rgb_rel_station": [
+    0.7467,
+    0.7491,
+    0.7509
+   ],
+   "decal": false,
+   "sub": null,
+   "note": "Mastcam-Z 110 mm zcam09365 拼图，亚毫米",
+   "quality": {
+    "hole_frac": 0.0315,
+    "shadow_frac": 0.0208,
+    "frames": 1,
+    "illuminations": 1,
+    "nframes_med": null,
+    "range_m": null,
+    "footprint_mm": null,
+    "seam_step_log": null,
+    "seam_step_mm": null,
+    "shading_leak_r": null
+   },
+   "flags": [
+    "单光照近似去光影",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p61_376/godot/p61_376_M11_5_albedo.png",
+    "height": "资料/地面材质/样块库/p61_376/godot/p61_376_M11_5_height.bin",
+    "npz": "资料/地面材质/样块库/p61_376/切块/p61_376_M11_5.npz",
+    "photo": "资料/地面材质/样块库/p61_376/切块/p61_376_M11_5_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.8254,
+    0.8293,
+    0.8327
+   ]
+  },
+  {
+   "id": "s0530_M12_1",
+   "type": "M12",
+   "station": "s0530",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 1222,
+   "sols": [
+    520,
+    521,
+    526,
+    527,
+    528,
+    529,
+    530,
+    531,
+    532
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -2.242,
+    -0.6
+   ],
+   "size_m": 0.16,
+   "px_m": 0.002,
+   "n_px": 80,
+   "gain": 1.87,
+   "height_range_m": 0.02913,
+   "h_rms_mm": 8.302,
+   "albedo_contrast": 0.2365,
+   "rb_contrast": null,
+   "slope_rms_1cm_deg": null,
+   "lam_dom_cm": null,
+   "psd_beta": null,
+   "rgb_rel_station": [
+    1.8973,
+    2.0195,
+    2.0311
+   ],
+   "decal": true,
+   "sub": null,
+   "note": "钻孔A贴花（不平铺、不做周期分解）",
+   "quality": {
+    "hole_frac": 0.0852,
+    "shadow_frac": 0,
+    "frames": 9,
+    "illuminations": 3,
+    "nframes_med": null,
+    "range_m": null,
+    "footprint_mm": null,
+    "seam_step_log": null,
+    "seam_step_mm": null,
+    "shading_leak_r": 0.125
+   },
+   "flags": [
+    "残余明暗（高通相关 0.12）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0530/godot/s0530_M12_1_albedo.png",
+    "height": "资料/地面材质/样块库/s0530/godot/s0530_M12_1_height.bin",
+    "npz": "资料/地面材质/样块库/s0530/切块/s0530_M12_1.npz",
+    "photo": "资料/地面材质/样块库/s0530/切块/s0530_M12_1_照片.npy"
+   }
+  },
+  {
+   "id": "s0530_M12_2",
+   "type": "M12",
+   "station": "s0530",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 1222,
+   "sols": [
+    520,
+    521,
+    526,
+    527,
+    528,
+    529,
+    530,
+    531,
+    532
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -2.134,
+    -0.692
+   ],
+   "size_m": 0.16,
+   "px_m": 0.002,
+   "n_px": 80,
+   "gain": 2.4,
+   "height_range_m": 0.02054,
+   "h_rms_mm": 4.748,
+   "albedo_contrast": 0.3282,
+   "rb_contrast": null,
+   "slope_rms_1cm_deg": null,
+   "lam_dom_cm": null,
+   "psd_beta": null,
+   "rgb_rel_station": [
+    1.7405,
+    1.8514,
+    1.8629
+   ],
+   "decal": true,
+   "sub": null,
+   "note": "钻孔B贴花（不平铺、不做周期分解）",
+   "quality": {
+    "hole_frac": 0.0195,
+    "shadow_frac": 0,
+    "frames": 9,
+    "illuminations": 3,
+    "nframes_med": null,
+    "range_m": null,
+    "footprint_mm": null,
+    "seam_step_log": null,
+    "seam_step_mm": null,
+    "shading_leak_r": 0.125
+   },
+   "flags": [
+    "残余明暗（高通相关 0.12）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0530/godot/s0530_M12_2_albedo.png",
+    "height": "资料/地面材质/样块库/s0530/godot/s0530_M12_2_height.bin",
+    "npz": "资料/地面材质/样块库/s0530/切块/s0530_M12_2.npz",
+    "photo": "资料/地面材质/样块库/s0530/切块/s0530_M12_2_照片.npy"
+   }
+  },
+  {
+   "id": "s0530_M12_3",
+   "type": "M12",
+   "station": "s0530",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 1222,
+   "sols": [
+    520,
+    521,
+    526,
+    527,
+    528,
+    529,
+    530,
+    531,
+    532
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -2.298,
+    -0.572
+   ],
+   "size_m": 0.16,
+   "px_m": 0.002,
+   "n_px": 80,
+   "gain": 1.91,
+   "height_range_m": 0.02386,
+   "h_rms_mm": 5.517,
+   "albedo_contrast": 0.2685,
+   "rb_contrast": null,
+   "slope_rms_1cm_deg": null,
+   "lam_dom_cm": null,
+   "psd_beta": null,
+   "rgb_rel_station": [
+    1.8488,
+    1.9957,
+    2.0157
+   ],
+   "decal": true,
+   "sub": null,
+   "note": "磨蚀斑贴花（不平铺、不做周期分解）",
+   "quality": {
+    "hole_frac": 0.0928,
+    "shadow_frac": 0,
+    "frames": 9,
+    "illuminations": 3,
+    "nframes_med": null,
+    "range_m": null,
+    "footprint_mm": null,
+    "seam_step_log": null,
+    "seam_step_mm": null,
+    "shading_leak_r": 0.125
+   },
+   "flags": [
+    "残余明暗（高通相关 0.12）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/s0530/godot/s0530_M12_3_albedo.png",
+    "height": "资料/地面材质/样块库/s0530/godot/s0530_M12_3_height.bin",
+    "npz": "资料/地面材质/样块库/s0530/切块/s0530_M12_3.npz",
+    "photo": "资料/地面材质/样块库/s0530/切块/s0530_M12_3_照片.npy"
+   }
+  },
+  {
+   "id": "p8_0_M13_1",
+   "type": "M13",
+   "station": "p8_0",
+   "rover": "M2020",
+   "site": 8,
+   "drive": 0,
+   "sols": [
+    248,
+    253,
+    262,
+    271
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    2.385,
+    2.125
+   ],
+   "size_m": 0.9,
+   "px_m": 0.003,
+   "n_px": 300,
+   "gain": 1.76,
+   "height_range_m": 0.09676,
+   "h_rms_mm": 35.639,
+   "albedo_contrast": 0.1453,
+   "rb_contrast": 0.0767,
+   "slope_rms_1cm_deg": 35.56,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 3.82,
+   "rgb_rel_station": [
+    1.1915,
+    1.128,
+    1.0874
+   ],
+   "decal": false,
+   "sub": "Brac 岩面",
+   "note": "Séítah Brac 露头：富橄榄石堆晶岩，风蚀棱面与鳞片状剥落，缝里积暗沙（只取北边岩面，南边是板间沙）",
+   "quality": {
+    "hole_frac": 0.1093,
+    "shadow_frac": 0.0,
+    "frames": 5,
+    "illuminations": 3,
+    "nframes_med": 3.0,
+    "range_m": 3.83,
+    "footprint_mm": [
+     5.2,
+     6.3,
+     7.5
+    ],
+    "seam_step_log": 0.0045,
+    "seam_step_mm": 0.5,
+    "shading_leak_r": 0.108
+   },
+   "flags": [
+    "空洞多",
+    "半分辨率",
+    "去光影效果差（光照一致性 0.25/0.38 → 0.24/0.33；sol 257–271 间有磨蚀、取芯，地面有变化）",
+    "岩面陡，残余明暗"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p8_0/godot/p8_0_M13_1_albedo.png",
+    "height": "资料/地面材质/样块库/p8_0/godot/p8_0_M13_1_height.bin",
+    "npz": "资料/地面材质/样块库/p8_0/切块/p8_0_M13_1.npz",
+    "photo": "资料/地面材质/样块库/p8_0/切块/p8_0_M13_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0642,
+    1.0257,
+    1.0001
+   ]
+  },
+  {
+   "id": "p8_0_M13_2",
+   "type": "M13",
+   "station": "p8_0",
+   "rover": "M2020",
+   "site": 8,
+   "drive": 0,
+   "sols": [
+    248,
+    253,
+    262,
+    271
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    3.33,
+    0.547
+   ],
+   "size_m": 0.9,
+   "px_m": 0.003,
+   "n_px": 300,
+   "gain": 2.47,
+   "height_range_m": 0.13911,
+   "h_rms_mm": 41.875,
+   "albedo_contrast": 0.1918,
+   "rb_contrast": 0.0747,
+   "slope_rms_1cm_deg": 31.1,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 4.04,
+   "rgb_rel_station": [
+    1.052,
+    1.0722,
+    1.0872
+   ],
+   "decal": false,
+   "sub": "Brac 岩面",
+   "note": "Séítah Brac 露头：富橄榄石堆晶岩，风蚀棱面与鳞片状剥落，缝里积暗沙（只取北边岩面，南边是板间沙）",
+   "quality": {
+    "hole_frac": 0.0947,
+    "shadow_frac": 0.0011,
+    "frames": 5,
+    "illuminations": 3,
+    "nframes_med": 3.0,
+    "range_m": 3.91,
+    "footprint_mm": [
+     5.3,
+     6.5,
+     7.7
+    ],
+    "seam_step_log": 0.0118,
+    "seam_step_mm": 0.58,
+    "shading_leak_r": 0.108
+   },
+   "flags": [
+    "半分辨率",
+    "去光影效果差（光照一致性 0.25/0.38 → 0.24/0.33；sol 257–271 间有磨蚀、取芯，地面有变化）",
+    "岩面陡，残余明暗"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p8_0/godot/p8_0_M13_2_albedo.png",
+    "height": "资料/地面材质/样块库/p8_0/godot/p8_0_M13_2_height.bin",
+    "npz": "资料/地面材质/样块库/p8_0/切块/p8_0_M13_2.npz",
+    "photo": "资料/地面材质/样块库/p8_0/切块/p8_0_M13_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9396,
+    0.975,
+    0.9999
+   ]
+  },
+  {
+   "id": "p7_2050_M14_1",
+   "type": "M14",
+   "station": "p7_2050",
+   "rover": "M2020",
+   "site": 7,
+   "drive": 2050,
+   "sols": [
+    210,
+    213,
+    236
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    2.253,
+    2.1
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 2.5,
+   "height_range_m": 0.04522,
+   "h_rms_mm": 10.105,
+   "albedo_contrast": 0.1135,
+   "rb_contrast": 0.0476,
+   "slope_rms_1cm_deg": 9.45,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 3.42,
+   "rgb_rel_station": [
+    0.8906,
+    0.9005,
+    0.9133
+   ],
+   "decal": false,
+   "sub": "铺路石板 + 板间暗沙",
+   "note": "Máaz 坑底：浅色多边形铺路石板（10–50 cm），板间暗色细沙（避开车身/桅杆影子）",
+   "quality": {
+    "hole_frac": 0.0103,
+    "shadow_frac": 0.0002,
+    "frames": 6,
+    "illuminations": 1,
+    "nframes_med": 3.0,
+    "range_m": 3.79,
+    "footprint_mm": [
+     2.5,
+     3.1,
+     3.8
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.096
+   },
+   "flags": [
+    "单一光照",
+    "光照差别小（太阳高 36–48°，同一方位）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p7_2050/godot/p7_2050_M14_1_albedo.png",
+    "height": "资料/地面材质/样块库/p7_2050/godot/p7_2050_M14_1_height.bin",
+    "npz": "资料/地面材质/样块库/p7_2050/切块/p7_2050_M14_1.npz",
+    "photo": "资料/地面材质/样块库/p7_2050/切块/p7_2050_M14_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9285,
+    0.9533,
+    0.9803
+   ]
+  },
+  {
+   "id": "p7_2050_M14_2",
+   "type": "M14",
+   "station": "p7_2050",
+   "rover": "M2020",
+   "site": 7,
+   "drive": 2050,
+   "sols": [
+    210,
+    213,
+    236
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    1.495,
+    1.0
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 2.05,
+   "height_range_m": 0.0472,
+   "h_rms_mm": 13.278,
+   "albedo_contrast": 0.2353,
+   "rb_contrast": 0.0596,
+   "slope_rms_1cm_deg": 14.37,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 4.17,
+   "rgb_rel_station": [
+    1.0812,
+    1.0568,
+    1.0389
+   ],
+   "decal": false,
+   "sub": "铺路石板 + 板间暗沙",
+   "note": "Máaz 坑底：浅色多边形铺路石板（10–50 cm），板间暗色细沙（避开车身/桅杆影子）",
+   "quality": {
+    "hole_frac": 0.0191,
+    "shadow_frac": 0.0002,
+    "frames": 6,
+    "illuminations": 1,
+    "nframes_med": 3.0,
+    "range_m": 2.5,
+    "footprint_mm": [
+     1.3,
+     1.7,
+     2.2
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.096
+   },
+   "flags": [
+    "单一光照",
+    "光照差别小（太阳高 36–48°，同一方位）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p7_2050/godot/p7_2050_M14_2_albedo.png",
+    "height": "资料/地面材质/样块库/p7_2050/godot/p7_2050_M14_2_height.bin",
+    "npz": "资料/地面材质/样块库/p7_2050/切块/p7_2050_M14_2.npz",
+    "photo": "资料/地面材质/样块库/p7_2050/切块/p7_2050_M14_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.1273,
+    1.1188,
+    1.1151
+   ]
+  },
+  {
+   "id": "p7_2050_M14_3",
+   "type": "M14",
+   "station": "p7_2050",
+   "rover": "M2020",
+   "site": 7,
+   "drive": 2050,
+   "sols": [
+    210,
+    213,
+    236
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    1.727,
+    -3.2
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 1.81,
+   "height_range_m": 0.03748,
+   "h_rms_mm": 11.453,
+   "albedo_contrast": 0.2265,
+   "rb_contrast": 0.0611,
+   "slope_rms_1cm_deg": 11.63,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 3.75,
+   "rgb_rel_station": [
+    1.2256,
+    1.167,
+    1.1087
+   ],
+   "decal": false,
+   "sub": "铺路石板 + 板间暗沙",
+   "note": "Máaz 坑底：浅色多边形铺路石板（10–50 cm），板间暗色细沙（避开车身/桅杆影子）",
+   "quality": {
+    "hole_frac": 0.0096,
+    "shadow_frac": 0.0,
+    "frames": 6,
+    "illuminations": 1,
+    "nframes_med": 3.0,
+    "range_m": 3.5,
+    "footprint_mm": [
+     2.2,
+     2.7,
+     3.4
+    ],
+    "seam_step_log": 0.017,
+    "seam_step_mm": 0.26,
+    "shading_leak_r": 0.096
+   },
+   "flags": [
+    "单一光照",
+    "光照差别小（太阳高 36–48°，同一方位）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p7_2050/godot/p7_2050_M14_3_albedo.png",
+    "height": "资料/地面材质/样块库/p7_2050/godot/p7_2050_M14_3_height.bin",
+    "npz": "资料/地面材质/样块库/p7_2050/切块/p7_2050_M14_3.npz",
+    "photo": "资料/地面材质/样块库/p7_2050/切块/p7_2050_M14_3_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.2778,
+    1.2355,
+    1.19
+   ]
+  },
+  {
+   "id": "p7_2050_M14_4",
+   "type": "M14",
+   "station": "p7_2050",
+   "rover": "M2020",
+   "site": 7,
+   "drive": 2050,
+   "sols": [
+    210,
+    213,
+    236
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    1.25,
+    2.2
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 2.5,
+   "height_range_m": 0.06239,
+   "h_rms_mm": 13.039,
+   "albedo_contrast": 0.1825,
+   "rb_contrast": 0.0499,
+   "slope_rms_1cm_deg": 12.57,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 3.8,
+   "rgb_rel_station": [
+    0.9193,
+    0.8994,
+    0.8913
+   ],
+   "decal": false,
+   "sub": "铺路石板 + 板间暗沙",
+   "note": "Máaz 坑底：浅色多边形铺路石板（10–50 cm），板间暗色细沙（避开车身/桅杆影子）",
+   "quality": {
+    "hole_frac": 0.0612,
+    "shadow_frac": 0.0019,
+    "frames": 6,
+    "illuminations": 1,
+    "nframes_med": 3.0,
+    "range_m": 3.22,
+    "footprint_mm": [
+     1.9,
+     2.4,
+     3.0
+    ],
+    "seam_step_log": 0.0234,
+    "seam_step_mm": 1.41,
+    "shading_leak_r": 0.096
+   },
+   "flags": [
+    "单一光照",
+    "光照差别小（太阳高 36–48°，同一方位）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p7_2050/godot/p7_2050_M14_4_albedo.png",
+    "height": "资料/地面材质/样块库/p7_2050/godot/p7_2050_M14_4_height.bin",
+    "npz": "资料/地面材质/样块库/p7_2050/切块/p7_2050_M14_4.npz",
+    "photo": "资料/地面材质/样块库/p7_2050/切块/p7_2050_M14_4_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9585,
+    0.9522,
+    0.9567
+   ]
+  },
+  {
+   "id": "p7_2050_M14_5",
+   "type": "M14",
+   "station": "p7_2050",
+   "rover": "M2020",
+   "site": 7,
+   "drive": 2050,
+   "sols": [
+    237
+   ],
+   "camera": "Mastcam-Z 110 mm",
+   "enu_x0y0": [
+    2.32,
+    1.127
+   ],
+   "size_m": 0.512,
+   "px_m": 0.0005,
+   "n_px": 1024,
+   "gain": 2.5,
+   "height_range_m": 0.03059,
+   "h_rms_mm": 10.233,
+   "albedo_contrast": 0.1985,
+   "rb_contrast": 0.1092,
+   "slope_rms_1cm_deg": 14.04,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 3.36,
+   "rgb_rel_station": [
+    0.7482,
+    0.7528,
+    0.7487
+   ],
+   "decal": false,
+   "sub": null,
+   "note": "Mastcam-Z 110 mm zcam08260 拼图，亚毫米",
+   "quality": {
+    "hole_frac": 0.2289,
+    "shadow_frac": 0.0075,
+    "frames": 1,
+    "illuminations": 1,
+    "nframes_med": null,
+    "range_m": null,
+    "footprint_mm": null,
+    "seam_step_log": null,
+    "seam_step_mm": null,
+    "shading_leak_r": null
+   },
+   "flags": [
+    "空洞多",
+    "单光照近似去光影",
+    "光照差别小（太阳高 36–48°，同一方位）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p7_2050/godot/p7_2050_M14_5_albedo.png",
+    "height": "资料/地面材质/样块库/p7_2050/godot/p7_2050_M14_5_height.bin",
+    "npz": "资料/地面材质/样块库/p7_2050/切块/p7_2050_M14_5.npz",
+    "photo": "资料/地面材质/样块库/p7_2050/切块/p7_2050_M14_5_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.7801,
+    0.797,
+    0.8036
+   ]
+  },
+  {
+   "id": "m89_724_M15_1",
+   "type": "M15",
+   "station": "m89_724",
+   "rover": "MSL",
+   "site": 89,
+   "drive": 724,
+   "sols": [
+    3154
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -2.228,
+    -2.685
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 1.61,
+   "height_range_m": 0.03109,
+   "h_rms_mm": 8.587,
+   "albedo_contrast": 0.1217,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 7.62,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 5.84,
+   "rgb_rel_station": [
+    1.0507,
+    1.0507,
+    1.0507
+   ],
+   "decal": false,
+   "sub": "多边形裂纹 + 填沙",
+   "note": "Pontours 一带：浅色泥岩/硫酸盐板，暗沙填的多边形裂纹网",
+   "quality": {
+    "hole_frac": 0.0008,
+    "shadow_frac": 0.0,
+    "frames": 5,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 2.79,
+    "footprint_mm": [
+     3.8,
+     4.9,
+     6.2
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.083
+   },
+   "flags": [
+    "单一光照",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m89_724/godot/m89_724_M15_1_albedo.png",
+    "height": "资料/地面材质/样块库/m89_724/godot/m89_724_M15_1_height.bin",
+    "npz": "资料/地面材质/样块库/m89_724/切块/m89_724_M15_1.npz",
+    "photo": "资料/地面材质/样块库/m89_724/切块/m89_724_M15_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0331,
+    1.0331,
+    1.0331
+   ]
+  },
+  {
+   "id": "m89_724_M15_2",
+   "type": "M15",
+   "station": "m89_724",
+   "rover": "MSL",
+   "site": 89,
+   "drive": 724,
+   "sols": [
+    3154
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -3.23,
+    -2.887
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 2.15,
+   "height_range_m": 0.03273,
+   "h_rms_mm": 11.283,
+   "albedo_contrast": 0.1684,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 10.43,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 5.64,
+   "rgb_rel_station": [
+    0.9984,
+    0.9984,
+    0.9984
+   ],
+   "decal": false,
+   "sub": "多边形裂纹 + 填沙",
+   "note": "Pontours 一带：浅色泥岩/硫酸盐板，暗沙填的多边形裂纹网",
+   "quality": {
+    "hole_frac": 0.0334,
+    "shadow_frac": 0.0,
+    "frames": 5,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 3.63,
+    "footprint_mm": [
+     5.8,
+     7.2,
+     8.9
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.083
+   },
+   "flags": [
+    "远处像素足迹大于格距（反照率偏糊）",
+    "单一光照",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m89_724/godot/m89_724_M15_2_albedo.png",
+    "height": "资料/地面材质/样块库/m89_724/godot/m89_724_M15_2_height.bin",
+    "npz": "资料/地面材质/样块库/m89_724/切块/m89_724_M15_2.npz",
+    "photo": "资料/地面材质/样块库/m89_724/切块/m89_724_M15_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9817,
+    0.9817,
+    0.9817
+   ]
+  },
+  {
+   "id": "m89_724_M15_3",
+   "type": "M15",
+   "station": "m89_724",
+   "rover": "MSL",
+   "site": 89,
+   "drive": 724,
+   "sols": [
+    3154
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -4.018,
+    -1.177
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 1.78,
+   "height_range_m": 0.02136,
+   "h_rms_mm": 8.309,
+   "albedo_contrast": 0.1666,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 8.72,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 5.9,
+   "rgb_rel_station": [
+    1.0028,
+    1.0028,
+    1.0028
+   ],
+   "decal": false,
+   "sub": "多边形裂纹 + 填沙",
+   "note": "Pontours 一带：浅色泥岩/硫酸盐板，暗沙填的多边形裂纹网",
+   "quality": {
+    "hole_frac": 0.0019,
+    "shadow_frac": 0.0,
+    "frames": 5,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 3.58,
+    "footprint_mm": [
+     5.7,
+     7.1,
+     8.7
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.083
+   },
+   "flags": [
+    "远处像素足迹大于格距（反照率偏糊）",
+    "单一光照",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m89_724/godot/m89_724_M15_3_albedo.png",
+    "height": "资料/地面材质/样块库/m89_724/godot/m89_724_M15_3_height.bin",
+    "npz": "资料/地面材质/样块库/m89_724/切块/m89_724_M15_3.npz",
+    "photo": "资料/地面材质/样块库/m89_724/切块/m89_724_M15_3_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.986,
+    0.986,
+    0.986
+   ]
+  },
+  {
+   "id": "p22_788_M16_1",
+   "type": "M16",
+   "station": "p22_788",
+   "rover": "M2020",
+   "site": 22,
+   "drive": 788,
+   "sols": [
+    413,
+    414
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -3.935,
+    -1.345
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 2.49,
+   "height_range_m": 0.00844,
+   "h_rms_mm": 2.493,
+   "albedo_contrast": 0.0965,
+   "rb_contrast": 0.0659,
+   "slope_rms_1cm_deg": 6.17,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 3.15,
+   "rgb_rel_station": [
+    1.0142,
+    1.0236,
+    1.0467
+   ],
+   "decal": false,
+   "sub": "积尘平原",
+   "note": "坑底平原：积尘细沙，小砾稀疏，对比低",
+   "quality": {
+    "hole_frac": 0.0,
+    "shadow_frac": 0.0,
+    "frames": 6,
+    "illuminations": 4,
+    "nframes_med": 3.0,
+    "range_m": 3.54,
+    "footprint_mm": [
+     2.2,
+     2.8,
+     3.4
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.103
+   },
+   "flags": [
+    "早晚两组帧覆盖不同地面，光照一致性改进有限（0.17 → 0.15）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p22_788/godot/p22_788_M16_1_albedo.png",
+    "height": "资料/地面材质/样块库/p22_788/godot/p22_788_M16_1_height.bin",
+    "npz": "资料/地面材质/样块库/p22_788/切块/p22_788_M16_1.npz",
+    "photo": "资料/地面材质/样块库/p22_788/切块/p22_788_M16_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0131,
+    1.0209,
+    1.0398
+   ]
+  },
+  {
+   "id": "p22_788_M16_2",
+   "type": "M16",
+   "station": "p22_788",
+   "rover": "M2020",
+   "site": 22,
+   "drive": 788,
+   "sols": [
+    413,
+    414
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -3.328,
+    0.737
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 2.49,
+   "height_range_m": 0.00626,
+   "h_rms_mm": 1.743,
+   "albedo_contrast": 0.1205,
+   "rb_contrast": 0.0822,
+   "slope_rms_1cm_deg": 5.16,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 3.51,
+   "rgb_rel_station": [
+    1.0228,
+    1.0209,
+    1.0151
+   ],
+   "decal": false,
+   "sub": "积尘平原",
+   "note": "坑底平原：积尘细沙，小砾稀疏，对比低",
+   "quality": {
+    "hole_frac": 0.0,
+    "shadow_frac": 0.0,
+    "frames": 6,
+    "illuminations": 4,
+    "nframes_med": 3.0,
+    "range_m": 3.09,
+    "footprint_mm": [
+     1.8,
+     2.3,
+     2.8
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.103
+   },
+   "flags": [
+    "早晚两组帧覆盖不同地面，光照一致性改进有限（0.17 → 0.15）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p22_788/godot/p22_788_M16_2_albedo.png",
+    "height": "资料/地面材质/样块库/p22_788/godot/p22_788_M16_2_height.bin",
+    "npz": "资料/地面材质/样块库/p22_788/切块/p22_788_M16_2.npz",
+    "photo": "资料/地面材质/样块库/p22_788/切块/p22_788_M16_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0217,
+    1.0182,
+    1.0084
+   ]
+  },
+  {
+   "id": "p22_788_M16_3",
+   "type": "M16",
+   "station": "p22_788",
+   "rover": "M2020",
+   "site": 22,
+   "drive": 788,
+   "sols": [
+    413,
+    414
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -1.86,
+    -4.115
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 2.5,
+   "height_range_m": 0.00581,
+   "h_rms_mm": 1.437,
+   "albedo_contrast": 0.12,
+   "rb_contrast": 0.076,
+   "slope_rms_1cm_deg": 4.73,
+   "lam_dom_cm": 7.1,
+   "psd_beta": 3.66,
+   "rgb_rel_station": [
+    0.9672,
+    0.9645,
+    0.96
+   ],
+   "decal": false,
+   "sub": "积尘平原",
+   "note": "坑底平原：积尘细沙，小砾稀疏，对比低",
+   "quality": {
+    "hole_frac": 0.0,
+    "shadow_frac": 0.0,
+    "frames": 6,
+    "illuminations": 4,
+    "nframes_med": 3.0,
+    "range_m": 3.86,
+    "footprint_mm": [
+     2.6,
+     3.2,
+     3.9
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.103
+   },
+   "flags": [
+    "早晚两组帧覆盖不同地面，光照一致性改进有限（0.17 → 0.15）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p22_788/godot/p22_788_M16_3_albedo.png",
+    "height": "资料/地面材质/样块库/p22_788/godot/p22_788_M16_3_height.bin",
+    "npz": "资料/地面材质/样块库/p22_788/切块/p22_788_M16_3.npz",
+    "photo": "资料/地面材质/样块库/p22_788/切块/p22_788_M16_3_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9661,
+    0.962,
+    0.9537
+   ]
+  },
+  {
+   "id": "m2_0_M17_1",
+   "type": "M17",
+   "station": "m2_0",
+   "rover": "MSL",
+   "site": 2,
+   "drive": 0,
+   "sols": [
+    2
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    1.31,
+    -3.628
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 2.47,
+   "height_range_m": 0.01426,
+   "h_rms_mm": 4.342,
+   "albedo_contrast": 0.2173,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 6.52,
+   "lam_dom_cm": 14.1,
+   "psd_beta": 6.32,
+   "rgb_rel_station": [
+    1.3044,
+    1.3044,
+    1.3044
+   ],
+   "decal": false,
+   "sub": "卵石/颗粒铺面",
+   "note": "Bradbury 着陆点：满铺的卵石与颗粒，零星 2–5 cm 小石",
+   "quality": {
+    "hole_frac": 0.0039,
+    "shadow_frac": 0.0032,
+    "frames": 4,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 3.61,
+    "footprint_mm": [
+     5.7,
+     7.2,
+     8.9
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.21
+   },
+   "flags": [
+    "残余明暗（高通相关 0.21）",
+    "远处像素足迹大于格距（反照率偏糊）",
+    "单一光照",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m2_0/godot/m2_0_M17_1_albedo.png",
+    "height": "资料/地面材质/样块库/m2_0/godot/m2_0_M17_1_height.bin",
+    "npz": "资料/地面材质/样块库/m2_0/切块/m2_0_M17_1.npz",
+    "photo": "资料/地面材质/样块库/m2_0/切块/m2_0_M17_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.3076,
+    1.3004,
+    1.2928
+   ]
+  },
+  {
+   "id": "m2_0_M17_2",
+   "type": "M17",
+   "station": "m2_0",
+   "rover": "MSL",
+   "site": 2,
+   "drive": 0,
+   "sols": [
+    2
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -2.77,
+    -1.923
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 2.5,
+   "height_range_m": 0.02177,
+   "h_rms_mm": 4.702,
+   "albedo_contrast": 0.2894,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 7.01,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 6.3,
+   "rgb_rel_station": [
+    0.8332,
+    0.8332,
+    0.8332
+   ],
+   "decal": false,
+   "sub": "卵石/颗粒铺面",
+   "note": "Bradbury 着陆点：满铺的卵石与颗粒，零星 2–5 cm 小石",
+   "quality": {
+    "hole_frac": 0.0015,
+    "shadow_frac": 0.0,
+    "frames": 4,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 2.68,
+    "footprint_mm": [
+     3.6,
+     4.7,
+     5.9
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.21
+   },
+   "flags": [
+    "残余明暗（高通相关 0.21）",
+    "单一光照",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m2_0/godot/m2_0_M17_2_albedo.png",
+    "height": "资料/地面材质/样块库/m2_0/godot/m2_0_M17_2_height.bin",
+    "npz": "资料/地面材质/样块库/m2_0/切块/m2_0_M17_2.npz",
+    "photo": "资料/地面材质/样块库/m2_0/切块/m2_0_M17_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.8352,
+    0.8306,
+    0.8258
+   ]
+  },
+  {
+   "id": "m2_0_M17_3",
+   "type": "M17",
+   "station": "m2_0",
+   "rover": "MSL",
+   "site": 2,
+   "drive": 0,
+   "sols": [
+    2
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -1.618,
+    -3.553
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 2.5,
+   "height_range_m": 0.01611,
+   "h_rms_mm": 4.206,
+   "albedo_contrast": 0.2245,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 6.63,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 6.14,
+   "rgb_rel_station": [
+    0.9803,
+    0.9803,
+    0.9803
+   ],
+   "decal": false,
+   "sub": "卵石/颗粒铺面",
+   "note": "Bradbury 着陆点：满铺的卵石与颗粒，零星 2–5 cm 小石",
+   "quality": {
+    "hole_frac": 0.003,
+    "shadow_frac": 0.002,
+    "frames": 4,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 3.25,
+    "footprint_mm": [
+     4.8,
+     6.1,
+     7.6
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.21
+   },
+   "flags": [
+    "残余明暗（高通相关 0.21）",
+    "单一光照",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m2_0/godot/m2_0_M17_3_albedo.png",
+    "height": "资料/地面材质/样块库/m2_0/godot/m2_0_M17_3_height.bin",
+    "npz": "资料/地面材质/样块库/m2_0/切块/m2_0_M17_3.npz",
+    "photo": "资料/地面材质/样块库/m2_0/切块/m2_0_M17_3_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9827,
+    0.9773,
+    0.9716
+   ]
+  },
+  {
+   "id": "m2_0_M17_4",
+   "type": "M17",
+   "station": "m2_0",
+   "rover": "MSL",
+   "site": 2,
+   "drive": 0,
+   "sols": [
+    2
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -1.77,
+    -2.29
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 2.5,
+   "height_range_m": 0.01294,
+   "h_rms_mm": 3.618,
+   "albedo_contrast": 0.3345,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 7.35,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 6.29,
+   "rgb_rel_station": [
+    0.842,
+    0.842,
+    0.842
+   ],
+   "decal": false,
+   "sub": "卵石/颗粒铺面",
+   "note": "Bradbury 着陆点：满铺的卵石与颗粒，零星 2–5 cm 小石",
+   "quality": {
+    "hole_frac": 0.0385,
+    "shadow_frac": 0.0016,
+    "frames": 4,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 2.19,
+    "footprint_mm": [
+     2.8,
+     3.6,
+     4.7
+    ],
+    "seam_step_log": 0.0046,
+    "seam_step_mm": 1.05,
+    "shading_leak_r": 0.21
+   },
+   "flags": [
+    "残余明暗（高通相关 0.21）",
+    "单一光照",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m2_0/godot/m2_0_M17_4_albedo.png",
+    "height": "资料/地面材质/样块库/m2_0/godot/m2_0_M17_4_height.bin",
+    "npz": "资料/地面材质/样块库/m2_0/切块/m2_0_M17_4.npz",
+    "photo": "资料/地面材质/样块库/m2_0/切块/m2_0_M17_4_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.844,
+    0.8394,
+    0.8345
+   ]
+  },
+  {
+   "id": "p22_788_M17_1",
+   "type": "M17",
+   "station": "p22_788",
+   "rover": "M2020",
+   "site": 22,
+   "drive": 788,
+   "sols": [
+    413,
+    414
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    1.507,
+    -3.873
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 2.5,
+   "height_range_m": 0.01,
+   "h_rms_mm": 2.221,
+   "albedo_contrast": 0.2218,
+   "rb_contrast": 0.0943,
+   "slope_rms_1cm_deg": 6.76,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 3.59,
+   "rgb_rel_station": [
+    1.0785,
+    1.0956,
+    1.1029
+   ],
+   "decal": false,
+   "sub": "积尘沙上的小砾",
+   "note": "坑底平原：积尘细沙上散布 0.5–3 cm 小砾，分布较密",
+   "quality": {
+    "hole_frac": 0.0435,
+    "shadow_frac": 0.0,
+    "frames": 6,
+    "illuminations": 4,
+    "nframes_med": 1.0,
+    "range_m": 3.92,
+    "footprint_mm": [
+     2.6,
+     3.3,
+     4.0
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.103
+   },
+   "flags": [
+    "早晚两组帧覆盖不同地面，光照一致性改进有限（0.17 → 0.15）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p22_788/godot/p22_788_M17_1_albedo.png",
+    "height": "资料/地面材质/样块库/p22_788/godot/p22_788_M17_1_height.bin",
+    "npz": "资料/地面材质/样块库/p22_788/切块/p22_788_M17_1.npz",
+    "photo": "资料/地面材质/样块库/p22_788/切块/p22_788_M17_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0811,
+    1.0922,
+    1.0931
+   ]
+  },
+  {
+   "id": "p22_788_M17_2",
+   "type": "M17",
+   "station": "p22_788",
+   "rover": "M2020",
+   "site": 22,
+   "drive": 788,
+   "sols": [
+    413,
+    414
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -3.428,
+    -2.938
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 2.5,
+   "height_range_m": 0.00718,
+   "h_rms_mm": 1.926,
+   "albedo_contrast": 0.1407,
+   "rb_contrast": 0.0778,
+   "slope_rms_1cm_deg": 6.04,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 3.09,
+   "rgb_rel_station": [
+    1.0124,
+    1.0395,
+    1.073
+   ],
+   "decal": false,
+   "sub": "积尘沙上的小砾",
+   "note": "坑底平原：积尘细沙上散布 0.5–3 cm 小砾，分布较密",
+   "quality": {
+    "hole_frac": 0.0,
+    "shadow_frac": 0.0,
+    "frames": 6,
+    "illuminations": 4,
+    "nframes_med": 3.0,
+    "range_m": 3.81,
+    "footprint_mm": [
+     2.5,
+     3.1,
+     3.8
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.103
+   },
+   "flags": [
+    "早晚两组帧覆盖不同地面，光照一致性改进有限（0.17 → 0.15）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p22_788/godot/p22_788_M17_2_albedo.png",
+    "height": "资料/地面材质/样块库/p22_788/godot/p22_788_M17_2_height.bin",
+    "npz": "资料/地面材质/样块库/p22_788/切块/p22_788_M17_2.npz",
+    "photo": "资料/地面材质/样块库/p22_788/切块/p22_788_M17_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0149,
+    1.0363,
+    1.0634
+   ]
+  },
+  {
+   "id": "p22_788_M17_3",
+   "type": "M17",
+   "station": "p22_788",
+   "rover": "M2020",
+   "site": 22,
+   "drive": 788,
+   "sols": [
+    413,
+    414
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -0.02,
+    -3.902
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 2.5,
+   "height_range_m": 0.00947,
+   "h_rms_mm": 1.881,
+   "albedo_contrast": 0.1522,
+   "rb_contrast": 0.0702,
+   "slope_rms_1cm_deg": 6.17,
+   "lam_dom_cm": 8.9,
+   "psd_beta": 3.63,
+   "rgb_rel_station": [
+    1.0038,
+    1.0001,
+    1.0029
+   ],
+   "decal": false,
+   "sub": "积尘沙上的小砾",
+   "note": "坑底平原：积尘细沙上散布 0.5–3 cm 小砾，分布较密",
+   "quality": {
+    "hole_frac": 0.0001,
+    "shadow_frac": 0.0,
+    "frames": 6,
+    "illuminations": 4,
+    "nframes_med": 2.0,
+    "range_m": 3.44,
+    "footprint_mm": [
+     2.1,
+     2.6,
+     3.3
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.103
+   },
+   "flags": [
+    "早晚两组帧覆盖不同地面，光照一致性改进有限（0.17 → 0.15）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p22_788/godot/p22_788_M17_3_albedo.png",
+    "height": "资料/地面材质/样块库/p22_788/godot/p22_788_M17_3_height.bin",
+    "npz": "资料/地面材质/样块库/p22_788/切块/p22_788_M17_3.npz",
+    "photo": "资料/地面材质/样块库/p22_788/切块/p22_788_M17_3_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0062,
+    0.997,
+    0.994
+   ]
+  },
+  {
+   "id": "m52_1162_M18_1",
+   "type": "M18",
+   "station": "m52_1162",
+   "rover": "MSL",
+   "site": 52,
+   "drive": 1162,
+   "sols": [
+    1221,
+    1224,
+    1226,
+    1228,
+    1231
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -1.342,
+    2.35
+   ],
+   "size_m": 0.8,
+   "px_m": 0.0025,
+   "n_px": 320,
+   "gain": 1.4,
+   "height_range_m": 0.01819,
+   "h_rms_mm": 5.706,
+   "albedo_contrast": 0.1147,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 11.02,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 5.17,
+   "rgb_rel_station": [
+    0.9279,
+    0.9279,
+    0.9279
+   ],
+   "decal": false,
+   "sub": "沙丘迎风坡沙纹",
+   "note": "Namib Dune：暗色玄武质沙，分米级沙纹，无尘",
+   "quality": {
+    "hole_frac": 0.0008,
+    "shadow_frac": 0.0001,
+    "frames": 7,
+    "illuminations": 4,
+    "nframes_med": 7.0,
+    "range_m": 2.91,
+    "footprint_mm": [
+     4.3,
+     5.2,
+     6.3
+    ],
+    "seam_step_log": 0.0245,
+    "seam_step_mm": 0.39,
+    "shading_leak_r": 0.162
+   },
+   "flags": [
+    "残余明暗（高通相关 0.16）",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m52_1162/godot/m52_1162_M18_1_albedo.png",
+    "height": "资料/地面材质/样块库/m52_1162/godot/m52_1162_M18_1_height.bin",
+    "npz": "资料/地面材质/样块库/m52_1162/切块/m52_1162_M18_1.npz",
+    "photo": "资料/地面材质/样块库/m52_1162/切块/m52_1162_M18_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9971,
+    0.9995,
+    1.0019
+   ]
+  },
+  {
+   "id": "m52_1162_M18_2",
+   "type": "M18",
+   "station": "m52_1162",
+   "rover": "MSL",
+   "site": 52,
+   "drive": 1162,
+   "sols": [
+    1221,
+    1224,
+    1226,
+    1228,
+    1231
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -2.2,
+    2.607
+   ],
+   "size_m": 0.8,
+   "px_m": 0.0025,
+   "n_px": 320,
+   "gain": 1.53,
+   "height_range_m": 0.01545,
+   "h_rms_mm": 5.128,
+   "albedo_contrast": 0.1095,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 11.95,
+   "lam_dom_cm": 14.1,
+   "psd_beta": 5.05,
+   "rgb_rel_station": [
+    0.9982,
+    0.9982,
+    0.9982
+   ],
+   "decal": false,
+   "sub": "沙丘迎风坡沙纹",
+   "note": "Namib Dune：暗色玄武质沙，分米级沙纹，无尘",
+   "quality": {
+    "hole_frac": 0.0032,
+    "shadow_frac": 0.0,
+    "frames": 7,
+    "illuminations": 4,
+    "nframes_med": 6.0,
+    "range_m": 3.51,
+    "footprint_mm": [
+     5.7,
+     6.9,
+     8.1
+    ],
+    "seam_step_log": 0.029,
+    "seam_step_mm": 0.28,
+    "shading_leak_r": 0.162
+   },
+   "flags": [
+    "残余明暗（高通相关 0.16）",
+    "远处像素足迹大于格距（反照率偏糊）",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m52_1162/godot/m52_1162_M18_2_albedo.png",
+    "height": "资料/地面材质/样块库/m52_1162/godot/m52_1162_M18_2_height.bin",
+    "npz": "资料/地面材质/样块库/m52_1162/切块/m52_1162_M18_2.npz",
+    "photo": "资料/地面材质/样块库/m52_1162/切块/m52_1162_M18_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0726,
+    1.0752,
+    1.0778
+   ]
+  },
+  {
+   "id": "p52_0_M18_1",
+   "type": "M18",
+   "station": "p52_0",
+   "rover": "M2020",
+   "site": 52,
+   "drive": 0,
+   "sols": [
+    1129
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    0.476,
+    -3.43
+   ],
+   "size_m": 1.0,
+   "px_m": 0.002,
+   "n_px": 500,
+   "gain": 1.96,
+   "height_range_m": 0.02907,
+   "h_rms_mm": 9.913,
+   "albedo_contrast": 0.0839,
+   "rb_contrast": 0.0346,
+   "slope_rms_1cm_deg": 7.15,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 2.12,
+   "rgb_rel_station": [
+    0.8361,
+    0.8229,
+    0.8179
+   ],
+   "decal": false,
+   "sub": "沙丘床面细沙纹",
+   "note": "Mount Washburn 一带：暗色沙床面，厘米级细沙纹（避开车辙）；沙床面背风坡有明暗残留（V 形暗区）",
+   "quality": {
+    "hole_frac": 0.0,
+    "shadow_frac": 0.0,
+    "frames": 4,
+    "illuminations": 3,
+    "nframes_med": 2.0,
+    "range_m": 3.09,
+    "footprint_mm": [
+     1.8,
+     2.3,
+     2.8
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.078
+   },
+   "flags": [],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p52_0/godot/p52_0_M18_1_albedo.png",
+    "height": "资料/地面材质/样块库/p52_0/godot/p52_0_M18_1_height.bin",
+    "npz": "资料/地面材质/样块库/p52_0/切块/p52_0_M18_1.npz",
+    "photo": "资料/地面材质/样块库/p52_0/切块/p52_0_M18_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.8984,
+    0.8864,
+    0.8832
+   ]
+  },
+  {
+   "id": "p52_0_M18_2",
+   "type": "M18",
+   "station": "p52_0",
+   "rover": "M2020",
+   "site": 52,
+   "drive": 0,
+   "sols": [
+    1129
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    1.788,
+    -2.988
+   ],
+   "size_m": 1.0,
+   "px_m": 0.002,
+   "n_px": 500,
+   "gain": 1.74,
+   "height_range_m": 0.03343,
+   "h_rms_mm": 12.685,
+   "albedo_contrast": 0.104,
+   "rb_contrast": 0.0621,
+   "slope_rms_1cm_deg": 6.66,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 2.36,
+   "rgb_rel_station": [
+    0.9515,
+    0.9343,
+    0.906
+   ],
+   "decal": false,
+   "sub": "沙丘床面细沙纹",
+   "note": "Mount Washburn 一带：暗色沙床面，厘米级细沙纹（避开车辙）；沙床面背风坡有明暗残留（V 形暗区）",
+   "quality": {
+    "hole_frac": 0.0,
+    "shadow_frac": 0.0,
+    "frames": 4,
+    "illuminations": 3,
+    "nframes_med": 1.0,
+    "range_m": 3.38,
+    "footprint_mm": [
+     2.0,
+     2.6,
+     3.2
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.078
+   },
+   "flags": [],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p52_0/godot/p52_0_M18_2_albedo.png",
+    "height": "资料/地面材质/样块库/p52_0/godot/p52_0_M18_2_height.bin",
+    "npz": "资料/地面材质/样块库/p52_0/切块/p52_0_M18_2.npz",
+    "photo": "资料/地面材质/样块库/p52_0/切块/p52_0_M18_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0224,
+    1.0064,
+    0.9783
+   ]
+  },
+  {
+   "id": "p52_0_M18_3",
+   "type": "M18",
+   "station": "p52_0",
+   "rover": "M2020",
+   "site": 52,
+   "drive": 0,
+   "sols": [
+    1129
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -2.304,
+    -2.922
+   ],
+   "size_m": 1.0,
+   "px_m": 0.002,
+   "n_px": 500,
+   "gain": 1.42,
+   "height_range_m": 0.04096,
+   "h_rms_mm": 14.712,
+   "albedo_contrast": 0.0733,
+   "rb_contrast": 0.0281,
+   "slope_rms_1cm_deg": 9.48,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 1.91,
+   "rgb_rel_station": [
+    1.0157,
+    1.002,
+    0.9933
+   ],
+   "decal": false,
+   "sub": "沙丘床面细沙纹",
+   "note": "Mount Washburn 一带：暗色沙床面，厘米级细沙纹（避开车辙）；沙床面背风坡有明暗残留（V 形暗区）",
+   "quality": {
+    "hole_frac": 0.0,
+    "shadow_frac": 0.0,
+    "frames": 4,
+    "illuminations": 3,
+    "nframes_med": 2.0,
+    "range_m": 3.02,
+    "footprint_mm": [
+     1.7,
+     2.2,
+     2.7
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.078
+   },
+   "flags": [],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p52_0/godot/p52_0_M18_3_albedo.png",
+    "height": "资料/地面材质/样块库/p52_0/godot/p52_0_M18_3_height.bin",
+    "npz": "资料/地面材质/样块库/p52_0/切块/p52_0_M18_3.npz",
+    "photo": "资料/地面材质/样块库/p52_0/切块/p52_0_M18_3_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0914,
+    1.0793,
+    1.0726
+   ]
+  },
+  {
+   "id": "p9_2818_M18_1",
+   "type": "M18",
+   "station": "p9_2818",
+   "rover": "M2020",
+   "site": 9,
+   "drive": 2818,
+   "sols": [
+    341,
+    342
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -2.456,
+    -2.88
+   ],
+   "size_m": 1.0,
+   "px_m": 0.002,
+   "n_px": 500,
+   "gain": 2.34,
+   "height_range_m": 0.00947,
+   "h_rms_mm": 3.117,
+   "albedo_contrast": 0.0974,
+   "rb_contrast": 0.0511,
+   "slope_rms_1cm_deg": 4.9,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 3.36,
+   "rgb_rel_station": [
+    0.9223,
+    0.9466,
+    0.9623
+   ],
+   "decal": false,
+   "sub": "暗沙细沙纹 + 零星小砾",
+   "note": "Séítah 南出口：暗色沙，厘米级沙纹，零星卵石（避开东边旧车辙和西缘噪声）",
+   "quality": {
+    "hole_frac": 0.0,
+    "shadow_frac": 0.0,
+    "frames": 4,
+    "illuminations": 3,
+    "nframes_med": 2.0,
+    "range_m": 3.08,
+    "footprint_mm": [
+     1.8,
+     2.2,
+     2.8
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.122
+   },
+   "flags": [
+    "残余明暗（高通相关 0.12）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p9_2818/godot/p9_2818_M18_1_albedo.png",
+    "height": "资料/地面材质/样块库/p9_2818/godot/p9_2818_M18_1_height.bin",
+    "npz": "资料/地面材质/样块库/p9_2818/切块/p9_2818_M18_1.npz",
+    "photo": "资料/地面材质/样块库/p9_2818/切块/p9_2818_M18_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9911,
+    1.0196,
+    1.0391
+   ]
+  },
+  {
+   "id": "p9_2818_M18_2",
+   "type": "M18",
+   "station": "p9_2818",
+   "rover": "M2020",
+   "site": 9,
+   "drive": 2818,
+   "sols": [
+    341,
+    342
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    1.6,
+    -2.378
+   ],
+   "size_m": 1.0,
+   "px_m": 0.002,
+   "n_px": 500,
+   "gain": 2.3,
+   "height_range_m": 0.01241,
+   "h_rms_mm": 4.194,
+   "albedo_contrast": 0.1258,
+   "rb_contrast": 0.072,
+   "slope_rms_1cm_deg": 5.73,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 3.11,
+   "rgb_rel_station": [
+    0.9758,
+    0.9718,
+    0.9657
+   ],
+   "decal": false,
+   "sub": "暗沙细沙纹 + 零星小砾",
+   "note": "Séítah 南出口：暗色沙，厘米级沙纹，零星卵石（避开东边旧车辙和西缘噪声）",
+   "quality": {
+    "hole_frac": 0.0,
+    "shadow_frac": 0.0,
+    "frames": 4,
+    "illuminations": 3,
+    "nframes_med": 2.0,
+    "range_m": 2.82,
+    "footprint_mm": [
+     1.6,
+     2.0,
+     2.5
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.122
+   },
+   "flags": [
+    "残余明暗（高通相关 0.12）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p9_2818/godot/p9_2818_M18_2_albedo.png",
+    "height": "资料/地面材质/样块库/p9_2818/godot/p9_2818_M18_2_height.bin",
+    "npz": "资料/地面材质/样块库/p9_2818/切块/p9_2818_M18_2.npz",
+    "photo": "资料/地面材质/样块库/p9_2818/切块/p9_2818_M18_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0486,
+    1.0467,
+    1.0428
+   ]
+  },
+  {
+   "id": "p9_2818_M18_3",
+   "type": "M18",
+   "station": "p9_2818",
+   "rover": "M2020",
+   "site": 9,
+   "drive": 2818,
+   "sols": [
+    341,
+    342
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -2.236,
+    -3.882
+   ],
+   "size_m": 1.0,
+   "px_m": 0.002,
+   "n_px": 500,
+   "gain": 2.5,
+   "height_range_m": 0.019,
+   "h_rms_mm": 5.287,
+   "albedo_contrast": 0.1082,
+   "rb_contrast": 0.0523,
+   "slope_rms_1cm_deg": 7.17,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 3.65,
+   "rgb_rel_station": [
+    0.905,
+    0.9331,
+    0.9584
+   ],
+   "decal": false,
+   "sub": "暗沙细沙纹 + 零星小砾",
+   "note": "Séítah 南出口：暗色沙，厘米级沙纹，零星卵石（避开东边旧车辙和西缘噪声）",
+   "quality": {
+    "hole_frac": 0.0029,
+    "shadow_frac": 0.0006,
+    "frames": 4,
+    "illuminations": 3,
+    "nframes_med": 2.0,
+    "range_m": 3.8,
+    "footprint_mm": [
+     2.5,
+     3.1,
+     3.8
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.122
+   },
+   "flags": [
+    "残余明暗（高通相关 0.12）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p9_2818/godot/p9_2818_M18_3_albedo.png",
+    "height": "资料/地面材质/样块库/p9_2818/godot/p9_2818_M18_3_height.bin",
+    "npz": "资料/地面材质/样块库/p9_2818/切块/p9_2818_M18_3.npz",
+    "photo": "资料/地面材质/样块库/p9_2818/切块/p9_2818_M18_3_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9725,
+    1.0051,
+    1.0349
+   ]
+  },
+  {
+   "id": "p9_2818_M18_4",
+   "type": "M18",
+   "station": "p9_2818",
+   "rover": "M2020",
+   "site": 9,
+   "drive": 2818,
+   "sols": [
+    341,
+    342
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -1.456,
+    -2.722
+   ],
+   "size_m": 1.0,
+   "px_m": 0.002,
+   "n_px": 500,
+   "gain": 2.5,
+   "height_range_m": 0.0152,
+   "h_rms_mm": 3.857,
+   "albedo_contrast": 0.0955,
+   "rb_contrast": 0.057,
+   "slope_rms_1cm_deg": 7.47,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 3.21,
+   "rgb_rel_station": [
+    0.8588,
+    0.8366,
+    0.8253
+   ],
+   "decal": false,
+   "sub": "暗沙细沙纹 + 零星小砾",
+   "note": "Séítah 南出口：暗色沙，厘米级沙纹，零星卵石（避开东边旧车辙和西缘噪声）",
+   "quality": {
+    "hole_frac": 0.0047,
+    "shadow_frac": 0.0004,
+    "frames": 4,
+    "illuminations": 3,
+    "nframes_med": 2.0,
+    "range_m": 2.42,
+    "footprint_mm": [
+     1.3,
+     1.6,
+     2.1
+    ],
+    "seam_step_log": 0.0111,
+    "seam_step_mm": 1.39,
+    "shading_leak_r": 0.122
+   },
+   "flags": [
+    "残余明暗（高通相关 0.12）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p9_2818/godot/p9_2818_M18_4_albedo.png",
+    "height": "资料/地面材质/样块库/p9_2818/godot/p9_2818_M18_4_height.bin",
+    "npz": "资料/地面材质/样块库/p9_2818/切块/p9_2818_M18_4.npz",
+    "photo": "资料/地面材质/样块库/p9_2818/切块/p9_2818_M18_4_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9228,
+    0.9011,
+    0.8912
+   ]
+  },
+  {
+   "id": "m5_104_M19_1",
+   "type": "M19",
+   "station": "m5_104",
+   "rover": "MSL",
+   "site": 5,
+   "drive": 104,
+   "sols": [
+    60
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -0.617,
+    2.15
+   ],
+   "size_m": 0.8,
+   "px_m": 0.0025,
+   "n_px": 320,
+   "gain": 1.35,
+   "height_range_m": 0.01398,
+   "h_rms_mm": 5.412,
+   "albedo_contrast": 0.0575,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 6.17,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 4.77,
+   "rgb_rel_station": [
+    0.9918,
+    0.9918,
+    0.9918
+   ],
+   "decal": false,
+   "sub": "沙影颗粒面",
+   "note": "Rocknest 沙影：颗粒铺面的平滑沙，低对比（避开南边车辙和西边岩屑）",
+   "quality": {
+    "hole_frac": 0.0038,
+    "shadow_frac": 0.0,
+    "frames": 8,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 2.56,
+    "footprint_mm": [
+     3.6,
+     4.4,
+     5.3
+    ],
+    "seam_step_log": 0.0129,
+    "seam_step_mm": 2.76,
+    "shading_leak_r": 0.216
+   },
+   "flags": [
+    "残余明暗（高通相关 0.22）",
+    "单一光照",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m5_104/godot/m5_104_M19_1_albedo.png",
+    "height": "资料/地面材质/样块库/m5_104/godot/m5_104_M19_1_height.bin",
+    "npz": "资料/地面材质/样块库/m5_104/切块/m5_104_M19_1.npz",
+    "photo": "资料/地面材质/样块库/m5_104/切块/m5_104_M19_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0702,
+    1.0658,
+    1.0585
+   ]
+  },
+  {
+   "id": "m5_104_M19_2",
+   "type": "M19",
+   "station": "m5_104",
+   "rover": "MSL",
+   "site": 5,
+   "drive": 104,
+   "sols": [
+    60
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    0.183,
+    2.23
+   ],
+   "size_m": 0.8,
+   "px_m": 0.0025,
+   "n_px": 320,
+   "gain": 1.28,
+   "height_range_m": 0.00754,
+   "h_rms_mm": 2.02,
+   "albedo_contrast": 0.0549,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 5.93,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 4.92,
+   "rgb_rel_station": [
+    1.0061,
+    1.0061,
+    1.0061
+   ],
+   "decal": false,
+   "sub": "沙影颗粒面",
+   "note": "Rocknest 沙影：颗粒铺面的平滑沙，低对比（避开南边车辙和西边岩屑）",
+   "quality": {
+    "hole_frac": 0.05,
+    "shadow_frac": 0.0,
+    "frames": 8,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 2.69,
+    "footprint_mm": [
+     3.8,
+     4.7,
+     5.7
+    ],
+    "seam_step_log": 0.0307,
+    "seam_step_mm": 2.18,
+    "shading_leak_r": 0.216
+   },
+   "flags": [
+    "残余明暗（高通相关 0.22）",
+    "单一光照",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m5_104/godot/m5_104_M19_2_albedo.png",
+    "height": "资料/地面材质/样块库/m5_104/godot/m5_104_M19_2_height.bin",
+    "npz": "资料/地面材质/样块库/m5_104/切块/m5_104_M19_2.npz",
+    "photo": "资料/地面材质/样块库/m5_104/切块/m5_104_M19_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0857,
+    1.0812,
+    1.0738
+   ]
+  },
+  {
+   "id": "p82_2866_M19_1",
+   "type": "M19",
+   "station": "p82_2866",
+   "rover": "M2020",
+   "site": 82,
+   "drive": 2866,
+   "sols": [
+    1704
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -3.701,
+    -0.246
+   ],
+   "size_m": 1.2,
+   "px_m": 0.003,
+   "n_px": 400,
+   "gain": 1.71,
+   "height_range_m": 0.01226,
+   "h_rms_mm": 3.979,
+   "albedo_contrast": 0.0657,
+   "rb_contrast": 0.0443,
+   "slope_rms_1cm_deg": 3.17,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 1.93,
+   "rgb_rel_station": [
+    0.9446,
+    0.954,
+    0.98
+   ],
+   "decal": false,
+   "sub": "颗粒沙席",
+   "note": "坑缘外沙席：细沙上的颗粒薄层与低矮颗粒波纹，对比很低",
+   "quality": {
+    "hole_frac": 0.0,
+    "shadow_frac": 0.0,
+    "frames": 4,
+    "illuminations": 1,
+    "nframes_med": 2.0,
+    "range_m": 3.12,
+    "footprint_mm": [
+     3.4,
+     4.6,
+     6.0
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.117
+   },
+   "flags": [
+    "单一光照",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p82_2866/godot/p82_2866_M19_1_albedo.png",
+    "height": "资料/地面材质/样块库/p82_2866/godot/p82_2866_M19_1_height.bin",
+    "npz": "资料/地面材质/样块库/p82_2866/切块/p82_2866_M19_1.npz",
+    "photo": "资料/地面材质/样块库/p82_2866/切块/p82_2866_M19_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0193,
+    1.0252,
+    1.0459
+   ]
+  },
+  {
+   "id": "p82_2866_M19_2",
+   "type": "M19",
+   "station": "p82_2866",
+   "rover": "M2020",
+   "site": 82,
+   "drive": 2866,
+   "sols": [
+    1704
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -3.833,
+    0.954
+   ],
+   "size_m": 1.2,
+   "px_m": 0.003,
+   "n_px": 400,
+   "gain": 1.74,
+   "height_range_m": 0.01274,
+   "h_rms_mm": 6.089,
+   "albedo_contrast": 0.0499,
+   "rb_contrast": 0.0359,
+   "slope_rms_1cm_deg": 4.1,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 2.08,
+   "rgb_rel_station": [
+    0.9979,
+    0.9893,
+    0.9951
+   ],
+   "decal": false,
+   "sub": "颗粒沙席",
+   "note": "坑缘外沙席：细沙上的颗粒薄层与低矮颗粒波纹，对比很低",
+   "quality": {
+    "hole_frac": 0.0,
+    "shadow_frac": 0.0,
+    "frames": 4,
+    "illuminations": 1,
+    "nframes_med": 2.0,
+    "range_m": 3.59,
+    "footprint_mm": [
+     4.3,
+     5.6,
+     7.2
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.117
+   },
+   "flags": [
+    "单一光照",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p82_2866/godot/p82_2866_M19_2_albedo.png",
+    "height": "资料/地面材质/样块库/p82_2866/godot/p82_2866_M19_2_height.bin",
+    "npz": "资料/地面材质/样块库/p82_2866/切块/p82_2866_M19_2.npz",
+    "photo": "资料/地面材质/样块库/p82_2866/切块/p82_2866_M19_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0768,
+    1.0631,
+    1.062
+   ]
+  },
+  {
+   "id": "p82_2866_M19_3",
+   "type": "M19",
+   "station": "p82_2866",
+   "rover": "M2020",
+   "site": 82,
+   "drive": 2866,
+   "sols": [
+    1704
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -2.201,
+    2.832
+   ],
+   "size_m": 1.2,
+   "px_m": 0.003,
+   "n_px": 400,
+   "gain": 1.65,
+   "height_range_m": 0.02804,
+   "h_rms_mm": 8.385,
+   "albedo_contrast": 0.0443,
+   "rb_contrast": 0.0311,
+   "slope_rms_1cm_deg": 8.48,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 3.74,
+   "rgb_rel_station": [
+    0.9616,
+    0.9816,
+    0.9898
+   ],
+   "decal": false,
+   "sub": "颗粒沙席",
+   "note": "坑缘外沙席：细沙上的颗粒薄层与低矮颗粒波纹，对比很低",
+   "quality": {
+    "hole_frac": 0.0123,
+    "shadow_frac": 0.0,
+    "frames": 4,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 3.79,
+    "footprint_mm": [
+     4.7,
+     6.1,
+     7.8
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.117
+   },
+   "flags": [
+    "单一光照",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p82_2866/godot/p82_2866_M19_3_albedo.png",
+    "height": "资料/地面材质/样块库/p82_2866/godot/p82_2866_M19_3_height.bin",
+    "npz": "资料/地面材质/样块库/p82_2866/切块/p82_2866_M19_3.npz",
+    "photo": "资料/地面材质/样块库/p82_2866/切块/p82_2866_M19_3_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0376,
+    1.0548,
+    1.0564
+   ]
+  },
+  {
+   "id": "p82_2866_M19_4",
+   "type": "M19",
+   "station": "p82_2866",
+   "rover": "M2020",
+   "site": 82,
+   "drive": 2866,
+   "sols": [
+    1705
+   ],
+   "camera": "Mastcam-Z 110 mm",
+   "enu_x0y0": [
+    -1.038,
+    3.216
+   ],
+   "size_m": 0.512,
+   "px_m": 0.0005,
+   "n_px": 1024,
+   "gain": 2.5,
+   "height_range_m": 0.01692,
+   "h_rms_mm": 5.342,
+   "albedo_contrast": 0.0628,
+   "rb_contrast": 0.0772,
+   "slope_rms_1cm_deg": 6.92,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 3.91,
+   "rgb_rel_station": [
+    0.7003,
+    0.7025,
+    0.7025
+   ],
+   "decal": false,
+   "sub": null,
+   "note": "Mastcam-Z 110 mm zcam09790 拼图，亚毫米",
+   "quality": {
+    "hole_frac": 0.1535,
+    "shadow_frac": 0.0124,
+    "frames": 1,
+    "illuminations": 1,
+    "nframes_med": null,
+    "range_m": null,
+    "footprint_mm": null,
+    "seam_step_log": null,
+    "seam_step_mm": null,
+    "shading_leak_r": null
+   },
+   "flags": [
+    "空洞多",
+    "单光照近似去光影",
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p82_2866/godot/p82_2866_M19_4_albedo.png",
+    "height": "资料/地面材质/样块库/p82_2866/godot/p82_2866_M19_4_height.bin",
+    "npz": "资料/地面材质/样块库/p82_2866/切块/p82_2866_M19_4.npz",
+    "photo": "资料/地面材质/样块库/p82_2866/切块/p82_2866_M19_4_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.7557,
+    0.7549,
+    0.7498
+   ]
+  },
+  {
+   "id": "m105_418_M20_1",
+   "type": "M20",
+   "station": "m105_418",
+   "rover": "MSL",
+   "site": 105,
+   "drive": 418,
+   "sols": [
+    4002,
+    4003,
+    4004,
+    4005,
+    4006,
+    4007,
+    4008,
+    4009
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    0.01,
+    -2.935
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 1.7,
+   "height_range_m": 0.04105,
+   "h_rms_mm": 12.372,
+   "albedo_contrast": 0.1804,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 10.27,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 6.02,
+   "rgb_rel_station": [
+    1.0377,
+    1.0377,
+    1.0377
+   ],
+   "decal": false,
+   "sub": "裂隙板 + 填沙节理",
+   "note": "浅色交错层理硫酸盐板，节理里填暗色颗粒沙",
+   "quality": {
+    "hole_frac": 0.0009,
+    "shadow_frac": 0.0002,
+    "frames": 16,
+    "illuminations": 12,
+    "nframes_med": 16.0,
+    "range_m": 2.49,
+    "footprint_mm": [
+     3.3,
+     4.2,
+     5.4
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.053
+   },
+   "flags": [
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m105_418/godot/m105_418_M20_1_albedo.png",
+    "height": "资料/地面材质/样块库/m105_418/godot/m105_418_M20_1_height.bin",
+    "npz": "资料/地面材质/样块库/m105_418/切块/m105_418_M20_1.npz",
+    "photo": "资料/地面材质/样块库/m105_418/切块/m105_418_M20_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9466,
+    0.9466,
+    0.9466
+   ]
+  },
+  {
+   "id": "m105_418_M20_2",
+   "type": "M20",
+   "station": "m105_418",
+   "rover": "MSL",
+   "site": 105,
+   "drive": 418,
+   "sols": [
+    4002,
+    4003,
+    4004,
+    4005,
+    4006,
+    4007,
+    4008,
+    4009
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    0.013,
+    -3.938
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 1.89,
+   "height_range_m": 0.03915,
+   "h_rms_mm": 10.299,
+   "albedo_contrast": 0.2024,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 11.36,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 5.73,
+   "rgb_rel_station": [
+    1.1209,
+    1.1209,
+    1.1209
+   ],
+   "decal": false,
+   "sub": "裂隙板 + 填沙节理",
+   "note": "浅色交错层理硫酸盐板，节理里填暗色颗粒沙",
+   "quality": {
+    "hole_frac": 0.0408,
+    "shadow_frac": 0.0012,
+    "frames": 16,
+    "illuminations": 12,
+    "nframes_med": 16.0,
+    "range_m": 3.48,
+    "footprint_mm": [
+     5.4,
+     6.8,
+     8.4
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.053
+   },
+   "flags": [
+    "远处像素足迹大于格距（反照率偏糊）",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m105_418/godot/m105_418_M20_2_albedo.png",
+    "height": "资料/地面材质/样块库/m105_418/godot/m105_418_M20_2_height.bin",
+    "npz": "资料/地面材质/样块库/m105_418/切块/m105_418_M20_2.npz",
+    "photo": "资料/地面材质/样块库/m105_418/切块/m105_418_M20_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0225,
+    1.0225,
+    1.0225
+   ]
+  },
+  {
+   "id": "m106_660_M20_1",
+   "type": "M20",
+   "station": "m106_660",
+   "rover": "MSL",
+   "site": 106,
+   "drive": 660,
+   "sols": [
+    4116
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -3.13,
+    -2.05
+   ],
+   "size_m": 0.8,
+   "px_m": 0.0025,
+   "n_px": 320,
+   "gain": 1.68,
+   "height_range_m": 0.04175,
+   "h_rms_mm": 13.818,
+   "albedo_contrast": 0.2115,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 13.1,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 5.7,
+   "rgb_rel_station": [
+    1.2727,
+    1.2727,
+    1.2727
+   ],
+   "decal": false,
+   "sub": "裂隙板（河道边）",
+   "note": "Gediz Vallis 河道边的浅色裂隙板，缝里填暗沙",
+   "quality": {
+    "hole_frac": 0.0094,
+    "shadow_frac": 0.0,
+    "frames": 8,
+    "illuminations": 7,
+    "nframes_med": 4.0,
+    "range_m": 3.19,
+    "footprint_mm": [
+     4.9,
+     5.9,
+     7.1
+    ],
+    "seam_step_log": 0.0248,
+    "seam_step_mm": 0.5,
+    "shading_leak_r": 0.127
+   },
+   "flags": [
+    "残余明暗（高通相关 0.13）",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m106_660/godot/m106_660_M20_1_albedo.png",
+    "height": "资料/地面材质/样块库/m106_660/godot/m106_660_M20_1_height.bin",
+    "npz": "资料/地面材质/样块库/m106_660/切块/m106_660_M20_1.npz",
+    "photo": "资料/地面材质/样块库/m106_660/切块/m106_660_M20_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.1609,
+    1.1609,
+    1.1609
+   ]
+  },
+  {
+   "id": "m106_660_M20_2",
+   "type": "M20",
+   "station": "m106_660",
+   "rover": "MSL",
+   "site": 106,
+   "drive": 660,
+   "sols": [
+    4116
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -2.143,
+    -1.85
+   ],
+   "size_m": 0.8,
+   "px_m": 0.0025,
+   "n_px": 320,
+   "gain": 1.8,
+   "height_range_m": 0.04961,
+   "h_rms_mm": 12.466,
+   "albedo_contrast": 0.2233,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 14.45,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 5.93,
+   "rgb_rel_station": [
+    1.1788,
+    1.1788,
+    1.1788
+   ],
+   "decal": false,
+   "sub": "裂隙板（河道边）",
+   "note": "Gediz Vallis 河道边的浅色裂隙板，缝里填暗沙",
+   "quality": {
+    "hole_frac": 0.0733,
+    "shadow_frac": 0.0,
+    "frames": 8,
+    "illuminations": 7,
+    "nframes_med": 4.0,
+    "range_m": 2.27,
+    "footprint_mm": [
+     3.1,
+     3.8,
+     4.6
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.127
+   },
+   "flags": [
+    "残余明暗（高通相关 0.13）",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m106_660/godot/m106_660_M20_2_albedo.png",
+    "height": "资料/地面材质/样块库/m106_660/godot/m106_660_M20_2_height.bin",
+    "npz": "资料/地面材质/样块库/m106_660/切块/m106_660_M20_2.npz",
+    "photo": "资料/地面材质/样块库/m106_660/切块/m106_660_M20_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0753,
+    1.0753,
+    1.0753
+   ]
+  },
+  {
+   "id": "m106_660_M20_3",
+   "type": "M20",
+   "station": "m106_660",
+   "rover": "MSL",
+   "site": 106,
+   "drive": 660,
+   "sols": [
+    4116
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -3.855,
+    -1.25
+   ],
+   "size_m": 0.8,
+   "px_m": 0.0025,
+   "n_px": 320,
+   "gain": 2.4,
+   "height_range_m": 0.05322,
+   "h_rms_mm": 16.505,
+   "albedo_contrast": 0.1906,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 16.14,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 5.77,
+   "rgb_rel_station": [
+    1.0859,
+    1.0859,
+    1.0859
+   ],
+   "decal": false,
+   "sub": "裂隙板（河道边）",
+   "note": "Gediz Vallis 河道边的浅色裂隙板，缝里填暗沙",
+   "quality": {
+    "hole_frac": 0.0057,
+    "shadow_frac": 0.0001,
+    "frames": 8,
+    "illuminations": 7,
+    "nframes_med": 4.0,
+    "range_m": 3.56,
+    "footprint_mm": [
+     5.9,
+     7.0,
+     8.3
+    ],
+    "seam_step_log": 0.0074,
+    "seam_step_mm": 1.06,
+    "shading_leak_r": 0.127
+   },
+   "flags": [
+    "残余明暗（高通相关 0.13）",
+    "远处像素足迹大于格距（反照率偏糊）",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m106_660/godot/m106_660_M20_3_albedo.png",
+    "height": "资料/地面材质/样块库/m106_660/godot/m106_660_M20_3_height.bin",
+    "npz": "资料/地面材质/样块库/m106_660/切块/m106_660_M20_3.npz",
+    "photo": "资料/地面材质/样块库/m106_660/切块/m106_660_M20_3_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9905,
+    0.9905,
+    0.9905
+   ]
+  },
+  {
+   "id": "m87_2578_M20_1",
+   "type": "M20",
+   "station": "m87_2578",
+   "rover": "MSL",
+   "site": 87,
+   "drive": 2578,
+   "sols": [
+    3088,
+    3092,
+    3104,
+    3107
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -1.282,
+    2.353
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 1.65,
+   "height_range_m": 0.01451,
+   "h_rms_mm": 3.307,
+   "albedo_contrast": 0.103,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 5.82,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 6.12,
+   "rgb_rel_station": [
+    1.0053,
+    1.0053,
+    1.0053
+   ],
+   "decal": false,
+   "sub": "板状层状基岩",
+   "note": "黏土–硫酸盐过渡带的平板状层状基岩，板缘小坎",
+   "quality": {
+    "hole_frac": 0.0007,
+    "shadow_frac": 0.0,
+    "frames": 8,
+    "illuminations": 5,
+    "nframes_med": 4.0,
+    "range_m": 2.96,
+    "footprint_mm": [
+     4.2,
+     5.3,
+     6.7
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.177
+   },
+   "flags": [
+    "残余明暗（高通相关 0.18）",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m87_2578/godot/m87_2578_M20_1_albedo.png",
+    "height": "资料/地面材质/样块库/m87_2578/godot/m87_2578_M20_1_height.bin",
+    "npz": "资料/地面材质/样块库/m87_2578/切块/m87_2578_M20_1.npz",
+    "photo": "资料/地面材质/样块库/m87_2578/切块/m87_2578_M20_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.917,
+    0.917,
+    0.917
+   ]
+  },
+  {
+   "id": "m87_2578_M20_2",
+   "type": "M20",
+   "station": "m87_2578",
+   "rover": "MSL",
+   "site": 87,
+   "drive": 2578,
+   "sols": [
+    3088,
+    3092,
+    3104,
+    3107
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -1.9,
+    1.35
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 1.6,
+   "height_range_m": 0.02993,
+   "h_rms_mm": 5.279,
+   "albedo_contrast": 0.1156,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 6.76,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 5.79,
+   "rgb_rel_station": [
+    0.9924,
+    0.9924,
+    0.9924
+   ],
+   "decal": false,
+   "sub": "板状层状基岩",
+   "note": "黏土–硫酸盐过渡带的平板状层状基岩，板缘小坎",
+   "quality": {
+    "hole_frac": 0.0102,
+    "shadow_frac": 0.0001,
+    "frames": 8,
+    "illuminations": 5,
+    "nframes_med": 4.0,
+    "range_m": 2.32,
+    "footprint_mm": [
+     3.0,
+     3.9,
+     5.0
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.177
+   },
+   "flags": [
+    "残余明暗（高通相关 0.18）",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m87_2578/godot/m87_2578_M20_2_albedo.png",
+    "height": "资料/地面材质/样块库/m87_2578/godot/m87_2578_M20_2_height.bin",
+    "npz": "资料/地面材质/样块库/m87_2578/切块/m87_2578_M20_2.npz",
+    "photo": "资料/地面材质/样块库/m87_2578/切块/m87_2578_M20_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9052,
+    0.9052,
+    0.9052
+   ]
+  },
+  {
+   "id": "m95_3152_M20_1",
+   "type": "M20",
+   "station": "m95_3152",
+   "rover": "MSL",
+   "site": 95,
+   "drive": 3152,
+   "sols": [
+    3511,
+    3512,
+    3513,
+    3515,
+    3527
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -0.102,
+    1.735
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 1.26,
+   "height_range_m": 0.01224,
+   "h_rms_mm": 4.295,
+   "albedo_contrast": 0.078,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 5.12,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 6.27,
+   "rgb_rel_station": [
+    1.1325,
+    1.1325,
+    1.1325
+   ],
+   "decal": false,
+   "sub": "平整层状基岩",
+   "note": "平整浅色基岩，发丝状细裂纹，零星暗色碎屑",
+   "quality": {
+    "hole_frac": 0.0,
+    "shadow_frac": 0.0,
+    "frames": 7,
+    "illuminations": 7,
+    "nframes_med": 7.0,
+    "range_m": 2.27,
+    "footprint_mm": [
+     2.9,
+     3.8,
+     4.9
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.139
+   },
+   "flags": [
+    "残余明暗（高通相关 0.14）",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m95_3152/godot/m95_3152_M20_1_albedo.png",
+    "height": "资料/地面材质/样块库/m95_3152/godot/m95_3152_M20_1_height.bin",
+    "npz": "资料/地面材质/样块库/m95_3152/切块/m95_3152_M20_1.npz",
+    "photo": "资料/地面材质/样块库/m95_3152/切块/m95_3152_M20_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.033,
+    1.033,
+    1.033
+   ]
+  },
+  {
+   "id": "m95_3152_M20_2",
+   "type": "M20",
+   "station": "m95_3152",
+   "rover": "MSL",
+   "site": 95,
+   "drive": 3152,
+   "sols": [
+    3511,
+    3512,
+    3513,
+    3515,
+    3527
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    0.213,
+    2.735
+   ],
+   "size_m": 1.0,
+   "px_m": 0.0025,
+   "n_px": 400,
+   "gain": 1.69,
+   "height_range_m": 0.0379,
+   "h_rms_mm": 13.32,
+   "albedo_contrast": 0.119,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 10.26,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 6.6,
+   "rgb_rel_station": [
+    1.0682,
+    1.0682,
+    1.0682
+   ],
+   "decal": false,
+   "sub": "平整层状基岩",
+   "note": "平整浅色基岩，发丝状细裂纹，零星暗色碎屑",
+   "quality": {
+    "hole_frac": 0.0053,
+    "shadow_frac": 0.0,
+    "frames": 7,
+    "illuminations": 7,
+    "nframes_med": 7.0,
+    "range_m": 3.31,
+    "footprint_mm": [
+     5.0,
+     6.3,
+     7.8
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.139
+   },
+   "flags": [
+    "残余明暗（高通相关 0.14）",
+    "远处像素足迹大于格距（反照率偏糊）",
+    "单色（Navcam 全色）"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m95_3152/godot/m95_3152_M20_2_albedo.png",
+    "height": "资料/地面材质/样块库/m95_3152/godot/m95_3152_M20_2_height.bin",
+    "npz": "资料/地面材质/样块库/m95_3152/切块/m95_3152_M20_2.npz",
+    "photo": "资料/地面材质/样块库/m95_3152/切块/m95_3152_M20_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9744,
+    0.9744,
+    0.9744
+   ]
+  },
+  {
+   "id": "m105_106_M21_1",
+   "type": "M21",
+   "station": "m105_106",
+   "rover": "MSL",
+   "site": 105,
+   "drive": 106,
+   "sols": [
+    3960,
+    3962
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -3.208,
+    1.027
+   ],
+   "size_m": 0.8,
+   "px_m": 0.0025,
+   "n_px": 320,
+   "gain": 2.17,
+   "height_range_m": 0.02963,
+   "h_rms_mm": 10.015,
+   "albedo_contrast": 0.2434,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 10.43,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 5.72,
+   "rgb_rel_station": [
+    1.0853,
+    1.0853,
+    1.0853
+   ],
+   "decal": false,
+   "sub": "沙上棱角块石",
+   "note": "0.1–1 m 棱角块石密布在暗沙上；块后被挡的地方多，补洞比例高（避开 y>2.2 的车辙）",
+   "quality": {
+    "hole_frac": 0.0059,
+    "shadow_frac": 0.0,
+    "frames": 9,
+    "illuminations": 1,
+    "nframes_med": 1.0,
+    "range_m": 3.15,
+    "footprint_mm": [
+     4.8,
+     5.8,
+     7.0
+    ],
+    "seam_step_log": 0.0209,
+    "seam_step_mm": 1.9,
+    "shading_leak_r": 0.164
+   },
+   "flags": [
+    "残余明暗（高通相关 0.16）",
+    "单一光照",
+    "单色（Navcam 全色）",
+    "块石背后遮挡，补洞多"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m105_106/godot/m105_106_M21_1_albedo.png",
+    "height": "资料/地面材质/样块库/m105_106/godot/m105_106_M21_1_height.bin",
+    "npz": "资料/地面材质/样块库/m105_106/切块/m105_106_M21_1.npz",
+    "photo": "资料/地面材质/样块库/m105_106/切块/m105_106_M21_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.962,
+    0.962,
+    0.962
+   ]
+  },
+  {
+   "id": "m105_106_M21_2",
+   "type": "M21",
+   "station": "m105_106",
+   "rover": "MSL",
+   "site": 105,
+   "drive": 106,
+   "sols": [
+    3960,
+    3962
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -4.26,
+    -0.895
+   ],
+   "size_m": 0.8,
+   "px_m": 0.0025,
+   "n_px": 320,
+   "gain": 2.5,
+   "height_range_m": 0.03324,
+   "h_rms_mm": 9.985,
+   "albedo_contrast": 0.2177,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 13.1,
+   "lam_dom_cm": 35.4,
+   "psd_beta": 5.83,
+   "rgb_rel_station": [
+    1.1909,
+    1.1909,
+    1.1909
+   ],
+   "decal": false,
+   "sub": "沙上棱角块石",
+   "note": "0.1–1 m 棱角块石密布在暗沙上；块后被挡的地方多，补洞比例高（避开 y>2.2 的车辙）",
+   "quality": {
+    "hole_frac": 0.0293,
+    "shadow_frac": 0.0036,
+    "frames": 9,
+    "illuminations": 1,
+    "nframes_med": 2.0,
+    "range_m": 3.89,
+    "footprint_mm": [
+     6.8,
+     8.1,
+     9.5
+    ],
+    "seam_step_log": 0.0027,
+    "seam_step_mm": 0.22,
+    "shading_leak_r": 0.164
+   },
+   "flags": [
+    "残余明暗（高通相关 0.16）",
+    "远处像素足迹大于格距（反照率偏糊）",
+    "单一光照",
+    "单色（Navcam 全色）",
+    "块石背后遮挡，补洞多"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m105_106/godot/m105_106_M21_2_albedo.png",
+    "height": "资料/地面材质/样块库/m105_106/godot/m105_106_M21_2_height.bin",
+    "npz": "资料/地面材质/样块库/m105_106/切块/m105_106_M21_2.npz",
+    "photo": "资料/地面材质/样块库/m105_106/切块/m105_106_M21_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0556,
+    1.0556,
+    1.0556
+   ]
+  },
+  {
+   "id": "m105_106_M21_3",
+   "type": "M21",
+   "station": "m105_106",
+   "rover": "MSL",
+   "site": 105,
+   "drive": 106,
+   "sols": [
+    3960,
+    3962
+   ],
+   "camera": "MSL Navcam",
+   "enu_x0y0": [
+    -2.473,
+    0.225
+   ],
+   "size_m": 0.8,
+   "px_m": 0.0025,
+   "n_px": 320,
+   "gain": 2.5,
+   "height_range_m": 0.07268,
+   "h_rms_mm": 23.781,
+   "albedo_contrast": 0.2999,
+   "rb_contrast": 0.0,
+   "slope_rms_1cm_deg": 18.69,
+   "lam_dom_cm": 44.6,
+   "psd_beta": 5.33,
+   "rgb_rel_station": [
+    1.111,
+    1.111,
+    1.111
+   ],
+   "decal": false,
+   "sub": "沙上棱角块石",
+   "note": "0.1–1 m 棱角块石密布在暗沙上；块后被挡的地方多，补洞比例高（避开 y>2.2 的车辙）",
+   "quality": {
+    "hole_frac": 0.0336,
+    "shadow_frac": 0.0136,
+    "frames": 9,
+    "illuminations": 1,
+    "nframes_med": 2.0,
+    "range_m": 2.16,
+    "footprint_mm": [
+     2.9,
+     3.6,
+     4.4
+    ],
+    "seam_step_log": 0.0112,
+    "seam_step_mm": 2.1,
+    "shading_leak_r": 0.164
+   },
+   "flags": [
+    "残余明暗（高通相关 0.16）",
+    "单一光照",
+    "单色（Navcam 全色）",
+    "块石背后遮挡，补洞多"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/m105_106/godot/m105_106_M21_3_albedo.png",
+    "height": "资料/地面材质/样块库/m105_106/godot/m105_106_M21_3_height.bin",
+    "npz": "资料/地面材质/样块库/m105_106/切块/m105_106_M21_3.npz",
+    "photo": "资料/地面材质/样块库/m105_106/切块/m105_106_M21_3_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.9848,
+    0.9848,
+    0.9848
+   ]
+  },
+  {
+   "id": "p56_1010_M22_1",
+   "type": "M22",
+   "station": "p56_1010",
+   "rover": "M2020",
+   "site": 56,
+   "drive": 1010,
+   "sols": [
+    1220,
+    1221,
+    1222
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -3.552,
+    0.694
+   ],
+   "size_m": 1.2,
+   "px_m": 0.003,
+   "n_px": 400,
+   "gain": 2.19,
+   "height_range_m": 0.03582,
+   "h_rms_mm": 8.974,
+   "albedo_contrast": 0.2139,
+   "rb_contrast": 0.0669,
+   "slope_rms_1cm_deg": 13.87,
+   "lam_dom_cm": 28.1,
+   "psd_beta": 4.95,
+   "rgb_rel_station": [
+    1.2199,
+    1.2224,
+    1.2269
+   ],
+   "decal": false,
+   "sub": "棱角碎屑/角砾面",
+   "note": "坑缘脚下：棱角岩屑与半埋的角砾状岩块，块间细粒",
+   "quality": {
+    "hole_frac": 0.003,
+    "shadow_frac": 0.0001,
+    "frames": 8,
+    "illuminations": 3,
+    "nframes_med": 2.0,
+    "range_m": 3.22,
+    "footprint_mm": [
+     3.6,
+     4.8,
+     6.2
+    ],
+    "seam_step_log": 0.0,
+    "seam_step_mm": 0.0,
+    "shading_leak_r": 0.104
+   },
+   "flags": [
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p56_1010/godot/p56_1010_M22_1_albedo.png",
+    "height": "资料/地面材质/样块库/p56_1010/godot/p56_1010_M22_1_height.bin",
+    "npz": "资料/地面材质/样块库/p56_1010/切块/p56_1010_M22_1.npz",
+    "photo": "资料/地面材质/样块库/p56_1010/切块/p56_1010_M22_1_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.0366,
+    1.0417,
+    1.0473
+   ]
+  },
+  {
+   "id": "p56_1010_M22_2",
+   "type": "M22",
+   "station": "p56_1010",
+   "rover": "M2020",
+   "site": 56,
+   "drive": 1010,
+   "sols": [
+    1220,
+    1221,
+    1222
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -2.655,
+    -2.417
+   ],
+   "size_m": 1.2,
+   "px_m": 0.003,
+   "n_px": 400,
+   "gain": 2.5,
+   "height_range_m": 0.05469,
+   "h_rms_mm": 11.132,
+   "albedo_contrast": 0.2581,
+   "rb_contrast": 0.0756,
+   "slope_rms_1cm_deg": 17.14,
+   "lam_dom_cm": 22.4,
+   "psd_beta": 4.92,
+   "rgb_rel_station": [
+    0.9597,
+    0.9465,
+    0.9377
+   ],
+   "decal": false,
+   "sub": "棱角碎屑/角砾面",
+   "note": "坑缘脚下：棱角岩屑与半埋的角砾状岩块，块间细粒",
+   "quality": {
+    "hole_frac": 0.011,
+    "shadow_frac": 0.0,
+    "frames": 8,
+    "illuminations": 3,
+    "nframes_med": 4.0,
+    "range_m": 2.74,
+    "footprint_mm": [
+     2.8,
+     3.8,
+     5.1
+    ],
+    "seam_step_log": 0.0061,
+    "seam_step_mm": 2.15,
+    "shading_leak_r": 0.104
+   },
+   "flags": [
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p56_1010/godot/p56_1010_M22_2_albedo.png",
+    "height": "资料/地面材质/样块库/p56_1010/godot/p56_1010_M22_2_height.bin",
+    "npz": "资料/地面材质/样块库/p56_1010/切块/p56_1010_M22_2.npz",
+    "photo": "资料/地面材质/样块库/p56_1010/切块/p56_1010_M22_2_照片.npy"
+   },
+   "rgb_rel_type": [
+    0.8155,
+    0.8066,
+    0.8004
+   ]
+  },
+  {
+   "id": "p56_1010_M22_3",
+   "type": "M22",
+   "station": "p56_1010",
+   "rover": "M2020",
+   "site": 56,
+   "drive": 1010,
+   "sols": [
+    1220,
+    1221,
+    1222
+   ],
+   "camera": "M2020 Navcam",
+   "enu_x0y0": [
+    -3.294,
+    1.894
+   ],
+   "size_m": 1.2,
+   "px_m": 0.003,
+   "n_px": 400,
+   "gain": 2.36,
+   "height_range_m": 0.0397,
+   "h_rms_mm": 8.429,
+   "albedo_contrast": 0.217,
+   "rb_contrast": 0.0613,
+   "slope_rms_1cm_deg": 14.58,
+   "lam_dom_cm": 22.4,
+   "psd_beta": 4.15,
+   "rgb_rel_station": [
+    1.392,
+    1.3965,
+    1.3976
+   ],
+   "decal": false,
+   "sub": "棱角碎屑/角砾面",
+   "note": "坑缘脚下：棱角岩屑与半埋的角砾状岩块，块间细粒",
+   "quality": {
+    "hole_frac": 0.056,
+    "shadow_frac": 0.0,
+    "frames": 8,
+    "illuminations": 3,
+    "nframes_med": 1.0,
+    "range_m": 3.67,
+    "footprint_mm": [
+     4.5,
+     5.8,
+     7.5
+    ],
+    "seam_step_log": 0.0125,
+    "seam_step_mm": 1.96,
+    "shading_leak_r": 0.104
+   },
+   "flags": [
+    "半分辨率"
+   ],
+   "files": {
+    "albedo": "资料/地面材质/样块库/p56_1010/godot/p56_1010_M22_3_albedo.png",
+    "height": "资料/地面材质/样块库/p56_1010/godot/p56_1010_M22_3_height.bin",
+    "npz": "资料/地面材质/样块库/p56_1010/切块/p56_1010_M22_3.npz",
+    "photo": "资料/地面材质/样块库/p56_1010/切块/p56_1010_M22_3_照片.npy"
+   },
+   "rgb_rel_type": [
+    1.1829,
+    1.1901,
+    1.193
+   ]
+  }
+ ]
+}

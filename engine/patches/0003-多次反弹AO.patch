@@ -1,0 +1,93 @@
+From 552e36ffa84f60342f81c34b3240d3539cfcbd06 Mon Sep 17 00:00:00 2001
+From: mars <mars@local>
+Date: Tue, 6 Oct 2026 13:29:05 -0400
+Subject: [PATCH 3/4] =?UTF-8?q?=E7=A7=BB=E6=A4=8D=20#115426=EF=BC=9A?=
+ =?UTF-8?q?=E5=A4=9A=E6=AC=A1=E5=8F=8D=E5=BC=B9=20AO=EF=BC=884.8=EF=BC=8C?=
+ =?UTF-8?q?=E6=8C=89=E5=8F=8D=E7=85=A7=E7=8E=87=E9=80=90=E9=80=9A=E9=81=93?=
+ =?UTF-8?q?=EF=BC=89=E2=86=92=204.7.2?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+来源 https://github.com/godotengine/godot/pull/115426（2026-08-25 合并）。
+项目设置 rendering/lights_and_shadows/multi_bounce_occlusion/enabled（需重启，默认 false）。
+冲突：rendering_server.cpp 与补丁 0002 的设置相邻，手工合并；editor_node.cpp 那一处只是新建项目的默认值（4.7.2 结构不同），跳过。
+用途：被遮挡处的环境光按反照率逐通道变红（Jimenez 2016），对应 地形GI设计.md §1 的偏色。未编译验证。
+---
+ doc/classes/ProjectSettings.xml                     |  3 +++
+ .../forward_clustered/render_forward_clustered.cpp  |  5 +++++
+ .../forward_clustered/scene_forward_clustered.glsl  | 13 +++++++++++++
+ servers/rendering/rendering_server.cpp              |  2 ++
+ 4 files changed, 23 insertions(+)
+
+diff --git a/doc/classes/ProjectSettings.xml b/doc/classes/ProjectSettings.xml
+index ada13a6..d64d5ae 100644
+--- a/doc/classes/ProjectSettings.xml
++++ b/doc/classes/ProjectSettings.xml
+@@ -3181,6 +3181,9 @@
+ 		<member name="rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality.mobile" type="int" setter="" getter="" default="0">
+ 			Lower-end override for [member rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality] on mobile devices, due to performance concerns or driver support.
+ 		</member>
++		<member name="rendering/lights_and_shadows/multi_bounce_occlusion/enabled" type="bool" setter="" getter="" default="false">
++			If [code]true[/code], approximates local multi-bounce global illumination in ambient occlusion by integrating albedo information.
++		</member>
+ 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_16_bits" type="bool" setter="" getter="" default="true">
+ 			Use 16 bits for the omni/spot shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
+ 		</member>
+diff --git a/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.cpp b/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.cpp
+index 63030c2..05cc703 100644
+--- a/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.cpp
++++ b/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.cpp
+@@ -5201,6 +5201,11 @@ RenderForwardClustered::RenderForwardClustered() {
+ 			defines += "\n#define USE_VERTEX_LIGHTING\n";
+ 		}
+ 
++		bool multi_bounce_occlusion = GLOBAL_GET("rendering/lights_and_shadows/multi_bounce_occlusion/enabled");
++		if (multi_bounce_occlusion) {
++			defines += "\n#define MULTI_BOUNCE_OCCLUSION_ENABLED\n";
++		}
++
+ 		bool specular_occlusion = GLOBAL_GET("rendering/reflections/specular_occlusion/enabled");
+ 		if (!specular_occlusion) {
+ 			defines += "\n#define SPECULAR_OCCLUSION_DISABLED\n";
+diff --git a/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered.glsl b/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered.glsl
+index 40a6421..cc0b4ba 100644
+--- a/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered.glsl
++++ b/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered.glsl
+@@ -2138,7 +2138,20 @@ void fragment_shader(in SceneData scene_data) {
+ 
+ 	//finalize ambient light here
+ 	{
++#ifdef MULTI_BOUNCE_OCCLUSION_ENABLED
++		// Apply multi-bounce ambient-occlusion approximation to ambient light:
++		// https://blog.selfshadow.com/publications/s2016-shading-course/activision/s2016_pbs_activision_occlusion.pdf#page=78
++		{
++			vec3 a = vec3(2.0404) * albedo - vec3(0.3324);
++			vec3 b = vec3(-4.7951) * albedo + vec3(0.6417);
++			vec3 c = vec3(2.7552) * albedo + vec3(0.6903);
++			vec3 x = vec3(ao);
++			vec3 bounce_occlusion = max(x, ((x * a + b) * x + c) * x);
++			ambient_light *= bounce_occlusion;
++		}
++#else // MULTI_BOUNCE_OCCLUSION_ENABLED
+ 		ambient_light *= ao;
++#endif // MULTI_BOUNCE_OCCLUSION_ENABLED
+ #ifndef SPECULAR_OCCLUSION_DISABLED
+ #ifdef BENT_NORMAL_MAP_USED
+ 		// Apply cone to cone intersection with cosine weighted assumption:
+diff --git a/servers/rendering/rendering_server.cpp b/servers/rendering/rendering_server.cpp
+index da30ece..1ff0654 100644
+--- a/servers/rendering/rendering_server.cpp
++++ b/servers/rendering/rendering_server.cpp
+@@ -3687,6 +3687,8 @@ void RenderingServer::init() {
+ 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/directional_shadow/far_cascade_first", PROPERTY_HINT_RANGE, "1,3"), 2);
+ 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/lights_and_shadows/directional_shadow/far_cascade_margin", PROPERTY_HINT_RANGE, "1.0,2.0,0.01"), 1.25);
+ 
++	GLOBAL_DEF_RST(PropertyInfo(Variant::BOOL, "rendering/lights_and_shadows/multi_bounce_occlusion/enabled"), false);
++
+ 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"), 2);
+ 	GLOBAL_DEF("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality.mobile", 0);
+ 	GLOBAL_DEF("rendering/lights_and_shadows/positional_shadow/atlas_16_bits", true);
+-- 
+2.55.0
+

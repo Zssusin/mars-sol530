@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+# 在 fedora 上编：
+#   git clone --depth 1 https://github.com/godotengine/godot-cpp   （4.5 以后 godot-cpp 只有 master，用 api_version 选引擎版本）
+#   scons platform=linux target=template_debug api_version=4.7 -j12     → ../bin/libmars_sim.linux.template_debug.x86_64.so
+#   scons platform=linux target=template_release api_version=4.7 -j12
+# 自编引擎时（precision=double 等）要用同样的选项编 godot-cpp。
+import os
+
+env = SConscript("godot-cpp/SConstruct")
+
+env.Append(CPPPATH=["src/", "../core/"])
+# -ffp-contract=off：C++ 移植必须和 GDScript 逐运算舍入一致（见 core/godot_compat.h）
+env.Append(CXXFLAGS=["-std=c++17", "-ffp-contract=off"])
+# 线程池（core/thread_pool.h）用 std::thread
+if env["platform"] == "linux":
+    env.Append(CCFLAGS=["-pthread"], LINKFLAGS=["-pthread"])
+
+
+# exFAT 上 macOS 会留下 ._*.cpp（AppleDouble），不能当源码编
+def sources(pattern):
+    return [f for f in Glob(pattern) if not os.path.basename(str(f)).startswith("._")]
+
+
+src = sources("src/*.cpp") + sources("../core/*.cpp")
+
+# 输出到 仿真核心/bin/（= res://扩展/仿真核心/bin/，和 ../mars_sim.gdextension 里写的路径一致）
+library = env.SharedLibrary(
+    "../bin/libmars_sim{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+    source=src,
+)
+Default(library)

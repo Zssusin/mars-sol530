@@ -1,0 +1,28 @@
+# 托管机只做轻活：不依赖数据和自编引擎的那部分检查（scripts/检查.sh 托管 = C++ 单元测试、Python 编译、JSON 合法性）。
+# 快档的其余部分（GDScript、控制自测）和全档（照片回归、测帧）要自编引擎、数据和 GPU，在 fedora 上跑；
+# 以后接 fedora 自托管 runner 的做法见 docs/工程化方案.md §8.2。私有仓每月 2000 分钟，这一档每次约 1 分钟。
+name: 检查（托管）
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["docs/**", "**.md"]
+  pull_request:
+    paths-ignore: ["docs/**", "**.md"]
+  workflow_dispatch:
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5            # 不拉 godot-cpp 子模块：这一档用不到
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"             # 和 fedora 的 .venv 一致（脚本里可能用到新语法）
+      - name: scripts/检查.sh 托管
+        run: scripts/检查.sh 托管

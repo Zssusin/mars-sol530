@@ -1,0 +1,435 @@
+From d9c554650dfcf0c42df05097e2f6c6018683d415 Mon Sep 17 00:00:00 2001
+From: mars <mars@local>
+Date: Tue, 6 Oct 2026 13:23:55 -0400
+Subject: [PATCH 2/4] =?UTF-8?q?=E8=BF=9C=E7=BA=A7=E8=81=94=E7=BC=93?=
+ =?UTF-8?q?=E5=AD=98=EF=BC=9A=E6=96=B9=E5=90=91=E5=85=89=E8=BF=9C=E5=A4=84?=
+ =?UTF-8?q?=E7=BA=A7=E8=81=94=E9=9A=94=E5=B8=A7=E6=B8=B2=E6=9F=93=E3=80=81?=
+ =?UTF-8?q?=E5=85=B6=E4=BD=99=E5=B8=A7=E5=A4=8D=E7=94=A8=EF=BC=88Forward+?=
+ =?UTF-8?q?=EF=BC=89?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+新项目设置 rendering/lights_and_shadows/directional_shadow/：
+  far_cascade_update_interval（默认 1 = 关，行为与原版相同）、far_cascade_first（默认 2）、far_cascade_margin（默认 1.25）。
+做法：
+- RendererSceneCull：可缓存级联按 margin 放大渲染，剔除也用放大后的范围；
+  _directional_shadow_cache_apply 判断能否复用（同一视口、同一图集、同一光源参数、该缓存渲染时的光向、
+  本帧所需范围在缓存范围内、未到轮值帧），复用时沿用缓存矩阵，只按当前相机重算 range_begin
+  （软阴影半径用），并跳过该级联的剔除和渲染。
+- RenderForwardClustered：取消方向光图集每帧整体清空，改为每个级联渲染时清自己的区域。
+参照 Cyberpunk 2077 远级联分帧更新（SIGGRAPH 2021）。
+
+2026-10-06 审查后的修正：
+- 紧凑投射物剔除（tighter_shadow_caster_culling，默认开）按本帧相机视锥建平面，会把余量区里的
+  投射物剔掉，复用时那里缺阴影。可缓存级联现在跳过这一步，只用放大后的级联视锥剔除。
+- 失效条件补全：图集重建（改尺寸、切 16 位，新增 directional_shadow_get_version()）；
+  投射物掩码、cull mask、bias、normal bias、pancake、反面剔除改变（按光源算一个哈希）。
+- 光向改为和该缓存条目渲染时的光向比较，慢慢转动的光不会在整个间隔里累积偏差。
+已知：开了阴影的反射探针会重画方向光图集，每次都会让缓存失效（正确，但这时没有收益）；
+margin 放大了深度范围，16 位深度下精度降低约 margin 倍。
+未编译验证。
+---
+ doc/classes/ProjectSettings.xml               |  12 ++
+ .../render_forward_clustered.cpp              |   6 +-
+ .../renderer_rd/storage_rd/light_storage.cpp  |   1 +
+ .../renderer_rd/storage_rd/light_storage.h    |   2 +
+ servers/rendering/renderer_scene_cull.cpp     | 139 +++++++++++++++++-
+ servers/rendering/renderer_scene_cull.h       |  29 ++++
+ servers/rendering/rendering_server.cpp        |   4 +
+ servers/rendering/storage/light_storage.h     |   3 +
+ 8 files changed, 192 insertions(+), 4 deletions(-)
+
+diff --git a/doc/classes/ProjectSettings.xml b/doc/classes/ProjectSettings.xml
+index 7e930e7..ada13a6 100644
+--- a/doc/classes/ProjectSettings.xml
++++ b/doc/classes/ProjectSettings.xml
+@@ -3155,6 +3155,18 @@
+ 		<member name="rendering/lights_and_shadows/directional_shadow/16_bits" type="bool" setter="" getter="" default="true">
+ 			Use 16 bits for the directional shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
+ 		</member>
++		<member name="rendering/lights_and_shadows/directional_shadow/far_cascade_cull_margin" type="bool" setter="" getter="" default="false">
++			If [code]true[/code], cascades cached by [member rendering/lights_and_shadows/directional_shadow/far_cascade_update_interval] skip the tighter shadow caster culling, so casters that only shadow the cached margin are present right away. This draws many more casters per cascade and usually costs more than the cache saves. If [code]false[/code], such casters appear at the next refresh of that cascade.
++		</member>
++		<member name="rendering/lights_and_shadows/directional_shadow/far_cascade_first" type="int" setter="" getter="" default="2">
++			First directional shadow cascade (0-based) affected by [member rendering/lights_and_shadows/directional_shadow/far_cascade_update_interval]. Closer cascades are rendered every frame.
++		</member>
++		<member name="rendering/lights_and_shadows/directional_shadow/far_cascade_margin" type="float" setter="" getter="" default="1.25">
++			Factor by which cached far cascades are enlarged, so they keep covering the view while the camera moves. Larger values allow more camera movement between updates at the cost of shadow resolution in those cascades.
++		</member>
++		<member name="rendering/lights_and_shadows/directional_shadow/far_cascade_update_interval" type="int" setter="" getter="" default="1">
++			If greater than [code]1[/code], directional shadow cascades starting at [member rendering/lights_and_shadows/directional_shadow/far_cascade_first] are rendered only every this many frames (staggered, so far cascades take turns) and reused in between. A cascade is rendered immediately if the light rotates, the shadow atlas changes, another viewport rendered directional shadows, or the camera moved or turned beyond what the cached cascade covers. Moving shadow casters in those cascades update with a delay of up to this many frames. Only supported by the Forward+ renderer.
++		</member>
+ 		<member name="rendering/lights_and_shadows/directional_shadow/size" type="int" setter="" getter="" default="4096">
+ 			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance. The value is rounded up to the nearest power of 2.
+ 		</member>
+diff --git a/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.cpp b/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.cpp
+index 05e38c8..63030c2 100644
+--- a/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.cpp
++++ b/servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.cpp
+@@ -1617,8 +1617,8 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
+ 		if (p_render_data->directional_shadows.size()) {
+ 			//open the pass for directional shadows
+ 			light_storage->update_directional_shadow_atlas();
+-			RD::get_singleton()->draw_list_begin(light_storage->direction_shadow_get_fb(), RD::DRAW_CLEAR_DEPTH, Vector<Color>(), 0.0f);
+-			RD::get_singleton()->draw_list_end();
++			// No full atlas clear: each directional cascade clears its own region when rendered, so cascades
++			// skipped by the far cascade cache (RendererSceneCull) keep last frame's contents.
+ 		}
+ 	}
+ 
+@@ -1641,7 +1641,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
+ 
+ 		//render directional shadows
+ 		for (uint32_t i = 0; i < p_render_data->directional_shadows.size(); i++) {
+-			_render_shadow_pass(p_render_data->render_shadows[p_render_data->directional_shadows[i]].light, p_render_data->shadow_atlas, p_render_data->render_shadows[p_render_data->directional_shadows[i]].pass, p_render_data->render_shadows[p_render_data->directional_shadows[i]].instances, lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, false, i == p_render_data->directional_shadows.size() - 1, false, p_render_data->render_info, viewport_size, p_render_data->scene_data->cam_transform);
++			_render_shadow_pass(p_render_data->render_shadows[p_render_data->directional_shadows[i]].light, p_render_data->shadow_atlas, p_render_data->render_shadows[p_render_data->directional_shadows[i]].pass, p_render_data->render_shadows[p_render_data->directional_shadows[i]].instances, lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, false, i == p_render_data->directional_shadows.size() - 1, true, p_render_data->render_info, viewport_size, p_render_data->scene_data->cam_transform);
+ 		}
+ 		//render positional shadows
+ 		for (uint32_t i = 0; i < p_render_data->shadows.size(); i++) {
+diff --git a/servers/rendering/renderer_rd/storage_rd/light_storage.cpp b/servers/rendering/renderer_rd/storage_rd/light_storage.cpp
+index d44624e..81d78cf 100644
+--- a/servers/rendering/renderer_rd/storage_rd/light_storage.cpp
++++ b/servers/rendering/renderer_rd/storage_rd/light_storage.cpp
+@@ -2781,6 +2781,7 @@ void LightStorage::update_directional_shadow_atlas() {
+ 		tf.usage_bits = get_shadow_atlas_depth_usage_bits();
+ 
+ 		directional_shadow.depth = RD::get_singleton()->texture_create(tf, RD::TextureView());
++		directional_shadow.version++; // New texture: anything cached in the old one is gone.
+ 		Vector<RID> fb_tex;
+ 		fb_tex.push_back(directional_shadow.depth);
+ 		directional_shadow.fb = RD::get_singleton()->framebuffer_create(fb_tex);
+diff --git a/servers/rendering/renderer_rd/storage_rd/light_storage.h b/servers/rendering/renderer_rd/storage_rd/light_storage.h
+index 5b90c1d..7e1f8e0 100644
+--- a/servers/rendering/renderer_rd/storage_rd/light_storage.h
++++ b/servers/rendering/renderer_rd/storage_rd/light_storage.h
+@@ -453,6 +453,7 @@ private:
+ 		int size = 0;
+ 		bool use_16_bits = true;
+ 		int current_light = 0;
++		uint64_t version = 0; // Incremented when the atlas texture is created.
+ 	} directional_shadow;
+ 
+ 	/* SHADOW CUBEMAPS */
+@@ -1180,6 +1181,7 @@ public:
+ 
+ 	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) override;
+ 	virtual int get_directional_light_shadow_size(RID p_light_instance) override;
++	virtual uint64_t directional_shadow_get_version() const override { return directional_shadow.version; }
+ 	virtual void set_directional_shadow_count(int p_count) override;
+ 
+ 	Rect2i get_directional_shadow_rect();
+diff --git a/servers/rendering/renderer_scene_cull.cpp b/servers/rendering/renderer_scene_cull.cpp
+index 26a7879..b8c1d48 100644
+--- a/servers/rendering/renderer_scene_cull.cpp
++++ b/servers/rendering/renderer_scene_cull.cpp
+@@ -35,6 +35,7 @@
+ #include "core/math/geometry_3d.h"
+ #include "core/object/callable_mp.h"
+ #include "core/object/worker_thread_pool.h"
++#include "core/os/os.h" // OS::get_current_rendering_method() for the far cascade cache.
+ #include "servers/rendering/rendering_light_culler.h"
+ #include "servers/rendering/rendering_server.h"
+ #include "servers/rendering/rendering_server_default.h"
+@@ -2143,6 +2144,15 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
+ 	geom->geometry_instance->set_lightmap_capture(p_instance->lightmap_sh.ptr());
+ }
+ 
++// Far cascade cache settings. Forward+ only: the other renderers clear the whole directional shadow atlas every frame.
++static int _far_cascade_update_interval() {
++	static const bool forward_plus = OS::get_singleton()->get_current_rendering_method() == "forward_plus";
++	if (!forward_plus) {
++		return 1;
++	}
++	return MAX(1, (int)GLOBAL_GET_CACHED(int, "rendering/lights_and_shadows/directional_shadow/far_cascade_update_interval"));
++}
++
+ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect) {
+ 	// For later tight culling, the light culler needs to know the details of the directional light.
+ 	light_culler->prepare_directional_light(p_instance, p_shadow_index);
+@@ -2194,10 +2204,26 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
+ 	cull.shadows[p_shadow_index].cascade_count = splits;
+ 	cull.shadows[p_shadow_index].light_instance = light->instance;
+ 	cull.shadows[p_shadow_index].caster_mask = RSG::light_storage->light_get_shadow_caster_mask(p_instance->base);
++	{
++		// Far cascade cache: a cached cascade must be re-rendered when anything that changes its depth contents changes.
++		uint32_t h = hash_murmur3_one_32(cull.shadows[p_shadow_index].caster_mask);
++		h = hash_murmur3_one_32(RSG::light_storage->light_get_cull_mask(p_instance->base), h);
++		h = hash_murmur3_one_float(RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SHADOW_BIAS), h);
++		h = hash_murmur3_one_float(RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SHADOW_NORMAL_BIAS), h);
++		h = hash_murmur3_one_float(RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SHADOW_PANCAKE_SIZE), h);
++		h = hash_murmur3_one_32(RSG::light_storage->light_get_reverse_cull_face_mode(p_instance->base) ? 1 : 0, h);
++		cull.shadows[p_shadow_index].cache_params_hash = hash_fmix32(h);
++	}
++
++	const int cache_interval = _far_cascade_update_interval();
++	const int cache_first = MAX(1, (int)GLOBAL_GET_CACHED(int, "rendering/lights_and_shadows/directional_shadow/far_cascade_first")); // Cascade 0 always renders (contact shadows need it).
++	const real_t cache_margin = MAX((real_t)1.0, (real_t)GLOBAL_GET_CACHED(float, "rendering/lights_and_shadows/directional_shadow/far_cascade_margin"));
+ 
+ 	for (int i = 0; i < splits; i++) {
+ 		RENDER_TIMESTAMP("Cull DirectionalLight3D, Split " + itos(i));
+ 
++		const bool cacheable = cache_interval > 1 && i >= cache_first;
++
+ 		// setup a camera matrix for that range!
+ 		Projection camera_matrix;
+ 
+@@ -2271,6 +2297,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
+ 		}
+ 
+ 		real_t radius = 0;
++		real_t need_radius = 0;
+ 		real_t soft_shadow_expand = 0;
+ 		Vector3 center;
+ 
+@@ -2293,6 +2320,11 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
+ 
+ 			radius *= texture_size / (texture_size - 2.0); //add a texel by each side
+ 
++			need_radius = radius;
++			if (cacheable) {
++				radius *= cache_margin; // Room for the camera to move before the cached shadow map stops covering the view.
++			}
++
+ 			z_min_cam = z_vec.dot(center) - radius;
+ 
+ 			{
+@@ -2321,6 +2353,15 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
+ 
+ 		//now that we know all ranges, we can proceed to make the light frustum planes, for culling octree
+ 
++		if (cacheable) {
++			// Cull against everything the shadow map covers, not just this frame's view, so that the margin has casters too.
++			x_min = MIN(x_min, x_min_cam);
++			x_max = MAX(x_max, x_max_cam);
++			y_min = MIN(y_min, y_min_cam);
++			y_max = MAX(y_max, y_max_cam);
++			z_min = MIN(z_min, z_min_cam);
++		}
++
+ 		Vector<Plane> light_frustum_planes;
+ 		light_frustum_planes.resize(6);
+ 
+@@ -2338,6 +2379,20 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
+ 
+ 		z_max = z_vec.dot(center) + radius + pancake_size;
+ 
++		{
++			Cull::Shadow::Cascade &cc = cull.shadows[p_shadow_index].cascades[i];
++			cc.cacheable = cacheable;
++			cc.skip_render = false;
++			const real_t cx = x_vec.dot(center), cy = y_vec.dot(center), cz = z_vec.dot(center);
++			const real_t need_xy = need_radius + soft_shadow_expand;
++			const real_t need[6] = { cx - need_xy, cx + need_xy, cy - need_xy, cy + need_xy, cz - need_radius, cz + need_radius + pancake_size };
++			const real_t have[6] = { x_min_cam, x_max_cam, y_min_cam, y_max_cam, z_min_cam, z_max };
++			for (int j = 0; j < 6; j++) {
++				cc.need[j] = need[j];
++				cc.have[j] = have[j];
++			}
++		}
++
+ 		{
+ 			Projection ortho_camera;
+ 			real_t half_x = (x_max_cam - x_min_cam) * 0.5;
+@@ -2364,6 +2419,77 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
+ 	}
+ }
+ 
++void RendererSceneCull::_directional_shadow_cache_apply(RID p_viewport, bool p_reflection_probe, const Transform3D &p_cam_transform, uint32_t p_light_count) {
++	const int interval = _far_cascade_update_interval();
++	const uint64_t frame = RSG::rasterizer->get_frame_number();
++
++	// The atlas is shared: contents are only ours if the previous directional shadow render was for this viewport.
++	const bool usable = interval > 1 && !p_reflection_probe && p_viewport.is_valid() && p_viewport == directional_shadow_cache_viewport && p_light_count == directional_shadow_cache_light_count;
++	if (p_light_count > 0) {
++		directional_shadow_cache_viewport = p_reflection_probe ? RID() : p_viewport;
++		directional_shadow_cache_light_count = p_light_count;
++	}
++
++	cull.cache_cull_margin = interval > 1 && GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/directional_shadow/far_cascade_cull_margin");
++
++	const uint64_t atlas_version = RSG::light_storage->directional_shadow_get_version();
++	for (uint32_t i = 0; i < cull.shadow_count; i++) {
++		Cull::Shadow &shadow = cull.shadows[i];
++		DirectionalShadowCache &cache = directional_shadow_cache[i];
++		const real_t texture_size = RSG::light_storage->get_directional_light_shadow_size(shadow.light_instance);
++
++		// Atlas recreated (size or 16-bit toggle), different light, different layout or changed bias/masks: drop everything.
++		const bool same_light = usable && cache.light_instance == shadow.light_instance && cache.texture_size == texture_size && cache.cascade_count == shadow.cascade_count && cache.atlas_version == atlas_version && cache.params_hash == shadow.cache_params_hash;
++		cache.light_instance = shadow.light_instance;
++		cache.texture_size = texture_size;
++		cache.cascade_count = shadow.cascade_count;
++		cache.atlas_version = atlas_version;
++		cache.params_hash = shadow.cache_params_hash;
++
++		for (uint32_t k = 0; k < shadow.cascade_count; k++) {
++			Cull::Shadow::Cascade &c = shadow.cascades[k];
++			DirectionalShadowCache::Entry &e = cache.entries[k];
++			if (!c.cacheable) {
++				e.valid = false;
++				continue;
++			}
++
++			// Compare the light direction with the one this entry was rendered with (not last frame's),
++			// so a slowly turning light can't drift unnoticed for a whole interval.
++			bool reuse = same_light && e.valid && e.cascade.transform.basis.is_equal_approx(c.transform.basis);
++			if (reuse) {
++				// Staggered: cascade k renders when frame % interval == k % interval, so far cascades take turns.
++				const bool due = frame - e.frame >= (uint64_t)interval || frame % (uint64_t)interval == (uint64_t)(k % (uint32_t)interval);
++				const real_t *have = e.cascade.have;
++				const bool covered = have[0] <= c.need[0] && c.need[1] <= have[1] && have[2] <= c.need[2] && c.need[3] <= have[3] && have[4] <= c.need[4] && c.need[5] <= have[5];
++				reuse = !due && covered;
++			}
++
++			if (reuse) {
++				const real_t split = c.split; // Split distances are relative to the camera: keep this frame's.
++				c = e.cascade;
++				c.split = split;
++				// Soft shadow radius in the scene shader is measured from range_begin along the light direction, relative to the camera.
++				const Transform3D &t = e.cascade.transform;
++				c.range_begin = t.basis.get_column(Vector3::AXIS_Z).normalized().dot(t.origin - p_cam_transform.origin);
++				c.skip_render = true;
++				directional_shadow_cache_stats[0]++;
++			} else {
++				directional_shadow_cache_stats[1]++;
++				e.valid = true;
++				e.frame = frame;
++				e.cascade = c;
++			}
++		}
++	}
++
++	if (interval > 1 && frame - directional_shadow_cache_stats_frame >= 600) {
++		print_verbose(vformat("far_cascade_cache: %d reused, %d rendered (cacheable cascades, last %d frames).", directional_shadow_cache_stats[0], directional_shadow_cache_stats[1], frame - directional_shadow_cache_stats_frame));
++		directional_shadow_cache_stats[0] = directional_shadow_cache_stats[1] = 0;
++		directional_shadow_cache_stats_frame = frame;
++	}
++}
++
+ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_screen_mesh_lod_threshold, uint32_t p_visible_layers) {
+ 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
+ 
+@@ -3239,7 +3365,14 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
+ 
+ 			for (uint32_t j = 0; j < cull_data.cull->shadow_count; j++) {
+ 				for (uint32_t k = 0; k < cull_data.cull->shadows[j].cascade_count; k++) {
+-					if (!light_culler->cull_directional_light(cull_data.scenario->instance_aabbs[i], j, k)) { // pass the cascade index
++					const Cull::Shadow::Cascade &cascade = cull_data.cull->shadows[j].cascades[k];
++					if (cascade.skip_render) {
++						continue;
++					}
++					// The tighter caster culling builds its planes from this frame's camera frustum. A cached cascade covers a
++					// margin that later frames reuse, so a caster that only shadows the margin shows up at the next refresh
++					// (at most interval - 1 frames late). far_cascade_cull_margin keeps those casters, but costs far more.
++					if (!(cascade.cacheable && cull_data.cull->cache_cull_margin) && !light_culler->cull_directional_light(cull_data.scenario->instance_aabbs[i], j, k)) { // pass the cascade index
+ 						continue;
+ 					}
+ 					if (IN_FRUSTUM(cull_data.cull->shadows[j].cascades[k].frustum) && VIS_CHECK) {
+@@ -3386,6 +3519,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
+ 		for (int i = 0; i < lights_with_shadow.size(); i++) {
+ 			_light_instance_setup_directional_shadow(i, lights_with_shadow[i], p_camera_data->main_transform, p_camera_data->main_projection, p_camera_data->is_orthogonal, p_camera_data->vaspect);
+ 		}
++		_directional_shadow_cache_apply(p_viewport, p_reflection_probe.is_valid(), p_camera_data->main_transform, lights_with_shadow.size());
+ 	}
+ 
+ 	{ //sdfgi
+@@ -3482,6 +3616,9 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
+ 				const Cull::Shadow::Cascade &c = cull.shadows[i].cascades[j];
+ 				//			print_line("shadow " + itos(i) + " cascade " + itos(j) + " elements: " + itos(c.cull_result.size()));
+ 				RSG::light_storage->light_instance_set_shadow_transform(cull.shadows[i].light_instance, c.projection, c.transform, c.zfar, c.split, j, c.shadow_texel_size, c.bias_scale, c.range_begin, c.uv_scale);
++				if (c.skip_render) {
++					continue; // Cached: the atlas still holds what was rendered with these matrices.
++				}
+ 				if (max_shadows_used == MAX_UPDATE_SHADOWS) {
+ 					continue;
+ 				}
+diff --git a/servers/rendering/renderer_scene_cull.h b/servers/rendering/renderer_scene_cull.h
+index 6d92798..d4ea5c9 100644
+--- a/servers/rendering/renderer_scene_cull.h
++++ b/servers/rendering/renderer_scene_cull.h
+@@ -1090,6 +1090,7 @@ public:
+ 		struct Shadow {
+ 			RID light_instance;
+ 			uint32_t caster_mask;
++			uint32_t cache_params_hash = 0; // Far cascade cache: settings that change what gets rendered into the shadow map.
+ 			struct Cascade {
+ 				Frustum frustum;
+ 
+@@ -1102,12 +1103,19 @@ public:
+ 				real_t range_begin;
+ 				Vector2 uv_scale;
+ 
++				// Far cascade cache (rendering/lights_and_shadows/directional_shadow/far_cascade_*).
++				bool cacheable = false; // Rendered with a margin, so its contents can be reused for a few frames while the camera moves.
++				bool skip_render = false; // Reusing the last rendered contents this frame: neither culled nor rendered.
++				real_t need[6] = {}; // Light space extents this frame needs (x0, x1, y0, y1, z0, z1).
++				real_t have[6] = {}; // Light space extents covered by the shadow map (with margin).
++
+ 			} cascades[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES]; //max 4 cascades
+ 			uint32_t cascade_count;
+ 
+ 		} shadows[RendererSceneRender::MAX_DIRECTIONAL_LIGHTS];
+ 
+ 		uint32_t shadow_count;
++		bool cache_cull_margin = false; // Far cascade cache: skip the tighter caster culling for cacheable cascades.
+ 
+ 		struct SDFGI {
+ 			//have arrays here because SDFGI functions expects this, plus regions can have areas
+@@ -1125,6 +1133,27 @@ public:
+ 		Frustum frustum;
+ 	} cull;
+ 
++	// Far directional shadow cascades are rendered every N frames and reused in between, as long as they
++	// still cover what the camera needs. The directional shadow atlas is shared, so the cache only holds
++	// while the same viewport keeps rendering it.
++	struct DirectionalShadowCache {
++		RID light_instance;
++		real_t texture_size = 0;
++		uint32_t cascade_count = 0;
++		uint64_t atlas_version = 0;
++		uint32_t params_hash = 0;
++		struct Entry {
++			bool valid = false;
++			uint64_t frame = 0;
++			Cull::Shadow::Cascade cascade;
++		} entries[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES];
++	} directional_shadow_cache[RendererSceneRender::MAX_DIRECTIONAL_LIGHTS];
++	RID directional_shadow_cache_viewport;
++	uint32_t directional_shadow_cache_light_count = 0;
++	uint64_t directional_shadow_cache_stats[2] = {}; // Cacheable cascades reused / rendered, for print_verbose.
++	uint64_t directional_shadow_cache_stats_frame = 0;
++	void _directional_shadow_cache_apply(RID p_viewport, bool p_reflection_probe, const Transform3D &p_cam_transform, uint32_t p_light_count);
++
+ 	struct VisibilityCullData {
+ 		uint64_t viewport_mask;
+ 		Scenario *scenario = nullptr;
+diff --git a/servers/rendering/rendering_server.cpp b/servers/rendering/rendering_server.cpp
+index 0a675a9..da30ece 100644
+--- a/servers/rendering/rendering_server.cpp
++++ b/servers/rendering/rendering_server.cpp
+@@ -3682,6 +3682,10 @@ void RenderingServer::init() {
+ 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"), 2);
+ 	GLOBAL_DEF("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality.mobile", 0);
+ 	GLOBAL_DEF("rendering/lights_and_shadows/directional_shadow/16_bits", true);
++	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/directional_shadow/far_cascade_update_interval", PROPERTY_HINT_RANGE, "1,8"), 1);
++	GLOBAL_DEF("rendering/lights_and_shadows/directional_shadow/far_cascade_cull_margin", false);
++	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/directional_shadow/far_cascade_first", PROPERTY_HINT_RANGE, "1,3"), 2);
++	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/lights_and_shadows/directional_shadow/far_cascade_margin", PROPERTY_HINT_RANGE, "1.0,2.0,0.01"), 1.25);
+ 
+ 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"), 2);
+ 	GLOBAL_DEF("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality.mobile", 0);
+diff --git a/servers/rendering/storage/light_storage.h b/servers/rendering/storage/light_storage.h
+index 0d3f789..a04731d 100644
+--- a/servers/rendering/storage/light_storage.h
++++ b/servers/rendering/storage/light_storage.h
+@@ -212,4 +212,7 @@ public:
+ 	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) = 0;
+ 	virtual int get_directional_light_shadow_size(RID p_light_instance) = 0;
+ 	virtual void set_directional_shadow_count(int p_count) = 0;
++	// Changes whenever the directional shadow atlas texture is (re)created, i.e. its contents are lost.
++	// Used by the far cascade cache in RendererSceneCull. Renderers that don't support the cache can keep 0.
++	virtual uint64_t directional_shadow_get_version() const { return 0; }
+ };
+-- 
+2.55.0
+

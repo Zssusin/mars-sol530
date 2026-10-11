@@ -1,0 +1,53 @@
+# 仓库根所在的工作目录里还有原始 DEM（30 GB）、渲染产出（11 GB）和别的脚本，
+# 一律不进仓库：根目录用白名单，只收下面列出的几项。
+/*
+!/.gitignore
+!/.gitattributes
+!/.gitmodules
+!/README.md
+!/README.en.md
+!/CHANGELOG.md
+!/THIRD_PARTY.md
+!/LICENSE
+!/.github/
+!/工具/
+!/godot/
+!/scripts/
+!/docs/
+!/engine/
+
+# scripts/：只要实景管线（Blender 50–60、Godot 61–68）
+/scripts/*
+!/scripts/Blender/
+!/scripts/Godot/
+!/scripts/检查.sh
+!/scripts/生成器/
+
+# Godot
+/godot/.godot/
+/godot/_备份_*/
+/godot/界面/截图/
+/godot/override.cfg
+/godot/build_info.json
+
+# 数据：全部由管线生成（scripts/Godot/61_Godot数据.py 等），只留手写 / 小的 json 配置
+/godot/数据/*/*
+!/godot/数据/*/*.json
+/godot/数据/*/*_备份_*.json
+
+# C++ 扩展：编译产物
+/godot/扩展/仿真核心/bin
+*.o
+*.os
+*.obj
+.sconsign*.dblite
+/godot/扩展/仿真核心/tests/test_core
+
+# 文档：视频太大（放 Release 附件）
+/docs/**/*.mp4
+
+# 杂项
+__pycache__/
+*.pyc
+._*
+.DS_Store

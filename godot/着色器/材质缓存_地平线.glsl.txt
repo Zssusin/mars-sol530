@@ -1,0 +1,46 @@
+#version 450
+// 微观自阴影的地平线图（颗粒感 §2，docs/地面材质/颗粒感.md）。一个线程 = 缓存的一个纹素（第 layer 层，纹素边长 t 米）。
+// 读 材质缓存烘焙（材质缓存_烘焙.glsl.txt）同一次调度里写好的高度图 mc_h（位移，米；环形寻址，所以用重复采样），
+// 沿 8 个水平方位（φ_k = k·45°，φ 从 +x 朝 +z 数：x 东、z 南，和着色器里太阳方位同一约定）按 1, 2, 4 … 128 纹素步进，
+// 取最大坡度的 atan 当该方位的地平线仰角 α_k（相对水平面，限 0..0.8 rad）；再对 α_k 做离散傅里叶，保留到 3 阶：
+//   α(φ) ≈ a0 + Σ_{m=1..3} (a_m cos mφ + b_m sin mφ)       （Fritsch 等，HPG 2025 的截断傅里叶地平线；他们用 16 个复系数 16 位浮点存行星尺度地形，
+//                                                              这里是毫米—厘米尺度，8 个方位采样 → 7 个系数，8 位够用：离线对拍见文档）
+// 存储：c0 = (a0/0.8, a1/0.8 + ½, b1/0.8 + ½, a2/0.8 + ½)，c1 = (b2/0.8 + ½, a3/0.8 + ½, b3/0.8 + ½, 0)。
+// 高度窗口往里缩 128 纹素才算有效（步进最远到那里），调度范围由 材质缓存.gd 按缩进的窗口给。
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+layout(set = 0, binding = 0) uniform sampler2DArray mc_h;
+layout(set = 0, binding = 1, rgba8) uniform restrict writeonly image2DArray mc_out_c0;
+layout(set = 0, binding = 2, rgba8) uniform restrict writeonly image2DArray mc_out_c1;
+layout(push_constant, std430) uniform MCPush { ivec4 rect; vec4 lv; } pc;
+
+void main() {
+	ivec2 id = ivec2(gl_GlobalInvocationID.xy);
+	if (id.x >= pc.rect.z || id.y >= pc.rect.w) return;
+	int layer = int(pc.lv.x); float t = pc.lv.y; int n = int(pc.lv.z);
+	ivec2 g = pc.rect.xy + id;
+	ivec2 sto = ((g % n) + n) % n;
+	float fn = float(n);
+	vec2 uv0 = (vec2(sto) + 0.5)/fn;
+	float h0 = textureLod(mc_h, vec3(uv0, float(layer)), 0.0).r;
+	float al[8];
+	for (int k = 0; k < 8; k++) {
+		float ph = float(k)*0.7853981634;
+		vec2 d = vec2(cos(ph), sin(ph))/fn;
+		float m = 0.0;
+		for (int j = 0; j < 8; j++) {
+			float s = float(1 << j);
+			m = max(m, (textureLod(mc_h, vec3(uv0 + d*s, float(layer)), 0.0).r - h0)/(s*t));
+		}
+		al[k] = clamp(atan(m), 0.0, 0.8);
+	}
+	float a0 = 0.0; vec3 ca = vec3(0.0), cb = vec3(0.0);
+	for (int k = 0; k < 8; k++) {
+		float ph = float(k)*0.7853981634;
+		a0 += al[k];
+		ca += al[k]*vec3(cos(ph), cos(2.0*ph), cos(3.0*ph));
+		cb += al[k]*vec3(sin(ph), sin(2.0*ph), sin(3.0*ph));
+	}
+	a0 *= 0.125; ca *= 0.25; cb *= 0.25;
+	imageStore(mc_out_c0, ivec3(sto, layer), vec4(a0/0.8, ca.x/0.8 + 0.5, cb.x/0.8 + 0.5, ca.y/0.8 + 0.5));
+	imageStore(mc_out_c1, ivec3(sto, layer), vec4(cb.y/0.8 + 0.5, ca.z/0.8 + 0.5, cb.z/0.8 + 0.5, 0.0));
+}

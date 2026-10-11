@@ -1,0 +1,3711 @@
+{
+ "数据版本": "2026.10.10.6",
+ "目录": "godot/数据/sol0530",
+ "哈希": "blake2b-128",
+ "生成于": "2026-10-10T21:22:39-04:00",
+ "文件数": 740,
+ "总大小": 4610886936,
+ "说明": "工具/数据清单.py 生成；docs/工程化方案.md §5",
+ "文件": {
+  "albedo_ctx.png": {
+   "大小": 8005779,
+   "哈希": "7f0f8122c68d37aaf5f77a67b6ee8dd3",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "albedo_hirise.png": {
+   "大小": 28967142,
+   "哈希": "83c39af9656d28e58c1351b6a83a2d64",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "albedo_mid.png": {
+   "大小": 20104891,
+   "哈希": "b0b1373176de638b695e035ddda9f357",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "albedo_near.png": {
+   "大小": 6809842,
+   "哈希": "3c1a7dc96f749386564fcd44e660b464",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "class_hirise.png": {
+   "大小": 155275176,
+   "哈希": "2cd557af3ba16565b97b51eede606b9f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "class_mid.png": {
+   "大小": 4086024,
+   "哈希": "2f391e429e345fdfaa82597de02caeff",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "fine_albedo.png": {
+   "大小": 16777202,
+   "哈希": "029a2815a1cbc9e28a8b95c860f753a0",
+   "来源": "scripts/Godot/72_近景细化.py"
+  },
+  "fine_dh.bin": {
+   "大小": 4422768,
+   "哈希": "8ec7c12e11ae609d9019d995d5d9534f",
+   "来源": "scripts/Godot/72_近景细化.py"
+  },
+  "fine_patch.png": {
+   "大小": 7698345,
+   "哈希": "c064ed7a426f597904d58122175bf764",
+   "来源": "scripts/Godot/72_近景细化.py"
+  },
+  "fine_res.png": {
+   "大小": 386356,
+   "哈希": "3ef250a7974976528eb2f13f476a493f",
+   "来源": "scripts/Godot/72_近景细化.py"
+  },
+  "fine_slope.bin": {
+   "大小": 67108872,
+   "哈希": "973c4adf63430b04adf3f85aa82ad4e4",
+   "来源": "scripts/Godot/72_近景细化.py"
+  },
+  "geo_class.bin": {
+   "大小": 16000000,
+   "哈希": "f8d0df14871e65454f1167d1c2671de6",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "heights.bin": {
+   "大小": 21672068,
+   "哈希": "7fb1f5691a9f0d0f1c7895417d9f276f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "mat.json": {
+   "大小": 11381,
+   "哈希": "bcad254c9fe54f506e7729db66f23fc2",
+   "来源": "scripts/Godot/73_材质规则.py"
+  },
+  "mat2.json": {
+   "大小": 21495,
+   "哈希": "615da0fcdfb2972fe211601d4eadb561",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "mat_ctrl_1m.bin": {
+   "大小": 16000008,
+   "哈希": "ab1dd06f4cc6e0706418521811130bec",
+   "来源": "scripts/Godot/73_材质规则.py"
+  },
+  "mat_ctrl_1m2.bin": {
+   "大小": 16000008,
+   "哈希": "3f6d765d52e1988e24354a0164a87249",
+   "来源": "scripts/Godot/73_材质规则.py"
+  },
+  "mat_ctrl_1m2f.bin": {
+   "大小": 16000008,
+   "哈希": "d9bd34c3b3ec30f661d84dc4a068fa15",
+   "来源": "scripts/Godot/81_中景丰富度.py"
+  },
+  "mat_ctrl_4cm.bin": {
+   "大小": 25000008,
+   "哈希": "5db97355ccc4e9244556ab8aadae3b31",
+   "来源": "scripts/Godot/73_材质规则.py"
+  },
+  "mat_ctrl_4cm2.bin": {
+   "大小": 25000008,
+   "哈希": "27a75c72b051620cbffa45b7585bbe9e",
+   "来源": "scripts/Godot/73_材质规则.py"
+  },
+  "mat_ctrl_4cm2f.bin": {
+   "大小": 25000008,
+   "哈希": "a9872867a1a4fc5eab2f5d16e4fe4817",
+   "来源": "scripts/Godot/81_中景丰富度.py"
+  },
+  "mat_gain_lp2.bin": {
+   "大小": 2000008,
+   "哈希": "5bff178ddeb7ed2ead1419a68000f84f",
+   "来源": "scripts/Godot/81_中景丰富度.py"
+  },
+  "mat_gate_4cm.bin": {
+   "大小": 6250008,
+   "哈希": "e173391e9cd906e20051424682e9df16",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "meso_0_albedo.png": {
+   "大小": 812486,
+   "哈希": "b3a8c05e188f32ef00e6c04a172a8e2e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "meso_0_height.bin": {
+   "大小": 2359304,
+   "哈希": "41ef0ddf3d4cf34249f49504883216b6",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "meso_1_albedo.png": {
+   "大小": 470305,
+   "哈希": "02a9e75359fd4e8a9779c85b807c849a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "meso_1_height.bin": {
+   "大小": 1048584,
+   "哈希": "1682aeba0da49ca1d78a92064bb8d674",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "meso_2_albedo.png": {
+   "大小": 440694,
+   "哈希": "60e14b2affac51abbceda9209497204a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "meso_2_height.bin": {
+   "大小": 1048584,
+   "哈希": "b48bd7f15088735fec4ea626678afc25",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "meso_3_albedo.png": {
+   "大小": 812486,
+   "哈希": "b3a8c05e188f32ef00e6c04a172a8e2e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "meso_3_height.bin": {
+   "大小": 2359304,
+   "哈希": "41ef0ddf3d4cf34249f49504883216b6",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "micro_0_albedo.png": {
+   "大小": 476361,
+   "哈希": "3a218dffe838d882e6d68015cb6d17b8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "micro_0_height.bin": {
+   "大小": 1048584,
+   "哈希": "5b0d8c641834cc8082ea4a627f0c3c09",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "micro_1_albedo.png": {
+   "大小": 224127,
+   "哈希": "fb9d7b2b5465c51c952e9b65700d2ab5",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "micro_1_height.bin": {
+   "大小": 589832,
+   "哈希": "7c9056ed04f9bc4e8f8347bf6190c1f4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "micro_2_albedo.png": {
+   "大小": 236876,
+   "哈希": "04ed2e539884ad5fea131ddca567c3bf",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "micro_2_height.bin": {
+   "大小": 589832,
+   "哈希": "309ede061873e9e68f37a58aceaba408",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "micro_3_albedo.png": {
+   "大小": 465237,
+   "哈希": "54f4fb8e8eb7a691df1cc4dbe104eeeb",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "micro_3_height.bin": {
+   "大小": 1048584,
+   "哈希": "acb33f8cbae3b70a32b1d8481dcfc6b3",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "ref_NRF_0M196RAS_.png": {
+   "大小": 107149,
+   "哈希": "c3f45196a1c0dbde0b61ab2dad264258",
+   "来源": "scripts/Godot/61_Godot数据.py（拷自封存 v5 对照照片）"
+  },
+  "ref_NRF_5M362RAS_.png": {
+   "大小": 1207156,
+   "哈希": "764c02102d9d72172d7d3cbd0c67781d",
+   "来源": "scripts/Godot/61_Godot数据.py（拷自封存 v5 对照照片）"
+  },
+  "ring_00.bin": {
+   "大小": 17308836,
+   "哈希": "6a06bdee419e3d6b90bd3ed576e0d7d9",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "ring_01.bin": {
+   "大小": 13003212,
+   "哈希": "6dd6a8824fa5ace8cb96f7f754202afe",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "ring_02.bin": {
+   "大小": 13003212,
+   "哈希": "e779d20a6cdb55b22366449dbb32d2ea",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "ring_03.bin": {
+   "大小": 13003212,
+   "哈希": "0f2b5044b4dfd7a528ff0dbddc6561d8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "ring_04.bin": {
+   "大小": 13003212,
+   "哈希": "85d2c3a13868e8cef2d412f9790916be",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "ring_05.bin": {
+   "大小": 13003212,
+   "哈希": "e10085b2e9c7c7b86ef03fe7419f7195",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "ring_06.bin": {
+   "大小": 13003212,
+   "哈希": "f6f5c44c3d65603a06c6be541da87733",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "ring_07.bin": {
+   "大小": 13003212,
+   "哈希": "8a9c835b08193c0698e9070593a292e2",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "ring_08.bin": {
+   "大小": 13003212,
+   "哈希": "1ee259b05b3711758634db2e5b7d9d4c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "ring_09.bin": {
+   "大小": 13003212,
+   "哈希": "b48bf26de7a1cf9d4bde8ecb4ab9a2cd",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "ring_10.bin": {
+   "大小": 13003212,
+   "哈希": "2f2a15c4203e52f6dedfc88848805920",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "ring_11.bin": {
+   "大小": 13003212,
+   "哈希": "dbfda36be2fd289322b689a344efd1d7",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "ring_12.bin": {
+   "大小": 13003212,
+   "哈希": "b19c2154950a392d6db8a11948af1da9",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "ring_13.bin": {
+   "大小": 13003212,
+   "哈希": "9a556e9de311030232539fad9cd1ea91",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "ring_14.bin": {
+   "大小": 13003212,
+   "哈希": "9cbb5d721d8f3373c036795ee14dac13",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "ripple_field.bin": {
+   "大小": 1203535,
+   "哈希": "ec2aa1679feea5c57133b6c508da67c3",
+   "来源": "scripts/Godot/80_沙纹场.py"
+  },
+  "ripple_field.json": {
+   "大小": 355,
+   "哈希": "4576d02e878e4e15faea05fc0f12a55a",
+   "来源": "scripts/Godot/80_沙纹场.py"
+  },
+  "ripple_stripe.bin": {
+   "大小": 4985839,
+   "哈希": "05ec07cf5e376f268e0fba88c5108d90",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rocks.bin": {
+   "大小": 1608228,
+   "哈希": "562a1a61b081a6c42062762ff22f0a68",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover.glb": {
+   "大小": 11687880,
+   "哈希": "fde9cbe97ab088db40b8c7d7da8eaa11",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_ao.glb": {
+   "大小": 13903328,
+   "哈希": "e469bf9ec91dd9a36b43cdd36cf59ccd",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao.png": {
+   "大小": 6222019,
+   "哈希": "3938ddb449ded9a09d0fcc3192b55ee1",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_arm_graphics.jpg": {
+   "大小": 63541,
+   "哈希": "23a2abd1c8f70745602c6fb91ada284c",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_blade.jpg": {
+   "大小": 172954,
+   "哈希": "d1842a0b45a38d577e247487fe696723",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_clear.png": {
+   "大小": 250,
+   "哈希": "4bb7a85ab4f2c4e51131a6cba2c9cff1",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_cvoidPlaque.jpg": {
+   "大小": 148743,
+   "哈希": "e5c05c22f580d37f4e47e961d442d870",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_foil_n.jpg": {
+   "大小": 43058,
+   "哈希": "67210dc61270f9ca81050216cb5e9c3b",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_glass.png": {
+   "大小": 391,
+   "哈希": "257ab2a3df98d37af6aad034b82963df",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_mars_2020_01.jpg": {
+   "大小": 168008,
+   "哈希": "5bd22f4a8207e522f1cf6765cdcbc019",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_mars_2020_01_n.jpg": {
+   "大小": 59350,
+   "哈希": "a094e081ec147db20ad15d37d0e6b96a",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_mars_2020_02.jpg": {
+   "大小": 158781,
+   "哈希": "cef05127486c7a7413906584e360db9e",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_mars_2020_02_n.jpg": {
+   "大小": 100277,
+   "哈希": "0d9542865ea7edaa54d171797f462050",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_mars_2020_03.jpg": {
+   "大小": 122603,
+   "哈希": "58c28260e8e1e4e76e7a43b7475c9448",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_mars_2020_04.jpg": {
+   "大小": 162513,
+   "哈希": "e32c689659f1f5a06947ae73bd7305f6",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_mars_2020_05.jpg": {
+   "大小": 253378,
+   "哈希": "b8842b6082d7c00c610e7cea96551037",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_mars_2020_05_n.png": {
+   "大小": 743375,
+   "哈希": "eaba1bef47b5b4e5adcc0cee98e390c6",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_mars_2020_05_r.jpg": {
+   "大小": 162585,
+   "哈希": "1839d6f377bbbbd670f2de822f74562d",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_mars_2020_06.jpg": {
+   "大小": 209407,
+   "哈希": "f7c757250c68c5ea0f04f2bf4277b9ef",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_mars_2020_06_n.jpg": {
+   "大小": 97272,
+   "哈希": "0b9b9e3ae83378c4329f502c444d257e",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_mars_2020_07_BLACKOUT.jpg": {
+   "大小": 88892,
+   "哈希": "a65ceaf0aa339a49936c8a5479b58cff",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_mars_2020_hub.jpg": {
+   "大小": 17511,
+   "哈希": "745af46d8077c25adbcdba618dde2cc5",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_mars_2020_hub_n.jpg": {
+   "大小": 7560,
+   "哈希": "c6c5801f066546bbba37299813548658",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_mars_2020_spring_n.jpg": {
+   "大小": 4460,
+   "哈希": "3e865297779787691f749cec29cac865",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_nameplate.jpg": {
+   "大小": 129094,
+   "哈希": "7ebc77ab0a5fa4ead57d4efe70eb3fd9",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_ao_sample_handling_door.jpg": {
+   "大小": 33643,
+   "哈希": "7c02ebc9060a1a09d5857b203af3163f",
+   "来源": "scripts/Godot/67_车AO.py"
+  },
+  "rover_arm_graphics.jpg": {
+   "大小": 63541,
+   "哈希": "23a2abd1c8f70745602c6fb91ada284c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_blade.jpg": {
+   "大小": 172954,
+   "哈希": "d1842a0b45a38d577e247487fe696723",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_clear.png": {
+   "大小": 250,
+   "哈希": "4bb7a85ab4f2c4e51131a6cba2c9cff1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_cvoidPlaque.jpg": {
+   "大小": 148743,
+   "哈希": "e5c05c22f580d37f4e47e961d442d870",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_detail.png": {
+   "大小": 620448,
+   "哈希": "ec9c47f796432d1612c2915a9cb43379",
+   "来源": "scripts/Godot/68_车细节.py"
+  },
+  "rover_foil_n.jpg": {
+   "大小": 43058,
+   "哈希": "67210dc61270f9ca81050216cb5e9c3b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_foil_n_17.jpg": {
+   "大小": 43058,
+   "哈希": "67210dc61270f9ca81050216cb5e9c3b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_glass.png": {
+   "大小": 391,
+   "哈希": "257ab2a3df98d37af6aad034b82963df",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_mars_2020_01.jpg": {
+   "大小": 168008,
+   "哈希": "5bd22f4a8207e522f1cf6765cdcbc019",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_mars_2020_01_n.jpg": {
+   "大小": 59350,
+   "哈希": "a094e081ec147db20ad15d37d0e6b96a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_mars_2020_02.jpg": {
+   "大小": 158781,
+   "哈希": "cef05127486c7a7413906584e360db9e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_mars_2020_02_n.jpg": {
+   "大小": 100277,
+   "哈希": "0d9542865ea7edaa54d171797f462050",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_mars_2020_03.jpg": {
+   "大小": 122603,
+   "哈希": "58c28260e8e1e4e76e7a43b7475c9448",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_mars_2020_04.jpg": {
+   "大小": 162513,
+   "哈希": "e32c689659f1f5a06947ae73bd7305f6",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_mars_2020_05.jpg": {
+   "大小": 253378,
+   "哈希": "b8842b6082d7c00c610e7cea96551037",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_mars_2020_05_n.png": {
+   "大小": 743375,
+   "哈希": "eaba1bef47b5b4e5adcc0cee98e390c6",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_mars_2020_05_r.jpg": {
+   "大小": 162585,
+   "哈希": "1839d6f377bbbbd670f2de822f74562d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_mars_2020_06.jpg": {
+   "大小": 209407,
+   "哈希": "f7c757250c68c5ea0f04f2bf4277b9ef",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_mars_2020_06_n.jpg": {
+   "大小": 97272,
+   "哈希": "0b9b9e3ae83378c4329f502c444d257e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_mars_2020_07_BLACKOUT.jpg": {
+   "大小": 88892,
+   "哈希": "a65ceaf0aa339a49936c8a5479b58cff",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_mars_2020_hub.jpg": {
+   "大小": 17511,
+   "哈希": "745af46d8077c25adbcdba618dde2cc5",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_mars_2020_hub_n.jpg": {
+   "大小": 7560,
+   "哈希": "c6c5801f066546bbba37299813548658",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_mars_2020_spring_n.jpg": {
+   "大小": 4460,
+   "哈希": "3e865297779787691f749cec29cac865",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_n_03.png": {
+   "大小": 714612,
+   "哈希": "8793a4b53cd62198933c2fe38dec1e9e",
+   "来源": "scripts/Godot/69_车法线.py"
+  },
+  "rover_n_04.png": {
+   "大小": 862489,
+   "哈希": "b766fc50bb4f62f2731f12463f2212df",
+   "来源": "scripts/Godot/69_车法线.py"
+  },
+  "rover_nameplate.jpg": {
+   "大小": 129094,
+   "哈希": "7ebc77ab0a5fa4ead57d4efe70eb3fd9",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_rig.json": {
+   "大小": 1756,
+   "哈希": "6f10ae667611ea838e70c156eda7ba83",
+   "来源": "godot/工具/量车轮.gd"
+  },
+  "rover_sample_handling_door.jpg": {
+   "大小": 33643,
+   "哈希": "7c02ebc9060a1a09d5857b203af3163f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "rover_材质.json": {
+   "大小": 8730,
+   "哈希": "4647dc9c8ef3faa6374b5b1a94c81046",
+   "来源": "手写"
+  },
+  "scene.json": {
+   "大小": 344581,
+   "哈希": "8069ce43855cc8cfc26f33744f0e0089",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0521.bin": {
+   "大小": 6291464,
+   "哈希": "a89e69bfb2fa5e5f1a15bb0c723ea99b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0528.bin": {
+   "大小": 6291464,
+   "哈希": "e6939e586a7fe6ab8c72cc6dbe9286a6",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0535.bin": {
+   "大小": 6291464,
+   "哈希": "9b0583e1a4e6ed2711c9e1510bbe3bda",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0541.bin": {
+   "大小": 6291464,
+   "哈希": "a2646236bf680f305916888a8e610534",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0548.bin": {
+   "大小": 6291464,
+   "哈希": "37771341144e5a2f5c2d6bda5ebf8b28",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0553.bin": {
+   "大小": 6291464,
+   "哈希": "c406ccf532518a009636698c61e7ea78",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0557.bin": {
+   "大小": 6291464,
+   "哈希": "923ec4597bebf4a24650a5e35721e5cc",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0602.bin": {
+   "大小": 6291464,
+   "哈希": "f05a9a9d54e8d59615f90dda5b67f541",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0606.bin": {
+   "大小": 6291464,
+   "哈希": "16856754917605b017aed9a9a3ad4303",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0611.bin": {
+   "大小": 6291464,
+   "哈希": "5e90ee89eddcda7bf39587fe61426cb3",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0616.bin": {
+   "大小": 6291464,
+   "哈希": "006f236d4c826f05b3d58f1a188a9a0a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0620.bin": {
+   "大小": 6291464,
+   "哈希": "13fe2e3d060b5d3f0334dd272d7b82e3",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0623.bin": {
+   "大小": 6291464,
+   "哈希": "e9455515ef1858d8a59a307fe4678686",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0625.bin": {
+   "大小": 6291464,
+   "哈希": "ac7bb62696dee81df89db8858f913595",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0627.bin": {
+   "大小": 6291464,
+   "哈希": "e30fb3d926c84d66cff1f5596301f769",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0630.bin": {
+   "大小": 6291464,
+   "哈希": "123daf8a04413ab485dc37baed554f2f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0632.bin": {
+   "大小": 6291464,
+   "哈希": "2da5dd841c48f2025b91dc498d26c635",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0634.bin": {
+   "大小": 6291464,
+   "哈希": "74583af8796888b6f655b32490568dd9",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0637.bin": {
+   "大小": 6291464,
+   "哈希": "3ddaef115808558e48cf187315c719d2",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0639.bin": {
+   "大小": 6291464,
+   "哈希": "365f8cbda56dae1b9911edb9df4fd618",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0641.bin": {
+   "大小": 6291464,
+   "哈希": "ab4d3694f838db1314c56232dcee7a99",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0644.bin": {
+   "大小": 6291464,
+   "哈希": "edfe4c5f9060d4c0696161d0a77379d7",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0648.bin": {
+   "大小": 6291464,
+   "哈希": "e12727563d1a6ca42f3c8c96cafceb48",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0653.bin": {
+   "大小": 6291464,
+   "哈希": "65d276d8388fed963ae38bef2522595a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0658.bin": {
+   "大小": 6291464,
+   "哈希": "53b1b3dc48c3878356d9c0375967f8bd",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0703.bin": {
+   "大小": 6291464,
+   "哈希": "9666312f610c80d2ddd0c67cc19808e2",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0707.bin": {
+   "大小": 6291464,
+   "哈希": "79b330c596bad781e8338b4fa6c81b32",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0712.bin": {
+   "大小": 6291464,
+   "哈希": "49ac974f534b6d5b640fd2b230584b75",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0717.bin": {
+   "大小": 6291464,
+   "哈希": "0ce8a2c8ac971df03acbbc00b2fde938",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0720.bin": {
+   "大小": 6291464,
+   "哈希": "4f7c9a57c48d9cf6b9b4ca53be444502",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0730.bin": {
+   "大小": 6291464,
+   "哈希": "81df78ecfdf298748083f7a862df536a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0740.bin": {
+   "大小": 6291464,
+   "哈希": "2b3538d35751c26bcf6cec1734a5572d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0750.bin": {
+   "大小": 6291464,
+   "哈希": "7f329537c02309ce3c2fa475d4ec32a4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0800.bin": {
+   "大小": 6291464,
+   "哈希": "691727e00d28d745b1ff1968ae4010d7",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0810.bin": {
+   "大小": 6291464,
+   "哈希": "3375dd4cc3d000f830ab86d33df8d9e9",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0820.bin": {
+   "大小": 6291464,
+   "哈希": "9e22667662dc24fdc1ee7d76243a75f6",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0830.bin": {
+   "大小": 6291464,
+   "哈希": "62a71dca156ab875e10f1fc29be654c8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0840.bin": {
+   "大小": 6291464,
+   "哈希": "69d1fb4f260ec54963fa72c7e761b9b0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0850.bin": {
+   "大小": 6291464,
+   "哈希": "335c7585b8f6e2b3c5baf4316e92b68c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0900.bin": {
+   "大小": 6291464,
+   "哈希": "e551ff90229c3c65ccd5f29a43eea03f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0910.bin": {
+   "大小": 6291464,
+   "哈希": "fe031e267de589eb170d2824db518859",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0920.bin": {
+   "大小": 6291464,
+   "哈希": "40ef89ce4f869491cc677659580755f9",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0930.bin": {
+   "大小": 6291464,
+   "哈希": "f58843ec06f40fb6b042ce3d67776f4d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0940.bin": {
+   "大小": 6291464,
+   "哈希": "2f47f7598f393cf7ea9d2dffc6ffb998",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_0950.bin": {
+   "大小": 6291464,
+   "哈希": "c3e60070d46dfa2761b22cb337bf4aab",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1000.bin": {
+   "大小": 6291464,
+   "哈希": "be833eb6ffce4252d5202e3544e2ab23",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1010.bin": {
+   "大小": 6291464,
+   "哈希": "f528ebd9db09ef800309f3bf7770b495",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1020.bin": {
+   "大小": 6291464,
+   "哈希": "c6015eaa516b34b97942607bbc7e73c7",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1030.bin": {
+   "大小": 6291464,
+   "哈希": "74667b4df18c6210a56be814e31db2e8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1040.bin": {
+   "大小": 6291464,
+   "哈希": "e33cc992653fd0639dbf8dd7acac15d5",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1050.bin": {
+   "大小": 6291464,
+   "哈希": "cbdecdbb56b58eec419b1c75c5657e44",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1100.bin": {
+   "大小": 6291464,
+   "哈希": "694db61a249c97ea3e7e9f0552ed2f3e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1110.bin": {
+   "大小": 6291464,
+   "哈希": "c666a078d05fc03ddaaa4589c784db4a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1120.bin": {
+   "大小": 6291464,
+   "哈希": "f8d86f29fcd94a0cae55f8e5c87cbd8d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1130.bin": {
+   "大小": 6291464,
+   "哈希": "4c60429140fe90faa3f9865d32f65ae3",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1140.bin": {
+   "大小": 6291464,
+   "哈希": "ef9c9a5be23983f08cf2dff8c3968811",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1150.bin": {
+   "大小": 6291464,
+   "哈希": "92001e712cc3a6ea26e86cd8b55ed380",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1200.bin": {
+   "大小": 6291464,
+   "哈希": "a010e9caa6ddc8763fc701a525877b48",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1210.bin": {
+   "大小": 6291464,
+   "哈希": "b283a938df5a1aa9d5ec8673b7f430fd",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1220.bin": {
+   "大小": 6291464,
+   "哈希": "8a89728efda3da30d683b03d14ed1c5d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1230.bin": {
+   "大小": 6291464,
+   "哈希": "8a13762557497d36eb61ac827ca7407b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1240.bin": {
+   "大小": 6291464,
+   "哈希": "99b3666f31f56a90095d1ad9dc5ff0a8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1250.bin": {
+   "大小": 6291464,
+   "哈希": "f934f37ef4954e62fd640c78d7cd2c7b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1307.bin": {
+   "大小": 6291464,
+   "哈希": "21a37d0e4e309eeb8d5392fc17476837",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1310.bin": {
+   "大小": 6291464,
+   "哈希": "467dcdc1271ad72f29fd52fa6739babf",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1320.bin": {
+   "大小": 6291464,
+   "哈希": "84ff7cbdf6ebfc394dfe750b8ba957b0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1330.bin": {
+   "大小": 6291464,
+   "哈希": "750df7c8faad83f0fa723f5b35fd9f41",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1340.bin": {
+   "大小": 6291464,
+   "哈希": "8dee3a41fe3bdc4ac543da4db74b3f89",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1350.bin": {
+   "大小": 6291464,
+   "哈希": "40a5b20e5aa53d47197651699d8ae9ba",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1400.bin": {
+   "大小": 6291464,
+   "哈希": "b57d0b70eb258a148d31739082b6f0a0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1410.bin": {
+   "大小": 6291464,
+   "哈希": "9c72dad5c41a4ffac5b8eac9d23cabda",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1420.bin": {
+   "大小": 6291464,
+   "哈希": "7b6b62e2e494714c8a22d14ea5e1aaa6",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1430.bin": {
+   "大小": 6291464,
+   "哈希": "f80980f5cfa392ba5e017f4eaed02e59",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1440.bin": {
+   "大小": 6291464,
+   "哈希": "b5c51e8159a8f145bb0a393cbe1ae464",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1450.bin": {
+   "大小": 6291464,
+   "哈希": "400684c3f80075877a37f6bd39ab6091",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1500.bin": {
+   "大小": 6291464,
+   "哈希": "58eb9ba22df9467c9ab064ae208f6b4a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1510.bin": {
+   "大小": 6291464,
+   "哈希": "9f500b53f1439911e0bbbb9d35933be2",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1520.bin": {
+   "大小": 6291464,
+   "哈希": "1510c3e38fb225d05e37dfe30cf5efd4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1530.bin": {
+   "大小": 6291464,
+   "哈希": "68df2c35d66d941092a1f41a0cae3fb4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1540.bin": {
+   "大小": 6291464,
+   "哈希": "4f56d27b683ca67d36e54d709393e0d9",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1550.bin": {
+   "大小": 6291464,
+   "哈希": "706ad662a5641d923fc48e20e848e564",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1600.bin": {
+   "大小": 6291464,
+   "哈希": "7e9762b662ec55ed65eb618ac0fcbee4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1610.bin": {
+   "大小": 6291464,
+   "哈希": "fd23c676a9c40eb02301d3d402987ac8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1620.bin": {
+   "大小": 6291464,
+   "哈希": "74c2a7647c4861e31869038f159a671b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1630.bin": {
+   "大小": 6291464,
+   "哈希": "a6eb97a90c2f7b650964295245d6402c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1640.bin": {
+   "大小": 6291464,
+   "哈希": "a8f3cb790931151dc422f11114bdf40b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1643.bin": {
+   "大小": 6291464,
+   "哈希": "b9719f18d373f87d63f5ca174a4ad900",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1648.bin": {
+   "大小": 6291464,
+   "哈希": "ede1b3c8670ac87be2574a4b761172eb",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1650.bin": {
+   "大小": 6291464,
+   "哈希": "acc4ab185664b091d30098070b01c4cb",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1653.bin": {
+   "大小": 6291464,
+   "哈希": "b0d91d622443fecf3976d775e07a84f8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1657.bin": {
+   "大小": 6291464,
+   "哈希": "93c2f8d1092de8f052871cbb142dccaa",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1700.bin": {
+   "大小": 6291464,
+   "哈希": "7156ab5f79dc1dc8beeb5c71749151b0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1702.bin": {
+   "大小": 6291464,
+   "哈希": "dc1e69414aceab440e7534194d7f8d96",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1707.bin": {
+   "大小": 6291464,
+   "哈希": "3df7c2f4ee62363ae7df7b5a6912dcd8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1712.bin": {
+   "大小": 6291464,
+   "哈希": "047ce5b7ed0314fc4a5d65dc54070f9f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1716.bin": {
+   "大小": 6291464,
+   "哈希": "5ed732f20555e43a577443c60da5353c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1719.bin": {
+   "大小": 6291464,
+   "哈希": "4b2e5f06eff6b51d6c868133cb7d1d1d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1721.bin": {
+   "大小": 6291464,
+   "哈希": "dab678dfe2ac27c6786d41de814de374",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1723.bin": {
+   "大小": 6291464,
+   "哈希": "79b9a7b8884f47e445abc35a1a9d30b4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1726.bin": {
+   "大小": 6291464,
+   "哈希": "48781a116baa96730961ac4efb94eef9",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1728.bin": {
+   "大小": 6291464,
+   "哈希": "e7c1ba2d2f6f8cf6565e48c0c9a3fa76",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1730.bin": {
+   "大小": 6291464,
+   "哈希": "da3026690344e4a747d1aed3f059c389",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1733.bin": {
+   "大小": 6291464,
+   "哈希": "28b7d86f0a29ec95894ca03a891a4294",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1735.bin": {
+   "大小": 6291464,
+   "哈希": "4183870d056d87a0006a088cfb0b9b1d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1737.bin": {
+   "大小": 6291464,
+   "哈希": "39dcb488ce9e7c769255b7011057ab1a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1740.bin": {
+   "大小": 6291464,
+   "哈希": "a295b3d186ee6386d67cad0e6b84cea3",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1744.bin": {
+   "大小": 6291464,
+   "哈希": "65c811bbeb59ad2f5917d03b31c70ab4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1749.bin": {
+   "大小": 6291464,
+   "哈希": "b0042cedefa874a092409c5730d65327",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1754.bin": {
+   "大小": 6291464,
+   "哈希": "6430f0b1b7bd2632273417b08e1f55e1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1758.bin": {
+   "大小": 6291464,
+   "哈希": "ed4cf1b924b41f3ff6b3bc7a6e31de0a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1803.bin": {
+   "大小": 6291464,
+   "哈希": "11e6e097471f80cb967e9b5fafd532b5",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1807.bin": {
+   "大小": 6291464,
+   "哈希": "c9deba9e41b7c37b215462d833ead82e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1812.bin": {
+   "大小": 6291464,
+   "哈希": "bbf391ddb97a38b26f20436c0255d689",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1819.bin": {
+   "大小": 6291464,
+   "哈希": "2d54441d9ab6abca1b0735045b43df36",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1825.bin": {
+   "大小": 6291464,
+   "哈希": "fdb5dd7a7a4e2142cefecc163b29d251",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1832.bin": {
+   "大小": 6291464,
+   "哈希": "203672d35bdec50bbda37700812415f8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_1839.bin": {
+   "大小": 6291464,
+   "哈希": "499f38d0b63a60b9d01be1399073394e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0521.bin": {
+   "大小": 6291464,
+   "哈希": "56bde877d1951949cb80bdec78854b05",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0528.bin": {
+   "大小": 6291464,
+   "哈希": "f6e76beee3550b839539bbc404cd9afc",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0535.bin": {
+   "大小": 6291464,
+   "哈希": "1b7fc50f780bb068575bd5442a136e9f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0541.bin": {
+   "大小": 6291464,
+   "哈希": "a5a36c0f74ffe3fd6255fb32b8389127",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0548.bin": {
+   "大小": 6291464,
+   "哈希": "848a114a46954f7d924767e4e608e376",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0553.bin": {
+   "大小": 6291464,
+   "哈希": "50b9f841c594f03e8df36637216c7084",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0557.bin": {
+   "大小": 6291464,
+   "哈希": "50c0d78baeb0ff1aec9009dfc213a9c4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0602.bin": {
+   "大小": 6291464,
+   "哈希": "42baa1871966ab9bdd74768d91d91ce4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0606.bin": {
+   "大小": 6291464,
+   "哈希": "1ffe8fe90b20c37c61d2b0bf06f40b48",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0611.bin": {
+   "大小": 6291464,
+   "哈希": "05e9533705e2f56d8f9278ca188d9e8d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0616.bin": {
+   "大小": 6291464,
+   "哈希": "3a0f8068641270d30bb6dab8f1320300",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0620.bin": {
+   "大小": 6291464,
+   "哈希": "ad66f953fada186427df81bd94355ab6",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0623.bin": {
+   "大小": 6291464,
+   "哈希": "35e0d38f9f9860d8d775565f5ebd651c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0625.bin": {
+   "大小": 6291464,
+   "哈希": "e2443e10ea76517bc79aafd0810e6d21",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0627.bin": {
+   "大小": 6291464,
+   "哈希": "77bf6094b54c48efe8c3c19d4d64c1aa",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0630.bin": {
+   "大小": 6291464,
+   "哈希": "80d538a05d0164163fb2f80dcdfaabea",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0632.bin": {
+   "大小": 6291464,
+   "哈希": "47cc0ced714f6f5059cd2ed222b41548",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0634.bin": {
+   "大小": 6291464,
+   "哈希": "a843275e9ba295afe297054231107018",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0637.bin": {
+   "大小": 6291464,
+   "哈希": "eed85ed165c6b32331e22e17ca3f036a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0639.bin": {
+   "大小": 6291464,
+   "哈希": "f3532a3c99d24805c20bea91d1432d7a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0641.bin": {
+   "大小": 6291464,
+   "哈希": "f58f9e6821dc29fe095de662c82a6409",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0644.bin": {
+   "大小": 6291464,
+   "哈希": "e4e82e6f155ada120ed3185c960aa4f1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0648.bin": {
+   "大小": 6291464,
+   "哈希": "b225ac830066579a8b9f35cd16595b3c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0653.bin": {
+   "大小": 6291464,
+   "哈希": "8eb88d2c2b4c6d7c8fb68ff29af5b896",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0658.bin": {
+   "大小": 6291464,
+   "哈希": "0545e3e3a688af4d8313f3818a95af89",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0703.bin": {
+   "大小": 6291464,
+   "哈希": "248ec95544ecec1a1bc946e02b69e28e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0707.bin": {
+   "大小": 6291464,
+   "哈希": "f37826d2aa71c5ecb794be4ee9ab2524",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0712.bin": {
+   "大小": 6291464,
+   "哈希": "43963ce1d28bc8c8194de787a4a755da",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0717.bin": {
+   "大小": 6291464,
+   "哈希": "207395c65922b01fdc5f661abca3fa04",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0720.bin": {
+   "大小": 6291464,
+   "哈希": "0271da59297dfaaa9def2ccbbdf92d84",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0730.bin": {
+   "大小": 6291464,
+   "哈希": "9d16074397805c38eacd06b0c5641f57",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0740.bin": {
+   "大小": 6291464,
+   "哈希": "5ea702b2e11ac88aa9790251b6b55173",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0750.bin": {
+   "大小": 6291464,
+   "哈希": "91124ed13817aed24b3fd2b3ee2625c7",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0800.bin": {
+   "大小": 6291464,
+   "哈希": "febb5b37f6d9af1b1aed7fb9336a22cf",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0810.bin": {
+   "大小": 6291464,
+   "哈希": "b4d89c8e7b1a95ecdc7c3ed0fb8e3c46",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0820.bin": {
+   "大小": 6291464,
+   "哈希": "290ac1d5b03ddac93b0a522a00910d27",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0830.bin": {
+   "大小": 6291464,
+   "哈希": "64f864014fe151e50fb266a42f21da43",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0840.bin": {
+   "大小": 6291464,
+   "哈希": "4ab638e523f200148d86bf4dfc89f975",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0850.bin": {
+   "大小": 6291464,
+   "哈希": "6ca139bf68fc92954e097e4a5460ce23",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0900.bin": {
+   "大小": 6291464,
+   "哈希": "fbee6a2b05e788b8d9c2594b74db538d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0910.bin": {
+   "大小": 6291464,
+   "哈希": "a1554d52fbcfb0e316b9d5291a6337ad",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0920.bin": {
+   "大小": 6291464,
+   "哈希": "30276c16928c147b1bc9358b68738935",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0930.bin": {
+   "大小": 6291464,
+   "哈希": "781ba0da7d3e4831eaab0617c8f80a06",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0940.bin": {
+   "大小": 6291464,
+   "哈希": "1a2d7d347d95be574a22771f40c6e4e7",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_0950.bin": {
+   "大小": 6291464,
+   "哈希": "4c159f96b0d7598a1b1fbb7451ef847a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1000.bin": {
+   "大小": 6291464,
+   "哈希": "264238ef18ab448f900b43f5d037dc80",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1010.bin": {
+   "大小": 6291464,
+   "哈希": "54e820ce3ab6b0c0a65035dbf6624ec9",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1020.bin": {
+   "大小": 6291464,
+   "哈希": "1a9e5a10d394fb0fbbfc547d867491cd",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1030.bin": {
+   "大小": 6291464,
+   "哈希": "a11c101ae524a2712adec803230d7b3f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1040.bin": {
+   "大小": 6291464,
+   "哈希": "33dcc44eec6ddb1cab02d898317ef246",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1050.bin": {
+   "大小": 6291464,
+   "哈希": "44f76d1ab089bb7049a39fa963592709",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1100.bin": {
+   "大小": 6291464,
+   "哈希": "2fe5b80fcda61d305aad16ca8b17e755",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1110.bin": {
+   "大小": 6291464,
+   "哈希": "88700a785b8aef1d81a9a8280e31ab66",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1120.bin": {
+   "大小": 6291464,
+   "哈希": "228ea830694a92e0f86c362d7b403cc5",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1130.bin": {
+   "大小": 6291464,
+   "哈希": "7105d4854ad8bdb114962bf115ad9cfc",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1140.bin": {
+   "大小": 6291464,
+   "哈希": "43714308446849c4e5647de92b7ff92a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1150.bin": {
+   "大小": 6291464,
+   "哈希": "bdff7c4354b8b1f0358e575ff3cc34cf",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1200.bin": {
+   "大小": 6291464,
+   "哈希": "231f24e70d99b24bf82e05ebbadedd4e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1210.bin": {
+   "大小": 6291464,
+   "哈希": "7fd8e7b8963a5295454759337bd8b83c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1220.bin": {
+   "大小": 6291464,
+   "哈希": "1210603f498e71fa5aa60af4d68a265d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1230.bin": {
+   "大小": 6291464,
+   "哈希": "fd25cfe9c046b411ce4ae83ca2117425",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1240.bin": {
+   "大小": 6291464,
+   "哈希": "743336d4f255d8429bfa200c857b2d89",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1250.bin": {
+   "大小": 6291464,
+   "哈希": "9e79cc9fa29510cd80f1a57dcea2a516",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1307.bin": {
+   "大小": 6291464,
+   "哈希": "b5c3170460642f7f6f5d1631009842db",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1310.bin": {
+   "大小": 6291464,
+   "哈希": "11ce2953d9e2e5c8ee08a6a17453747a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1320.bin": {
+   "大小": 6291464,
+   "哈希": "18de9659d71e9bb166856e1acd5235aa",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1330.bin": {
+   "大小": 6291464,
+   "哈希": "cea220ed5dc546c06d94cf4032414955",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1340.bin": {
+   "大小": 6291464,
+   "哈希": "922b49013779c06dcf3534038df81254",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1350.bin": {
+   "大小": 6291464,
+   "哈希": "f2491774ca286509744105d7c66c6799",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1400.bin": {
+   "大小": 6291464,
+   "哈希": "2add5c12ef1254c580279d05c3918843",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1410.bin": {
+   "大小": 6291464,
+   "哈希": "939e8e1179ca1cc8f5dbc3200c4f9824",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1420.bin": {
+   "大小": 6291464,
+   "哈希": "f1803709f6551d92acdbf1e16eed8fdb",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1430.bin": {
+   "大小": 6291464,
+   "哈希": "762fcdc2666a7090a62c28eb46aaddd5",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1440.bin": {
+   "大小": 6291464,
+   "哈希": "e633ccd133c8ef90427cc725dfb9e428",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1450.bin": {
+   "大小": 6291464,
+   "哈希": "84c5be2e5dafcb2c52c2d1c85045f224",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1500.bin": {
+   "大小": 6291464,
+   "哈希": "3b614e08bfaf31d8fd7a19e5b6229b6b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1510.bin": {
+   "大小": 6291464,
+   "哈希": "f40549ab9f79215461f55fc488b7e894",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1520.bin": {
+   "大小": 6291464,
+   "哈希": "f9719ff136534978f3f873705628b7e1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1530.bin": {
+   "大小": 6291464,
+   "哈希": "5082fbf7225bcab1b50c94043b850ccd",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1540.bin": {
+   "大小": 6291464,
+   "哈希": "0f223ebe715dcf6835d01199abe537b3",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1550.bin": {
+   "大小": 6291464,
+   "哈希": "c945ad1714189ca6945a3d5c47f10c18",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1600.bin": {
+   "大小": 6291464,
+   "哈希": "da08898d71f1935b709f169b1f3013fd",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1610.bin": {
+   "大小": 6291464,
+   "哈希": "f612f3059a5ba1509ff3b45c4b2e37a3",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1620.bin": {
+   "大小": 6291464,
+   "哈希": "c9e13ff90848a3ac986c907727b93b66",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1630.bin": {
+   "大小": 6291464,
+   "哈希": "d19ea105e97f03d512197827ca96215b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1640.bin": {
+   "大小": 6291464,
+   "哈希": "e3302b441092eb46a83d6aa4570e006c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1643.bin": {
+   "大小": 6291464,
+   "哈希": "5de9c2d032dd21f043ae37507f3b7e22",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1648.bin": {
+   "大小": 6291464,
+   "哈希": "53a3c478e49e2980224fea57cad381c5",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1650.bin": {
+   "大小": 6291464,
+   "哈希": "86beb455080526384bbef6c369ae5223",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1653.bin": {
+   "大小": 6291464,
+   "哈希": "d9b05a8755b1c5d8cbdc05b6f6750e7e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1657.bin": {
+   "大小": 6291464,
+   "哈希": "58254417e7622f9220b1e6a0340a34ce",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1700.bin": {
+   "大小": 6291464,
+   "哈希": "af58d565751e06e1506a4cb75a72bec9",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1702.bin": {
+   "大小": 6291464,
+   "哈希": "511b1e41b9c0240899eb989bd7cd46f0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1707.bin": {
+   "大小": 6291464,
+   "哈希": "1337d3a44707624d9566b3b5e23047bd",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1712.bin": {
+   "大小": 6291464,
+   "哈希": "429ce14c9d04ec301a91bbbff2095c89",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1716.bin": {
+   "大小": 6291464,
+   "哈希": "08299fc3b83e6ca524622a0b2a16ab7e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1719.bin": {
+   "大小": 6291464,
+   "哈希": "bf1aceeb20e2309324f88cc4c6ed6872",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1721.bin": {
+   "大小": 6291464,
+   "哈希": "dbfe5bdfdd68159e9353da12236a8801",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1723.bin": {
+   "大小": 6291464,
+   "哈希": "9e3750ce1eeae19e4b586a045bcad532",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1726.bin": {
+   "大小": 6291464,
+   "哈希": "ec90e1bf35154ddc1742e57da01c37ba",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1728.bin": {
+   "大小": 6291464,
+   "哈希": "7d3b21fe3091e7c1fc0a0ab67de7208c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1730.bin": {
+   "大小": 6291464,
+   "哈希": "e35bd0377992a19fd412f324390272f1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1733.bin": {
+   "大小": 6291464,
+   "哈希": "ee366c06500845d71568430bc8431787",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1735.bin": {
+   "大小": 6291464,
+   "哈希": "0f91a50812555cd3f7f12211e99a4a58",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1737.bin": {
+   "大小": 6291464,
+   "哈希": "134fe0dadffd27a1901daedc7d93aa4e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1740.bin": {
+   "大小": 6291464,
+   "哈希": "e410de6694a402dba1388616e2859511",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1744.bin": {
+   "大小": 6291464,
+   "哈希": "ef71bebb8c0ce2144c49dd581a324799",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1749.bin": {
+   "大小": 6291464,
+   "哈希": "756f281ad8208af344049d52303acbb0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1754.bin": {
+   "大小": 6291464,
+   "哈希": "396b8c75c5c20365da2432e19b574f77",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1758.bin": {
+   "大小": 6291464,
+   "哈希": "86615c8cd281f09b5b568d605efc13ff",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1803.bin": {
+   "大小": 6291464,
+   "哈希": "f71711c23d98cfdd814bdebd46ffe0e8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1807.bin": {
+   "大小": 6291464,
+   "哈希": "311064522109e66d7e62c26ec266b700",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1812.bin": {
+   "大小": 6291464,
+   "哈希": "b643faea28aeb98dc9c19cb38574f6c9",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1819.bin": {
+   "大小": 6291464,
+   "哈希": "6f2837bae4b3bb6d278dc022a171efa1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1825.bin": {
+   "大小": 6291464,
+   "哈希": "5aefc056388938794e6c5815afa95a83",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1832.bin": {
+   "大小": 6291464,
+   "哈希": "b2a378f154cc155df1bbefa229c13a00",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t0.3_1839.bin": {
+   "大小": 6291464,
+   "哈希": "bc11e6a90b0979c294b746d6847af26c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0521.bin": {
+   "大小": 6291464,
+   "哈希": "7dd24eb3805ff7af2c6eaa2765d395d6",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0528.bin": {
+   "大小": 6291464,
+   "哈希": "3cb67fe9c5c0c20331d660a5e9ec8f1a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0535.bin": {
+   "大小": 6291464,
+   "哈希": "de233d788102d29a190fea5e43f67697",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0541.bin": {
+   "大小": 6291464,
+   "哈希": "e8f5fb22830b27258f4f46e1d40207ba",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0548.bin": {
+   "大小": 6291464,
+   "哈希": "e398dc3d4c087ed04bfe0fbd3c5f8f58",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0553.bin": {
+   "大小": 6291464,
+   "哈希": "f4c6e82669f32f5d3f0a5f1360fe9436",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0557.bin": {
+   "大小": 6291464,
+   "哈希": "0ab0cea6492126c9723da4264aaa60d3",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0602.bin": {
+   "大小": 6291464,
+   "哈希": "cf0854290ea32608a4f4147623cf10c4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0606.bin": {
+   "大小": 6291464,
+   "哈希": "1362590f9baaeb4b809f7dd2bc0643c5",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0611.bin": {
+   "大小": 6291464,
+   "哈希": "dcd05f5dbd3ab3fc5f349c55eb141978",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0616.bin": {
+   "大小": 6291464,
+   "哈希": "0f4526475de53df4cb41d6d5d37758c1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0620.bin": {
+   "大小": 6291464,
+   "哈希": "d900fa1e1293893002f06d470a85177b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0623.bin": {
+   "大小": 6291464,
+   "哈希": "036565026dba0e9688b22cbd3c5ffc24",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0625.bin": {
+   "大小": 6291464,
+   "哈希": "f80510da6fa88b5406b8ecac43737802",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0627.bin": {
+   "大小": 6291464,
+   "哈希": "4da987e0587c9519f5417893378f7c56",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0630.bin": {
+   "大小": 6291464,
+   "哈希": "2729829f0cad6a01641a0cabd25f52b8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0632.bin": {
+   "大小": 6291464,
+   "哈希": "bb088e3391c392ba1fabdde6d04606ea",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0634.bin": {
+   "大小": 6291464,
+   "哈希": "6d0703d1f854727450fbd2298e8fcc32",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0637.bin": {
+   "大小": 6291464,
+   "哈希": "ab789edcaf86078d324230c8224a324e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0639.bin": {
+   "大小": 6291464,
+   "哈希": "c727540847dbc5c9a70f8c84d287eda1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0641.bin": {
+   "大小": 6291464,
+   "哈希": "ea1c59eadcec8ae3d7a2d75af094905c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0644.bin": {
+   "大小": 6291464,
+   "哈希": "7a0afda0637402f326223497b2cdd157",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0648.bin": {
+   "大小": 6291464,
+   "哈希": "9f481b9397f1e717a129d60f7eb74639",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0653.bin": {
+   "大小": 6291464,
+   "哈希": "3186fb3266cdc5570df7fb8514273d3d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0658.bin": {
+   "大小": 6291464,
+   "哈希": "b486aa95ed32582cf080c66642629fd7",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0703.bin": {
+   "大小": 6291464,
+   "哈希": "35cc8174125269c5dfe3976ee8d85ce0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0707.bin": {
+   "大小": 6291464,
+   "哈希": "8d98cedc3034e816c7117c1d909e5ec1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0712.bin": {
+   "大小": 6291464,
+   "哈希": "af95db76cfec72f5ed1de8888446b689",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0717.bin": {
+   "大小": 6291464,
+   "哈希": "77a9474bd1d50124da6f970dffbeb781",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0720.bin": {
+   "大小": 6291464,
+   "哈希": "b922328652cd1dbef07cb4b651258895",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0730.bin": {
+   "大小": 6291464,
+   "哈希": "d653ec39fc26bbe93c48ecb27ba2249b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0740.bin": {
+   "大小": 6291464,
+   "哈希": "4096612dc6a5db6e51e763d083bbdc00",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0750.bin": {
+   "大小": 6291464,
+   "哈希": "89a82d1c6e6f754a53cbb87180efaf5c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0800.bin": {
+   "大小": 6291464,
+   "哈希": "3071379fc5543c9d45bbef967895d975",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0810.bin": {
+   "大小": 6291464,
+   "哈希": "4124558234e82300139e93c20e7f305d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0820.bin": {
+   "大小": 6291464,
+   "哈希": "83d2bd06e8618717732e9e23f245f047",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0830.bin": {
+   "大小": 6291464,
+   "哈希": "54806397eaec53d7a68dba3cc60afdc5",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0840.bin": {
+   "大小": 6291464,
+   "哈希": "2ff05b43ce58f0bdf2310a47713adf2e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0850.bin": {
+   "大小": 6291464,
+   "哈希": "c14307982eb843235e581e356327507d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0900.bin": {
+   "大小": 6291464,
+   "哈希": "48e9188166ac09dde1592cac9d24b857",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0910.bin": {
+   "大小": 6291464,
+   "哈希": "8b3d40da3d8b91252f5ffdcb8f46f78e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0920.bin": {
+   "大小": 6291464,
+   "哈希": "fead856fbc78460c946afa55269c85ee",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0930.bin": {
+   "大小": 6291464,
+   "哈希": "3028a3588a086d5be845155baf08db35",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0940.bin": {
+   "大小": 6291464,
+   "哈希": "3bedbd7c2afe16b22736a838bfc81f43",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_0950.bin": {
+   "大小": 6291464,
+   "哈希": "b57dc9d141e429760494a9acd85d759e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1000.bin": {
+   "大小": 6291464,
+   "哈希": "325ae3b2408dd1e79c29f9f5cdd6ac81",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1010.bin": {
+   "大小": 6291464,
+   "哈希": "9fb3432001f926ba1a7c17b43dcf8066",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1020.bin": {
+   "大小": 6291464,
+   "哈希": "abac6b5ec772d0cf6b97707c85e071d6",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1030.bin": {
+   "大小": 6291464,
+   "哈希": "8acbe4dd0a7f26a4477214754cc8e471",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1040.bin": {
+   "大小": 6291464,
+   "哈希": "1ba45d35638053bbd4adfe6c251c57b4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1050.bin": {
+   "大小": 6291464,
+   "哈希": "53f610030e9105510259e8451a3330c1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1100.bin": {
+   "大小": 6291464,
+   "哈希": "c46eb520e958b056645be77ed56373e7",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1110.bin": {
+   "大小": 6291464,
+   "哈希": "63985cec3e1bad6a5998afbc28375495",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1120.bin": {
+   "大小": 6291464,
+   "哈希": "b4234234ad9c650c1267fd6bfeacc832",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1130.bin": {
+   "大小": 6291464,
+   "哈希": "c0e2195efa01f30b4bd3ec8bd4a62051",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1140.bin": {
+   "大小": 6291464,
+   "哈希": "cdd24142f50c3ed0ebdd23e3c7c79024",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1150.bin": {
+   "大小": 6291464,
+   "哈希": "6d642ff8d612631a37354cb8fc8a1df2",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1200.bin": {
+   "大小": 6291464,
+   "哈希": "417778bcca8e52dbc7a654d877fc4563",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1210.bin": {
+   "大小": 6291464,
+   "哈希": "75e3830b1a24e40e6da440f82eb73699",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1220.bin": {
+   "大小": 6291464,
+   "哈希": "23360015a814bda888e18ccf6a368f1b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1230.bin": {
+   "大小": 6291464,
+   "哈希": "69d992683dbb879e625ce6c9e32a6ba6",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1240.bin": {
+   "大小": 6291464,
+   "哈希": "6bfb98d1f5b94c8adcd9c882502b1e84",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1250.bin": {
+   "大小": 6291464,
+   "哈希": "46a8ce19a1d219baf5850d1fb92b640d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1307.bin": {
+   "大小": 6291464,
+   "哈希": "b1ceedd72b68ab0533e8745e06048b90",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1310.bin": {
+   "大小": 6291464,
+   "哈希": "dcd4441fe6786d1f23c707952ae12a53",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1320.bin": {
+   "大小": 6291464,
+   "哈希": "d84f3d910a4ac937ef2a176e305a3c40",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1330.bin": {
+   "大小": 6291464,
+   "哈希": "51e87fd60ae84988053e7b443534f512",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1340.bin": {
+   "大小": 6291464,
+   "哈希": "47f392f71bbf5d1cc95c66c0d84c46cf",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1350.bin": {
+   "大小": 6291464,
+   "哈希": "6d48c06107a5faedb3719eeec8b0df09",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1400.bin": {
+   "大小": 6291464,
+   "哈希": "df42b0b4fc27520527d8613edca8cc58",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1410.bin": {
+   "大小": 6291464,
+   "哈希": "79c207dbb7d8b3162ca392f005a44bc8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1420.bin": {
+   "大小": 6291464,
+   "哈希": "ffa6e963a91643ba65e5e1159e7cfc86",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1430.bin": {
+   "大小": 6291464,
+   "哈希": "b357e88f0b1f837c21f78f3d1a7a9510",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1440.bin": {
+   "大小": 6291464,
+   "哈希": "277eb2bb14e2764505a525efcc15bf7f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1450.bin": {
+   "大小": 6291464,
+   "哈希": "99d271845da43811875fabc356e6cb81",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1500.bin": {
+   "大小": 6291464,
+   "哈希": "172bd378407015d9b2abd1861def6e02",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1510.bin": {
+   "大小": 6291464,
+   "哈希": "521cd117d7ba6db067f75c036d56b3fe",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1520.bin": {
+   "大小": 6291464,
+   "哈希": "4c0327f84a9e956d430ae76f0242b391",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1530.bin": {
+   "大小": 6291464,
+   "哈希": "08944a9fa42503ce3182ecbbf2fc9e75",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1540.bin": {
+   "大小": 6291464,
+   "哈希": "b1a794d0c35cdfd415fe7894dc3422df",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1550.bin": {
+   "大小": 6291464,
+   "哈希": "c20cd692fee811c991d57260ac2106a2",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1600.bin": {
+   "大小": 6291464,
+   "哈希": "421b7cff4b1f469dbc5bb3841bba5f92",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1610.bin": {
+   "大小": 6291464,
+   "哈希": "74f40cc4b22cff2621ad1877405c3055",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1620.bin": {
+   "大小": 6291464,
+   "哈希": "cb7488a29dbde3d93d8e45a200a1cf50",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1630.bin": {
+   "大小": 6291464,
+   "哈希": "aec0ea2aba49a9af84997a8ec733998e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1640.bin": {
+   "大小": 6291464,
+   "哈希": "67330a0a791dbe8e9f00611da1690213",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1643.bin": {
+   "大小": 6291464,
+   "哈希": "de2bb1f369dbf92bc896406a691f244c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1648.bin": {
+   "大小": 6291464,
+   "哈希": "0a9d989c9eb97b649fb7e2634cab4456",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1650.bin": {
+   "大小": 6291464,
+   "哈希": "bfff0ff8e804fca75ddfb20571a5f2cd",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1653.bin": {
+   "大小": 6291464,
+   "哈希": "c97c254019b1df85e2a71eee84c0dfaf",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1657.bin": {
+   "大小": 6291464,
+   "哈希": "0adc82f1557321ec19d16c120876bbe8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1700.bin": {
+   "大小": 6291464,
+   "哈希": "e47c1ffb2805b447687b8dcb76d293f3",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1702.bin": {
+   "大小": 6291464,
+   "哈希": "de158c5346f9fc3fa94eb902c917f03d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1707.bin": {
+   "大小": 6291464,
+   "哈希": "3499b66ac332c0c1aedbff89637bfb43",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1712.bin": {
+   "大小": 6291464,
+   "哈希": "03181f16e3eb954b25d83135498e66ea",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1716.bin": {
+   "大小": 6291464,
+   "哈希": "64e08281eca13d0c104d913558e9bf5f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1719.bin": {
+   "大小": 6291464,
+   "哈希": "b01db6c9c5089d6def53559cc3ecd567",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1721.bin": {
+   "大小": 6291464,
+   "哈希": "d228eecf87a6b2f330250dec3a24ea11",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1723.bin": {
+   "大小": 6291464,
+   "哈希": "77ec89f097f6ee460fa657b5aa353bbb",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1726.bin": {
+   "大小": 6291464,
+   "哈希": "2e8ce0479d2abca5b44da5f6e9fd5642",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1728.bin": {
+   "大小": 6291464,
+   "哈希": "7eee8217d0b76013a83e0e9ece4acaa4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1730.bin": {
+   "大小": 6291464,
+   "哈希": "3877dd444cc5ba42265758c7afcb758a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1733.bin": {
+   "大小": 6291464,
+   "哈希": "4c4eacbf44ad5049ec9c4b64a82c2b06",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1735.bin": {
+   "大小": 6291464,
+   "哈希": "d55b9a293e5cb0be8eb9c701715205c2",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1737.bin": {
+   "大小": 6291464,
+   "哈希": "d324919b7e60a6d780dc2966d56e0a58",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1740.bin": {
+   "大小": 6291464,
+   "哈希": "3a69c744d9b8d3a3eba75ff1ba5ad690",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1744.bin": {
+   "大小": 6291464,
+   "哈希": "62cb23911f8cb4d8532037fb59a48cd6",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1749.bin": {
+   "大小": 6291464,
+   "哈希": "d1852cb9467403f4e81dbcd036c4bd3a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1754.bin": {
+   "大小": 6291464,
+   "哈希": "0a17c5a46e697128cb17b0087e77d5b1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1758.bin": {
+   "大小": 6291464,
+   "哈希": "71a9bcef1d3a96ae76a22b877e4a4499",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1803.bin": {
+   "大小": 6291464,
+   "哈希": "61191e1775897658fe78860c9fea4809",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1807.bin": {
+   "大小": 6291464,
+   "哈希": "b034f236d4ee3c5a6ece8746f0010a16",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1812.bin": {
+   "大小": 6291464,
+   "哈希": "204c93659178c60d362b5e7a79ddb723",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1819.bin": {
+   "大小": 6291464,
+   "哈希": "35776660dbeaa18f27a66581fafe86bb",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1825.bin": {
+   "大小": 6291464,
+   "哈希": "ef07873f91ec11da27757199c21ee821",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1832.bin": {
+   "大小": 6291464,
+   "哈希": "365f19a37a0b2f9f280a533ba5da71ac",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t1.5_1839.bin": {
+   "大小": 6291464,
+   "哈希": "2aa6ed8381fee0f59636bff574bd912f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0521.bin": {
+   "大小": 6291464,
+   "哈希": "e417418eb1db4a2d03a8b656a161a261",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0528.bin": {
+   "大小": 6291464,
+   "哈希": "2cd993b208e87d52c617f03db8a33c1a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0535.bin": {
+   "大小": 6291464,
+   "哈希": "6506e58e0175b2ea6039aa8e206edbbf",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0541.bin": {
+   "大小": 6291464,
+   "哈希": "85522a1ee15890a66c35c13ccac04569",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0548.bin": {
+   "大小": 6291464,
+   "哈希": "ad545bdc9ff009beb8bff13e88c232ea",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0553.bin": {
+   "大小": 6291464,
+   "哈希": "cb506920a2876e74c86b565561532a9c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0557.bin": {
+   "大小": 6291464,
+   "哈希": "650cb5cae01ef8a86d35585857334243",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0602.bin": {
+   "大小": 6291464,
+   "哈希": "832454195b58c44de71d0376d863f3fc",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0606.bin": {
+   "大小": 6291464,
+   "哈希": "4edc763ca2f4c94d2603784ed1cc1fd9",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0611.bin": {
+   "大小": 6291464,
+   "哈希": "0f4ac610c3535fa850f204b0ac050e00",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0616.bin": {
+   "大小": 6291464,
+   "哈希": "01550e3ecfce554892804accd662d088",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0620.bin": {
+   "大小": 6291464,
+   "哈希": "f3ac901a8c5eab070f19599fa14bcc57",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0623.bin": {
+   "大小": 6291464,
+   "哈希": "91b263daad12d90f8c69172d7f5350d1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0625.bin": {
+   "大小": 6291464,
+   "哈希": "a023afb82a2bc126576202440d6791bb",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0627.bin": {
+   "大小": 6291464,
+   "哈希": "605d6792914773408345f391baf5fae0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0630.bin": {
+   "大小": 6291464,
+   "哈希": "09494f828eacb2706f92d3a9d976104e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0632.bin": {
+   "大小": 6291464,
+   "哈希": "4263d400e8045aa3d486350bf5166563",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0634.bin": {
+   "大小": 6291464,
+   "哈希": "c25e35a58af578e97fee183d332abaf0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0637.bin": {
+   "大小": 6291464,
+   "哈希": "eda33be96066f71a9b69c3100bb9d542",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0639.bin": {
+   "大小": 6291464,
+   "哈希": "3f55cc0cacb3fd05af02dbafe48b48b1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0641.bin": {
+   "大小": 6291464,
+   "哈希": "7349d677fd750fa0b9ffd291f90736fa",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0644.bin": {
+   "大小": 6291464,
+   "哈希": "b224a891ddfa61a891b0f47c44b5f1bd",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0648.bin": {
+   "大小": 6291464,
+   "哈希": "13b5dabcb3bf881026083d42e8b7ecdd",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0653.bin": {
+   "大小": 6291464,
+   "哈希": "aecb87e31477e9b0f93a8d80f3b5e0d2",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0658.bin": {
+   "大小": 6291464,
+   "哈希": "4a2f905a1262203cc52c40e17982debc",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0703.bin": {
+   "大小": 6291464,
+   "哈希": "19f7924f8a1feb5b9ce46361302439c5",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0707.bin": {
+   "大小": 6291464,
+   "哈希": "71076d66b2d3d624b55784f31adf0efd",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0712.bin": {
+   "大小": 6291464,
+   "哈希": "1daa67db49497e375ae47b039641a3a0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0717.bin": {
+   "大小": 6291464,
+   "哈希": "d12d42913f2e18d779240b01a52a993c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0720.bin": {
+   "大小": 6291464,
+   "哈希": "03be32ffa711897f3a84f97be070154d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0730.bin": {
+   "大小": 6291464,
+   "哈希": "205e8987e307de0297287dd7d07adbf8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0740.bin": {
+   "大小": 6291464,
+   "哈希": "c5e20ea386e42b14d63602514b29a0de",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0750.bin": {
+   "大小": 6291464,
+   "哈希": "280e2ed799f2b4235d6c1a34560d25aa",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0800.bin": {
+   "大小": 6291464,
+   "哈希": "6652ffdf4d52cb1f1b0dc3d447868a85",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0810.bin": {
+   "大小": 6291464,
+   "哈希": "fcb4f07e843925824d9e035a3800e1a1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0820.bin": {
+   "大小": 6291464,
+   "哈希": "b657df1dd5a58fd401321b259d076d68",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0830.bin": {
+   "大小": 6291464,
+   "哈希": "ff99a1a0c4e56d4371a164f799adb0b2",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0840.bin": {
+   "大小": 6291464,
+   "哈希": "212717b7276cdca4f8089aafe5fe12f3",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0850.bin": {
+   "大小": 6291464,
+   "哈希": "6560abb99304267a61e399253a583e1a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0900.bin": {
+   "大小": 6291464,
+   "哈希": "18724a0f3529a36bedc151f28f10e657",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0910.bin": {
+   "大小": 6291464,
+   "哈希": "109a582e4089b0c8b4b9d048e9f793c3",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0920.bin": {
+   "大小": 6291464,
+   "哈希": "7c17d9e7ad3d89e43aca41820d4fbdcb",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0930.bin": {
+   "大小": 6291464,
+   "哈希": "6cb4d5f4b0c1511616574ef9cecdd015",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0940.bin": {
+   "大小": 6291464,
+   "哈希": "b4f90812cc4f7197233860cbd45e504c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_0950.bin": {
+   "大小": 6291464,
+   "哈希": "60fb0c49854c6b9eedda919ad8b7d3dd",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1000.bin": {
+   "大小": 6291464,
+   "哈希": "76e928350f5a0c57ea76b6e773256c5a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1010.bin": {
+   "大小": 6291464,
+   "哈希": "526e4baea7f27281c503eec655f1d59f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1020.bin": {
+   "大小": 6291464,
+   "哈希": "ddecfe266fc51d18bf13806a399b5444",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1030.bin": {
+   "大小": 6291464,
+   "哈希": "544a0097015bddbbde3d289fe05c4e23",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1040.bin": {
+   "大小": 6291464,
+   "哈希": "8b29f61856c5328731459b61a0851e99",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1050.bin": {
+   "大小": 6291464,
+   "哈希": "181e630dc5407fb08ecb3a6ce52c1f08",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1100.bin": {
+   "大小": 6291464,
+   "哈希": "231a2eb6e9c1281ee16d79d64f6adb29",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1110.bin": {
+   "大小": 6291464,
+   "哈希": "370c27dabe56bf1b44e380f78279a6f4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1120.bin": {
+   "大小": 6291464,
+   "哈希": "d83c0f12dcc6821bef3f1842beaa8b1b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1130.bin": {
+   "大小": 6291464,
+   "哈希": "9fb5f53341b4482ee8bc0ae032c8e964",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1140.bin": {
+   "大小": 6291464,
+   "哈希": "33724be1042aad17a62c723224c7a8d1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1150.bin": {
+   "大小": 6291464,
+   "哈希": "60d5b311bf90120f04f6fa716960978b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1200.bin": {
+   "大小": 6291464,
+   "哈希": "0463217a79965bc5689c10474e17ab1e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1210.bin": {
+   "大小": 6291464,
+   "哈希": "dd6e16429c7d76739add775b953b818e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1220.bin": {
+   "大小": 6291464,
+   "哈希": "1a09bab240f4a7c66cb706561627ebd8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1230.bin": {
+   "大小": 6291464,
+   "哈希": "bf7c68e6055bd2e41f65a8dfb7d0c405",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1240.bin": {
+   "大小": 6291464,
+   "哈希": "6ffc97be3b362f3519ad5cbcb5b2b22c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1250.bin": {
+   "大小": 6291464,
+   "哈希": "c7e52a540309eb29a66aafc2106fe9c1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1307.bin": {
+   "大小": 6291464,
+   "哈希": "15902ba3a5bbcd313e7794fee19a67ef",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1310.bin": {
+   "大小": 6291464,
+   "哈希": "20f3c5a5850229af55560ed497268824",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1320.bin": {
+   "大小": 6291464,
+   "哈希": "05e3712ffc0152f3be391839d7d0c733",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1330.bin": {
+   "大小": 6291464,
+   "哈希": "668c8a5713dbfde1548324499ea78df3",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1340.bin": {
+   "大小": 6291464,
+   "哈希": "6a86815f228f6786bbdd88dd583bfab5",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1350.bin": {
+   "大小": 6291464,
+   "哈希": "7d313873d716339bf2b429158b579096",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1400.bin": {
+   "大小": 6291464,
+   "哈希": "22e4f6696c2a195194ccf9793bb64248",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1410.bin": {
+   "大小": 6291464,
+   "哈希": "0534b285214c68933fa1c4259df45ac1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1420.bin": {
+   "大小": 6291464,
+   "哈希": "33efc5887c4b0c456bd6165871aeaf7f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1430.bin": {
+   "大小": 6291464,
+   "哈希": "870b2aaad685e98d6a8b56df22567432",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1440.bin": {
+   "大小": 6291464,
+   "哈希": "1a8df1703044f01194c211092530e5a7",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1450.bin": {
+   "大小": 6291464,
+   "哈希": "b510a2311d0b93088a22cc388f53c399",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1500.bin": {
+   "大小": 6291464,
+   "哈希": "10f37cb02e0552b6476eba0b8dc1dc3c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1510.bin": {
+   "大小": 6291464,
+   "哈希": "9a652c7429b1215ae1507eb3b8c63b0d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1520.bin": {
+   "大小": 6291464,
+   "哈希": "f0f62713be70fc98e703ac421bf2f985",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1530.bin": {
+   "大小": 6291464,
+   "哈希": "39d477183c88723a3d4e907dcaa30dd7",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1540.bin": {
+   "大小": 6291464,
+   "哈希": "e68dace644a960d773fa1c6e984a31a2",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1550.bin": {
+   "大小": 6291464,
+   "哈希": "64b81c78c51be4ead7fe8d391794cc07",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1600.bin": {
+   "大小": 6291464,
+   "哈希": "b7eb98d7882f0749f2f56332537131a0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1610.bin": {
+   "大小": 6291464,
+   "哈希": "47683b6a1abfc97d880dc3b910a28b0f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1620.bin": {
+   "大小": 6291464,
+   "哈希": "17c5379ac16ca78e41c3c235beee52a6",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1630.bin": {
+   "大小": 6291464,
+   "哈希": "f02089e385bd1cdd71e247df6ebd254f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1640.bin": {
+   "大小": 6291464,
+   "哈希": "21bbaad65cd9491eb29cf88d07e1b209",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1643.bin": {
+   "大小": 6291464,
+   "哈希": "40ac2a01cb02bc626b3ee284b4f2a353",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1648.bin": {
+   "大小": 6291464,
+   "哈希": "c55a755c4d2a56fd85a9f2d25dd12279",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1650.bin": {
+   "大小": 6291464,
+   "哈希": "6e24941b1d08c2704fcd7b40f209f106",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1653.bin": {
+   "大小": 6291464,
+   "哈希": "34367eb185433888a5f2b95208ed647e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1657.bin": {
+   "大小": 6291464,
+   "哈希": "6efea5936977ab6dad7bc2b64043809b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1700.bin": {
+   "大小": 6291464,
+   "哈希": "6636e37a8ac43f7f2604949e71698354",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1702.bin": {
+   "大小": 6291464,
+   "哈希": "eedca991f5e59ca8a231369c99537506",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1707.bin": {
+   "大小": 6291464,
+   "哈希": "e54cb857adbd6146c7d781db2416eefd",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1712.bin": {
+   "大小": 6291464,
+   "哈希": "b25a29c3524ea0f6ae1038fc59274e89",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1716.bin": {
+   "大小": 6291464,
+   "哈希": "416e86fae6bdf8283f58a6d81e565137",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1719.bin": {
+   "大小": 6291464,
+   "哈希": "80bf45c2d4b8ffd947bec9c8ceffcc11",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1721.bin": {
+   "大小": 6291464,
+   "哈希": "c0911fdaebea0df6a9047cfe6aca7a08",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1723.bin": {
+   "大小": 6291464,
+   "哈希": "d2bc53ca215fb7ae759559a6bbe38b77",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1726.bin": {
+   "大小": 6291464,
+   "哈希": "2ca5755f11caa4e5eaf61343f126e173",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1728.bin": {
+   "大小": 6291464,
+   "哈希": "cd8869f02be8135245eaf43431d8a2ed",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1730.bin": {
+   "大小": 6291464,
+   "哈希": "09a4cdc4eb9e02ee24a019330ee03361",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1733.bin": {
+   "大小": 6291464,
+   "哈希": "4cbb48a1619ba833003c52fc68a3499e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1735.bin": {
+   "大小": 6291464,
+   "哈希": "23eb6f0b8cccb24772c88be91816e8a2",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1737.bin": {
+   "大小": 6291464,
+   "哈希": "410e0cfe7375edb83bb29427710509dd",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1740.bin": {
+   "大小": 6291464,
+   "哈希": "1dab19492fe01cb3b91f3759a3487310",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1744.bin": {
+   "大小": 6291464,
+   "哈希": "61eb966abaa75b0609b73f82a27a4308",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1749.bin": {
+   "大小": 6291464,
+   "哈希": "aa155e00f32aaa07ff1e6d80108c22a2",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1754.bin": {
+   "大小": 6291464,
+   "哈希": "ef11c1199e42cac84e42756579669a73",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1758.bin": {
+   "大小": 6291464,
+   "哈希": "f74abc4d946ccf1a54ff7197632b90b4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1803.bin": {
+   "大小": 6291464,
+   "哈希": "4d6b29cbb43b5fa8efd0467aa582a580",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1807.bin": {
+   "大小": 6291464,
+   "哈希": "43d65b7205574dae2b0ffb661377d040",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1812.bin": {
+   "大小": 6291464,
+   "哈希": "1615f2dfb9a6c5bbccdf35a0582b3063",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1819.bin": {
+   "大小": 6291464,
+   "哈希": "79c33a3ededf85312c3f3ff760bbb097",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1825.bin": {
+   "大小": 6291464,
+   "哈希": "cda08d9996f37387d7251c7d8942b220",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1832.bin": {
+   "大小": 6291464,
+   "哈希": "cf7b2a175f4e6366b70db2aa4cc5ca47",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t3_1839.bin": {
+   "大小": 6291464,
+   "哈希": "aa6b86703a06f0dc00942e7e76e46aca",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0521.bin": {
+   "大小": 6291464,
+   "哈希": "a67f62a3328e54ba69607e54faaa146c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0528.bin": {
+   "大小": 6291464,
+   "哈希": "4be5a43c5b01e11564aa7088cab13a45",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0535.bin": {
+   "大小": 6291464,
+   "哈希": "c45017b501352ba2a46bea6377ebe2dd",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0541.bin": {
+   "大小": 6291464,
+   "哈希": "8c6980dfc0307ccea9cbcb2251dde4c9",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0548.bin": {
+   "大小": 6291464,
+   "哈希": "617b6f628fe36afeadf367a0ec680474",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0553.bin": {
+   "大小": 6291464,
+   "哈希": "01f87bb51b432e7933eed9e9c1fe102b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0557.bin": {
+   "大小": 6291464,
+   "哈希": "9a10fdfbbc9b019b84b6153b72d41276",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0602.bin": {
+   "大小": 6291464,
+   "哈希": "99cdbc88baf6193e7b1068f530c97575",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0606.bin": {
+   "大小": 6291464,
+   "哈希": "6c36c56cfd1cda5829c6a89c24462405",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0611.bin": {
+   "大小": 6291464,
+   "哈希": "c9085aa4bf7dc28c67f13686a11baa39",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0616.bin": {
+   "大小": 6291464,
+   "哈希": "237e2b183d7568e76d71baa026605a4f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0620.bin": {
+   "大小": 6291464,
+   "哈希": "98f81f842f5f029efa269f40b606ec4d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0623.bin": {
+   "大小": 6291464,
+   "哈希": "f393a8d5c5774df9a96e90a4cf045f44",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0625.bin": {
+   "大小": 6291464,
+   "哈希": "f07052e25f2014563a1976895cb945e5",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0627.bin": {
+   "大小": 6291464,
+   "哈希": "4b69bdae44673135484adfba25a106cc",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0630.bin": {
+   "大小": 6291464,
+   "哈希": "bdf718d16799a0a58f9f419b0fc977f8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0632.bin": {
+   "大小": 6291464,
+   "哈希": "f88bc25f5ec950e0bfa1b8ca286d3403",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0634.bin": {
+   "大小": 6291464,
+   "哈希": "fd8965238f057e86f050f1e61afcd09e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0637.bin": {
+   "大小": 6291464,
+   "哈希": "aece6fa21016c45e7a5a0e721b306aad",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0639.bin": {
+   "大小": 6291464,
+   "哈希": "c837302e84552911db8043251bb8eb98",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0641.bin": {
+   "大小": 6291464,
+   "哈希": "c3789b21f971321bd968a330bd5f4788",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0644.bin": {
+   "大小": 6291464,
+   "哈希": "36754216892586e7c6ae65295c098bec",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0648.bin": {
+   "大小": 6291464,
+   "哈希": "6aa1585186a65fc6845b7cc57c52b673",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0653.bin": {
+   "大小": 6291464,
+   "哈希": "9e834f97d449954710b6f21fb1f4dc88",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0658.bin": {
+   "大小": 6291464,
+   "哈希": "d5b4fb2a7dd79602cf2484bb84ffea8f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0703.bin": {
+   "大小": 6291464,
+   "哈希": "0fbf124680adf9822992cd41ecd83444",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0707.bin": {
+   "大小": 6291464,
+   "哈希": "39098c93c273b6dc220a249c3a72637e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0712.bin": {
+   "大小": 6291464,
+   "哈希": "387dd7e4f0c7c375e6351529c51955dc",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0717.bin": {
+   "大小": 6291464,
+   "哈希": "0df4da5d36e2126e6f32aeebdc8ef0eb",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0720.bin": {
+   "大小": 6291464,
+   "哈希": "a970e3230bfa6841b258beab0c761dd0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0730.bin": {
+   "大小": 6291464,
+   "哈希": "91f2ee7ef6705dce9bec4cfc89b1ba4a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0740.bin": {
+   "大小": 6291464,
+   "哈希": "d265a434af8f1d94083be734c411114f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0750.bin": {
+   "大小": 6291464,
+   "哈希": "7e38ee994e968509abd27c3bb96c075b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0800.bin": {
+   "大小": 6291464,
+   "哈希": "9344bed4e510fe0abef6a3772afd05c7",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0810.bin": {
+   "大小": 6291464,
+   "哈希": "b374ba82cac4b3813101a26e7566d569",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0820.bin": {
+   "大小": 6291464,
+   "哈希": "0506a586042aadad6d11dcbe915ec298",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0830.bin": {
+   "大小": 6291464,
+   "哈希": "a8d79219ceb4673fcc5cc2bf2fb33488",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0840.bin": {
+   "大小": 6291464,
+   "哈希": "a08ef0d6a5d3a33a81a913febe0d05be",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0850.bin": {
+   "大小": 6291464,
+   "哈希": "899d6f31a150f5517d37838cd3ff1da9",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0900.bin": {
+   "大小": 6291464,
+   "哈希": "c20beb5ee828ad20887f76426b87578b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0910.bin": {
+   "大小": 6291464,
+   "哈希": "1dc5c144477967f29a967f5270bb4553",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0920.bin": {
+   "大小": 6291464,
+   "哈希": "6d1ecf0a28f92d35023102c37a63c9ed",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0930.bin": {
+   "大小": 6291464,
+   "哈希": "00090df7dddc70df8ebb507d021e90f7",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0940.bin": {
+   "大小": 6291464,
+   "哈希": "5dc3369fd64af6d23afc293e75836b1e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_0950.bin": {
+   "大小": 6291464,
+   "哈希": "6512f85853118670335c80f72d5c0ea8",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1000.bin": {
+   "大小": 6291464,
+   "哈希": "7103a9b26bc7a0d481f7331acb8b0018",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1010.bin": {
+   "大小": 6291464,
+   "哈希": "2608aa89a447bd5ed6eb9a122c073f6d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1020.bin": {
+   "大小": 6291464,
+   "哈希": "0532b21b6233b5cf131da6c9fc33cbe7",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1030.bin": {
+   "大小": 6291464,
+   "哈希": "3c15885dfc76c5e084569a580d7bb776",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1040.bin": {
+   "大小": 6291464,
+   "哈希": "cd77d601e070cbc9e642558f465c763e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1050.bin": {
+   "大小": 6291464,
+   "哈希": "05160cfba6a3ec2097e18762c4946bcc",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1100.bin": {
+   "大小": 6291464,
+   "哈希": "be52a3703d7a90312dd79ad722d83037",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1110.bin": {
+   "大小": 6291464,
+   "哈希": "2a53356d2f3b9aa6ea825595ba1391d4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1120.bin": {
+   "大小": 6291464,
+   "哈希": "2a55c90a5848f49d165dcb2de26648c1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1130.bin": {
+   "大小": 6291464,
+   "哈希": "a973d65de573fef985dbfff1bd372bd0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1140.bin": {
+   "大小": 6291464,
+   "哈希": "37df82c2173c051e1ea9069c229dd481",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1150.bin": {
+   "大小": 6291464,
+   "哈希": "53142efe02d194c9c5a5f52b159517af",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1200.bin": {
+   "大小": 6291464,
+   "哈希": "f69d99ebeb7abe7852c630140bdf3285",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1210.bin": {
+   "大小": 6291464,
+   "哈希": "ce28a490f51bc2fab885aa690453f817",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1220.bin": {
+   "大小": 6291464,
+   "哈希": "c4cac146f0f38f21d9fc05b7dfc33318",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1230.bin": {
+   "大小": 6291464,
+   "哈希": "4535c3860fdf9ea16fe5f1741c762bcb",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1240.bin": {
+   "大小": 6291464,
+   "哈希": "aa4963af53abf5b600ae9c70c5702b05",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1250.bin": {
+   "大小": 6291464,
+   "哈希": "fc78059964837a78ea8e5572d9b8ee1e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1307.bin": {
+   "大小": 6291464,
+   "哈希": "e4e66bb817cc25ceb8a881d72a852c45",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1310.bin": {
+   "大小": 6291464,
+   "哈希": "891261a4aa19f31a59aab9a2c9618d20",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1320.bin": {
+   "大小": 6291464,
+   "哈希": "c8f0e9b20ce1cd8cf37f111f1efae81b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1330.bin": {
+   "大小": 6291464,
+   "哈希": "d0462143a5fe04636fad602b7e88e371",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1340.bin": {
+   "大小": 6291464,
+   "哈希": "8d706359484b3a998917140694f66070",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1350.bin": {
+   "大小": 6291464,
+   "哈希": "3cda3119fabcf6bc87e7e0b20c3f681b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1400.bin": {
+   "大小": 6291464,
+   "哈希": "f13633c380641ab069a81a4eb7c5ee3c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1410.bin": {
+   "大小": 6291464,
+   "哈希": "a8201b29d0dd37cd54ebcbda77e16c00",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1420.bin": {
+   "大小": 6291464,
+   "哈希": "cc46e175b3dc42084ece1e452e4d84fe",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1430.bin": {
+   "大小": 6291464,
+   "哈希": "04b396c984c93fbe55495cb0fe869682",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1440.bin": {
+   "大小": 6291464,
+   "哈希": "7704ee2b6ae123fad33d7921d8cb9c8c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1450.bin": {
+   "大小": 6291464,
+   "哈希": "7b942cbffa627945fd32818d01bb60fe",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1500.bin": {
+   "大小": 6291464,
+   "哈希": "da86b44db94fa343c752aa9cda7f704d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1510.bin": {
+   "大小": 6291464,
+   "哈希": "3c7eef33bb0fabc9d07c759a11b1fc49",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1520.bin": {
+   "大小": 6291464,
+   "哈希": "b3f40f6af9cb6dac39fd383bf76af42a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1530.bin": {
+   "大小": 6291464,
+   "哈希": "2c32e1b0d51ff59fb2b067dd5a91d63c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1540.bin": {
+   "大小": 6291464,
+   "哈希": "804cf213fa070facb257c5909c8ade59",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1550.bin": {
+   "大小": 6291464,
+   "哈希": "31d9d5318f444401032eb25e75ca4775",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1600.bin": {
+   "大小": 6291464,
+   "哈希": "ecde05cc11c38e123e14a4ebc4075188",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1610.bin": {
+   "大小": 6291464,
+   "哈希": "40d13bf09b32ecd72c7c6538d70084c3",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1620.bin": {
+   "大小": 6291464,
+   "哈希": "7ed98d6e3a43e05c4cfebef42238d6b0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1630.bin": {
+   "大小": 6291464,
+   "哈希": "53a52ad0783293c20a9c1ba13dc5f8a3",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1640.bin": {
+   "大小": 6291464,
+   "哈希": "5a67f33f0e1cfc707d9741b88716d418",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1643.bin": {
+   "大小": 6291464,
+   "哈希": "9c5a847d5b71e88560c1de9bf8b845bd",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1648.bin": {
+   "大小": 6291464,
+   "哈希": "0730ac59b68ff3325363f12268455537",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1650.bin": {
+   "大小": 6291464,
+   "哈希": "6d498dc93357a2efc019b215e29ebdf5",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1653.bin": {
+   "大小": 6291464,
+   "哈希": "412016921d5660b77d78f14b53402711",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1657.bin": {
+   "大小": 6291464,
+   "哈希": "8890e238a6ea7a12def9714b25829cf9",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1700.bin": {
+   "大小": 6291464,
+   "哈希": "c01dab799052aafc7fe23a3814981ca7",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1702.bin": {
+   "大小": 6291464,
+   "哈希": "3cdc1ae79f799739d0ec10c322bbbe2a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1707.bin": {
+   "大小": 6291464,
+   "哈希": "0ea3d86a8e495c4423f33489b680d619",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1712.bin": {
+   "大小": 6291464,
+   "哈希": "50748f239c43f3c05857658af5ef5ac0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1716.bin": {
+   "大小": 6291464,
+   "哈希": "8e7fffa776504909413b117f77a38cd7",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1719.bin": {
+   "大小": 6291464,
+   "哈希": "e088fcac171db6f6279dd85318b31d4d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1721.bin": {
+   "大小": 6291464,
+   "哈希": "97be1116e4d7a34ccc36048b8e16a837",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1723.bin": {
+   "大小": 6291464,
+   "哈希": "f56ad63e7d56747444369145c522eea6",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1726.bin": {
+   "大小": 6291464,
+   "哈希": "b67d9ee0a01304eca551fa3a3a984703",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1728.bin": {
+   "大小": 6291464,
+   "哈希": "340e9a7c79f4e7c3b4ec7c958e62439a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1730.bin": {
+   "大小": 6291464,
+   "哈希": "a68cdfb6bfccc54ffa5dff2ddbe1d20e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1733.bin": {
+   "大小": 6291464,
+   "哈希": "e7add21552ef63235a62836e48b5b9a1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1735.bin": {
+   "大小": 6291464,
+   "哈希": "fa7d5083d23d43c5cb0309e0d587494f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1737.bin": {
+   "大小": 6291464,
+   "哈希": "50ae44897cb42d07c7fc4e2bdfe034a0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1740.bin": {
+   "大小": 6291464,
+   "哈希": "b50fbdafbfdb945ba0037f6535c420a3",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1744.bin": {
+   "大小": 6291464,
+   "哈希": "77de860181d683870e4c7d14f2f8c7cb",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1749.bin": {
+   "大小": 6291464,
+   "哈希": "f72b5f65abf1bcaf6cd375944927bc66",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1754.bin": {
+   "大小": 6291464,
+   "哈希": "457c28351fb33f68cd31ae52a0f88787",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1758.bin": {
+   "大小": 6291464,
+   "哈希": "ff523f77cfe1ba4b368ab3bb173dace0",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1803.bin": {
+   "大小": 6291464,
+   "哈希": "4efeab41723a6101cbe86c71212962a5",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1807.bin": {
+   "大小": 6291464,
+   "哈希": "a13ed8681e8d52632c88bad79a03e51d",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1812.bin": {
+   "大小": 6291464,
+   "哈希": "c8a8a3c08f8623cd4b9a4a251bc40c0a",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1819.bin": {
+   "大小": 6291464,
+   "哈希": "a8278ca34583b79f9901a6714c0813e5",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1825.bin": {
+   "大小": 6291464,
+   "哈希": "df6d975350b60a4a01d75d8f436dfebe",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1832.bin": {
+   "大小": 6291464,
+   "哈希": "08119961e09e2052ca0a8a6695f9edc6",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "sky_t5_1839.bin": {
+   "大小": 6291464,
+   "哈希": "bd101a79a8e193e8bb9895357716b7a2",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/amalik_1.jpg": {
+   "大小": 56975,
+   "哈希": "4a144dbb8b164d7dee2acb61a3f98f2f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/enchanted_1.jpg": {
+   "大小": 178739,
+   "哈希": "28fd615edc5fae4dba73b0dae017f91e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/hawksbill_1.jpg": {
+   "大小": 130665,
+   "哈希": "107034ed4622ed3284968122d2d34b2f",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/hogwallow_1.jpg": {
+   "大小": 160207,
+   "哈希": "394209e7c2a6163aa3207770ce186cdf",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/jezero_1.jpg": {
+   "大小": 71159,
+   "哈希": "da0db6e06aa308bdd8689b45ea78a36b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/landing_1.jpg": {
+   "大小": 139017,
+   "哈希": "38138bd7d9b238bbf4a9a3bab04d2ed7",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/obsmtn_1.jpg": {
+   "大小": 189227,
+   "哈希": "a41e2ba928714a1e07fd4b55c3f5a1d4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/obsmtn_2.jpg": {
+   "大小": 44920,
+   "哈希": "b8e3684f808c7028253e5794a5c85cd5",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/skinner_1.jpg": {
+   "大小": 158281,
+   "哈希": "929f17942ce166ba107925145f9a1d01",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/skinner_2.jpg": {
+   "大小": 63665,
+   "哈希": "bb67214a3082f6a0ff5ad4142476b38e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/three_forks_1.jpg": {
+   "大小": 131522,
+   "哈希": "1fd8c4fa07cb180865c6bc5eaed3881c",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/tracks_1.jpg": {
+   "大小": 166228,
+   "哈希": "5c84bb2e983fefbbe525661feec019f1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/wildcat_1.jpg": {
+   "大小": 190479,
+   "哈希": "45692756434e3edfeb12a55afbbaefc2",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/挑战_enchanted427.jpg": {
+   "大小": 178739,
+   "哈希": "28fd615edc5fae4dba73b0dae017f91e",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/挑战_enchanted427_针孔.jpg": {
+   "大小": 257312,
+   "哈希": "d651c30694738aa15248e1da2d962805",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/挑战_skinner490.jpg": {
+   "大小": 158281,
+   "哈希": "929f17942ce166ba107925145f9a1d01",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/挑战_skinner490_针孔.jpg": {
+   "大小": 215472,
+   "哈希": "16ee74b1ef692fbb0c132ddcce307c42",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/挑战_sol530.jpg": {
+   "大小": 71159,
+   "哈希": "da0db6e06aa308bdd8689b45ea78a36b",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/挑战_sol530_针孔.jpg": {
+   "大小": 82144,
+   "哈希": "7b40aa1ae88f59e4e7dee52f9fc94086",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/挑战_tracks535.jpg": {
+   "大小": 166228,
+   "哈希": "5c84bb2e983fefbbe525661feec019f1",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点/挑战_tracks535_针孔.jpg": {
+   "大小": 224342,
+   "哈希": "e3668ccb4457a52a66e07edc4cd873b4",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "兴趣点.json": {
+   "大小": 26238,
+   "哈希": "1139a8d6678240459890bcb82a570712",
+   "来源": "scripts/Godot/61_Godot数据.py"
+  },
+  "地图台已探索.bin": {
+   "大小": 326800,
+   "哈希": "f5dfbdf29850884595f07817089316cd",
+   "来源": "scripts/Godot/90_地图台数据.py"
+  },
+  "地图台底.png": {
+   "大小": 53395,
+   "哈希": "0fd1b2a097214e24caf40dc46b8413c0",
+   "来源": "scripts/Godot/90_地图台数据.py"
+  },
+  "地图台机位.json": {
+   "大小": 333,
+   "哈希": "49574160903b90e9498df6727d74c9c4",
+   "来源": "scripts/Godot/90_地图台数据.py"
+  },
+  "地图台路线.json": {
+   "大小": 154256,
+   "哈希": "4be092ab4caf3756d1a298e7779cc050",
+   "来源": "scripts/Godot/90_地图台数据.py"
+  },
+  "材质/mat_meso_ah.dds": {
+   "大小": 8039844,
+   "哈希": "23a91dad8302f0b3e1875df05211c13d",
+   "来源": "scripts/Godot/73_材质规则.py"
+  },
+  "材质/mat_meso_d.dds": {
+   "大小": 8039844,
+   "哈希": "5d34b0764254376d6c7328d5f05c119c",
+   "来源": "scripts/Godot/73_材质规则.py"
+  },
+  "材质/mat_meso_h16.dds": {
+   "大小": 16078298,
+   "哈希": "3c32b857def9a8fc37bc63d81dca4f4a",
+   "来源": "scripts/Godot/73_材质规则.py"
+  },
+  "材质/mat_micro_ah.dds": {
+   "大小": 2796564,
+   "哈希": "ec313803ad032583a328ca10cf4a9b99",
+   "来源": "scripts/Godot/73_材质规则.py"
+  },
+  "材质/mat_micro_d.dds": {
+   "大小": 2796564,
+   "哈希": "916a7faf17fa7b52d01e91a0c8bcbaae",
+   "来源": "scripts/Godot/73_材质规则.py"
+  },
+  "材质2/mat_meso_ah.dds": {
+   "大小": 24818340,
+   "哈希": "744e5bbd223d663657a88bda26d32c04",
+   "来源": "scripts/Godot/81_中景丰富度.py"
+  },
+  "材质2/mat_meso_d.dds": {
+   "大小": 24818340,
+   "哈希": "aa539612f52e595cfcb12f1d63eb3be9",
+   "来源": "scripts/Godot/81_中景丰富度.py"
+  },
+  "材质2/mat_meso_h16.dds": {
+   "大小": 3102138,
+   "哈希": "f7bd7c749525aba8f46c8ba9014214c2",
+   "来源": "scripts/Godot/81_中景丰富度.py"
+  },
+  "材质2/mat_meso_h16_full.dds": {
+   "大小": 49632698,
+   "哈希": "a7234bc7ae9d6479f50248479f3a8f74",
+   "来源": "scripts/Godot/81_中景丰富度.py"
+  },
+  "材质2/mat_micro_ah.dds": {
+   "大小": 4893876,
+   "哈希": "921b19a6c7790d5eab0519da8e024f9c",
+   "来源": "scripts/Godot/81_中景丰富度.py"
+  },
+  "材质2/mat_micro_d.dds": {
+   "大小": 4893876,
+   "哈希": "07b9b4ffaef5661b60046af79f59d015",
+   "来源": "scripts/Godot/81_中景丰富度.py"
+  },
+  "车辙.bin": {
+   "大小": 25475208,
+   "哈希": "6ee540add22a1b2a99d0ab5b3c24940f",
+   "来源": "scripts/Godot/66_车辆动画.py"
+  },
+  "车辙.json": {
+   "大小": 279,
+   "哈希": "dce3cae7913507d834d90385726d2ed1",
+   "来源": "scripts/Godot/66_车辆动画.py"
+  }
+ }
+}

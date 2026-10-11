@@ -1,0 +1,3 @@
+[submodule "godot/扩展/仿真核心/gdextension/godot-cpp"]
+	path = godot/扩展/仿真核心/gdextension/godot-cpp
+	url = https://github.com/godotengine/godot-cpp

@@ -1,0 +1,12 @@
+版本=4.7.2-mars.1
+上游=4.7.2-stable ed1daf0bf001b61586d9930840f2f1394092c079
+分支=mars-4.7（fedora ~/引擎/godot，无远端）
+提交=5d7782b310193922d660b82a3f52e11baebbb707
+补丁=0001-接触阴影-118045 0002-远级联缓存 0003-多次反弹AO 0004-深度预通道常量
+编辑器=bin/godot.linuxbsd.editor.x86_64.mars（提交 5d7782b31，production=yes debug_symbols=yes separate_debug_symbols=yes extra_suffix=mars）
+模板=bin/godot.linuxbsd.template_release.x86_64.mars（提交 5d7782b31，production=yes extra_suffix=mars，2026-10-07 编，sha256 前 16 位 bd6ffa138a82d0af）
+扩展=godot/扩展/仿真核心/bin/libmars_sim.linux.template_release.x86_64.so（godot-cpp ed672dc，api_version=4.7 use_static_cpp=no）
+多平台（2026-10-10，同一提交 5d7782b31，没动 ~/引擎/godot/bin；副本 ~/引擎/godot_多平台，产物 ~/引擎/多平台产物/）：
+  Linux 老 glibc=buildroot SDK godot-2023.08.x-4（gcc 13.2、glibc 2.28），模板 sha256 前 16 位 7cae7de0d502e78f，扩展 295cb1e0c34aa3b3，最高 GLIBC_2.28 / 2.27
+  Windows=容器 mars-win-cross（mingw-w64 GCC 13 posix），模板 sha256 前 16 位 90e9bb4a564d640f（d3d12=no accesskit=no）
+  macOS=Mac 上 Apple clang 21（CLT），platform=macos arch=arm64 production=yes lto=thin vulkan=no accesskit=no extra_suffix=mars（Metal）

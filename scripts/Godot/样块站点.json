@@ -1,0 +1,4107 @@
+{
+ "说明": "74_多站样块.py 的站点配置。每站：rover（M2020 / MSL）、site/drive、sols；Navcam 帧 frames[{sol, xyz, ras, rasR?, uvw?}]（产品地址，下载到 资料/地面材质/PDS/站/<站>/）或 local_glob（已下载的本地 XYZ）；cs 格距（米）；ref 配准参考帧（sol_HHMM）；r_sel 选点离车距离（米）；r_grid 定格用的距离；bbox 可直接给 [x0, x1, y0, y1]（ENU 米）；sep 分离用的帧（缺省 = 全部，太阳高 < sep_min_el 的不要）；sep_ref_rule 主光照簇（缺省自动：离中心帧太阳方向 ≤ 12°）；cut 切块规则（rules 滑窗打分表达式，可用 sand/frag/slab/okf/fragd/bd/lr/shadow/rough/hrel/taken；windows 手选窗口；decals 贴花）；mastcam.patches Mastcam-Z 块；cut.max_seam_step [log 反照率, 毫米] 帧接缝台阶门槛（超过的候选不要；s0530 不设，保持复现）；cut.max_hole 补洞上限；规则 k 候选数、max 本类最多块数、sub 子类型。",
+ "库说明": "真火星地面材质样块库（74_多站样块.py 库 生成，勿手改）。每块是一张可平铺的细节图块：反照率细节（逐通道均值 1）+ 高度（米，零均值，去平面和 0.5 m 低频），都做了 Moisan 周期分解（贴花除外）。类型定义、放置线索见 类型；站点见 站点；方法和质量见 docs/地面材质/样块库.md。",
+ "库格式": {
+  "albedo": "PNG RGB8，存 A/gain（第 0 行在南，同 57/61）；解码 A = 像素/255 × gain。gain = 全图最大值向上取到 0.01（同 61.albedo_gain），不截断",
+  "height": "<id>_height.bin：int32 宽、高，然后 float32 高度（米）行优先，第 0 行在南（同 61）",
+  "size_m": "整块边长（米）；px_m 格距（米）",
+  "可信频段": "Navcam 全分辨率：高度只到约 1 cm 波长（更细的是平滑），反照率到约 2 mm；Navcam 半分辨率：高度约 2 cm、反照率约 4 mm；Mastcam-Z 110 mm：高度约 3–5 mm、反照率 0.5–1 mm；好奇号 Navcam：见站点 note",
+  "h_rms_mm": "高度细节的标准差",
+  "albedo_contrast": "反照率细节 log 亮度的标准差",
+  "rb_contrast": "log(R/B) 的标准差",
+  "slope_rms_1cm_deg": "高度平滑到 1 cm 后的坡度 RMS",
+  "lam_dom_cm": "2 cm–0.5 m 内方差最大的 1/4 倍频程带中心",
+  "psd_beta": "2D 高度谱在 2–20 cm 的斜率",
+  "rgb_rel_station": "块平均线性 RGB（分离后的反照率）÷ 本站整片有效地面的中值（Mastcam 块：÷ 本块所在帧中值）：同站内的相对亮度与颜色",
+  "rgb_rel_type": "rgb_rel_station ÷ 同类各块的几何平均：同类变体之间的颜色差",
+  "quality": "hole_frac 补洞比例；shadow_frac 每帧都在投射阴影里的格的比例；frames 分离用帧数；illuminations 光照簇数；nframes_med 块内参与的帧数中值；range_m 块中心离车距离；footprint_mm 顺距离方向的像素足迹（近边、中心、远边）；seam_step_log / seam_step_mm 块内帧接缝两侧的反照率（log）/高度（毫米）中位台阶（切块时超过站点 cut.max_seam_step 的候选不要）；shading_leak_r 分离后反照率与明暗模型的高通相关（站级，|r| 越小越干净）",
+  "flags": "质量标记（中文短语）"
+ },
+ "类型": {
+  "M1": {
+   "名称": "暗色细沙 / 风化层（板间、低处）",
+   "英文": "dark fine sand / regolith",
+   "现有地类": "沙",
+   "粗糙度": [
+    0.92,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.25,
+    "角色": "填低处",
+    "说明": "高度混合里优先占低处、裂隙和凹处；边缘柔和"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     20
+    ],
+    "曲率": "凹（负）",
+    "相对高程": "低于 1 m 均值",
+    "背风": "是（石块背风、坑内）",
+    "其他": "基岩岛之间、裂隙里"
+   }
+  },
+  "M2": {
+   "名称": "浅色裂隙基岩板（硫酸盐胶结粉砂岩）",
+   "英文": "fractured light-toned bedrock slabs",
+   "现有地类": "基岩",
+   "粗糙度": [
+    0.75,
+    0.9
+   ],
+   "高度混合": {
+    "对比": 0.8,
+    "角色": "盖高处",
+    "说明": "板面平、板缘锐利，混合边界要硬；缝里让给 M1"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     20
+    ],
+    "曲率": "凸（正）",
+    "相对高程": "高出周围 1–10 cm",
+    "背风": "否",
+    "其他": "成岛 + 缝，不宜大面积平铺"
+   }
+  },
+  "M3": {
+   "名称": "棱角碎片砾石裙",
+   "英文": "angular fragment gravel apron",
+   "现有地类": "砾石风化层",
+   "粗糙度": [
+    0.85,
+    0.95
+   ],
+   "高度混合": {
+    "对比": 0.6,
+    "角色": "中间",
+    "说明": "碎片突出于沙面，混合边界中等"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     25
+    ],
+    "曲率": "任意，坡下侧更多",
+    "相对高程": "基岩岛周围 0.5–3 m",
+    "背风": "否",
+    "其他": "离 M2 板缘距离指数衰减"
+   }
+  },
+  "M4": {
+   "名称": "冲击波纹沙（厘米级沙纹）",
+   "英文": "impact ripples",
+   "现有地类": "沙",
+   "粗糙度": [
+    0.95,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.3,
+    "角色": "填低处",
+    "说明": "平地和槽地，按风向旋转"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     8
+    ],
+    "曲率": "平或凹",
+    "相对高程": "低处、槽地",
+    "背风": "石块背风侧接 M9",
+    "其他": "方向 = 局部风向"
+   }
+  },
+  "M5": {
+   "名称": "大波纹 / TAR 脊与槽",
+   "英文": "megaripple / TAR crest and trough",
+   "现有地类": "沙",
+   "粗糙度": [
+    0.9,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.4,
+    "角色": "按印章曲率",
+    "说明": "脊（正曲率）用颗粒装甲，槽（负曲率）用积尘细沙"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     15
+    ],
+    "曲率": "脊：正；槽：负",
+    "相对高程": "TAR 区",
+    "背风": "迎风坡偏脊材质",
+    "其他": "需要米级起伏（印章）"
+   }
+  },
+  "M6": {
+   "名称": "车辙",
+   "英文": "wheel tracks",
+   "现有地类": "—",
+   "程序化": true,
+   "粗糙度": [
+    0.9,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.0,
+    "角色": "运行时贴",
+    "说明": "运行时生成"
+   },
+   "放置": {
+    "其他": "车轮轨迹"
+   }
+  },
+  "M7": {
+   "名称": "灰色浮石 / 卵石地面",
+   "英文": "grey float rocks",
+   "现有地类": "暗色岩块",
+   "粗糙度": [
+    0.8,
+    0.9
+   ],
+   "高度混合": {
+    "对比": 0.7,
+    "角色": "盖高处"
+   },
+   "放置": {
+    "其他": "均匀稀疏撒布，坡下平原多"
+   }
+  },
+  "M8": {
+   "名称": "片状纹层 / 台阶层理岩",
+   "英文": "platy laminated bedrock",
+   "现有地类": "基岩",
+   "粗糙度": [
+    0.75,
+    0.9
+   ],
+   "高度混合": {
+    "对比": 0.8,
+    "角色": "盖高处"
+   },
+   "放置": {
+    "坡度_deg": [
+     15,
+     60
+    ],
+    "曲率": "凸、坎",
+    "相对高程": "露头面、板缘",
+    "其他": "层面近水平，用世界 z 做层序"
+   }
+  },
+  "M9": {
+   "名称": "背风积沙尾",
+   "英文": "wind tails",
+   "现有地类": "沙",
+   "程序化": true,
+   "粗糙度": [
+    0.95,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.2,
+    "角色": "印章"
+   },
+   "放置": {
+    "背风": "石块背风侧",
+    "其他": "长 1–3 倍石径"
+   }
+  },
+  "M10": {
+   "名称": "积尘层（修饰）",
+   "英文": "dust mantle (modifier)",
+   "现有地类": "—",
+   "程序化": true,
+   "粗糙度": [
+    0.95,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.0,
+    "角色": "着色器参数"
+   },
+   "放置": {
+    "其他": "朝上、天空可见度高、背风"
+   }
+  },
+  "M11": {
+   "名称": "崖脚碎石裙 / 崖锥",
+   "英文": "talus apron",
+   "现有地类": "砾石风化层",
+   "粗糙度": [
+    0.85,
+    0.95
+   ],
+   "高度混合": {
+    "对比": 0.7,
+    "角色": "盖高处"
+   },
+   "放置": {
+    "坡度_deg": [
+     20,
+     35
+    ],
+    "曲率": "凹（坡脚）",
+    "相对高程": "崖面下方",
+    "其他": "石径随离坡脚距离增大"
+   }
+  },
+  "M12": {
+   "名称": "磨蚀斑 / 钻孔（贴花）",
+   "英文": "abrasion patch / borehole decal",
+   "现有地类": "基岩",
+   "贴花": true,
+   "粗糙度": [
+    0.6,
+    0.8
+   ],
+   "高度混合": {
+    "对比": 1.0,
+    "角色": "贴花"
+   },
+   "放置": {
+    "其他": "只放真实位置"
+   }
+  },
+  "M13": {
+   "名称": "坑底富橄榄石堆晶岩（Séítah）",
+   "英文": "olivine-rich cumulate bedrock (Séítah)",
+   "现有地类": "基岩",
+   "新增": true,
+   "粗糙度": [
+    0.8,
+    0.92
+   ],
+   "高度混合": {
+    "对比": 0.75,
+    "角色": "盖高处",
+    "说明": "块状、风蚀成的鳞片/棱面，岩面之间积暗沙"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     30
+    ],
+    "曲率": "凸",
+    "相对高程": "岩脊、露头",
+    "背风": "沙在背风处积",
+    "其他": "坑底 Séítah 单元；与 M18/M5 沙波相间"
+   }
+  },
+  "M14": {
+   "名称": "Máaz 玄武质坑底基岩（含铺路石）",
+   "英文": "Máaz basaltic crater-floor bedrock / pavers",
+   "现有地类": "基岩",
+   "新增": true,
+   "粗糙度": [
+    0.8,
+    0.92
+   ],
+   "高度混合": {
+    "对比": 0.7,
+    "角色": "盖高处",
+    "说明": "平顶板块、多孔面、积尘"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     15
+    ],
+    "曲率": "平到凸",
+    "相对高程": "平原上略高",
+    "其他": "坑底 Máaz 单元；板块间是 M16/M17"
+   }
+  },
+  "M15": {
+   "名称": "多边形裂隙地面（干裂/六边形纹）",
+   "英文": "polygonally fractured ground",
+   "现有地类": "基岩",
+   "新增": true,
+   "粗糙度": [
+    0.8,
+    0.95
+   ],
+   "高度混合": {
+    "对比": 0.6,
+    "角色": "中间",
+    "说明": "多边形板面平，缝里填沙；缝的位置要和高度一致"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     10
+    ],
+    "曲率": "平",
+    "相对高程": "平坦露头",
+    "其他": "泥岩/硫酸盐层面；多边形 5–50 cm"
+   }
+  },
+  "M16": {
+   "名称": "亮色积尘平原",
+   "英文": "bright dust-mantled plain",
+   "现有地类": "沙",
+   "新增": true,
+   "粗糙度": [
+    0.95,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.15,
+    "角色": "填低处",
+    "说明": "平滑、对比低、偏亮偏红"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     8
+    ],
+    "曲率": "平",
+    "相对高程": "平原",
+    "背风": "是",
+    "其他": "着陆区一带的坑底平原；与 M17 卵石混"
+   }
+  },
+  "M17": {
+   "名称": "卵石 / 砾石滞留铺面",
+   "英文": "pebble / cobble lag pavement",
+   "现有地类": "砾石风化层",
+   "新增": true,
+   "粗糙度": [
+    0.88,
+    0.97
+   ],
+   "高度混合": {
+    "对比": 0.55,
+    "角色": "中间",
+    "说明": "卵石突出于细粒基底"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     12
+    ],
+    "曲率": "平到凸",
+    "相对高程": "风蚀面、平原",
+    "背风": "否（迎风、风蚀处）",
+    "其他": "细沙被吹走后留下的粗颗粒层"
+   }
+  },
+  "M18": {
+   "名称": "暗色玄武质沙丘沙（带沙纹）",
+   "英文": "dark basaltic dune sand with ripples",
+   "现有地类": "沙",
+   "新增": true,
+   "粗糙度": [
+    0.95,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.2,
+    "角色": "填低处",
+    "说明": "沙丘迎风坡上的厘米–分米级沙纹，干净无尘"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     30
+    ],
+    "曲率": "任意",
+    "相对高程": "沙丘场",
+    "背风": "背风坡更平滑",
+    "其他": "活动沙丘；沙纹方向随局部风"
+   }
+  },
+  "M19": {
+   "名称": "颗粒波纹沙席 / 沙影",
+   "英文": "granule-ripple sand sheet / sand shadow",
+   "现有地类": "沙",
+   "新增": true,
+   "粗糙度": [
+    0.92,
+    1.0
+   ],
+   "高度混合": {
+    "对比": 0.35,
+    "角色": "填低处",
+    "说明": "毫米级颗粒铺面上的低矮颗粒波纹"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     10
+    ],
+    "曲率": "凹或背风",
+    "相对高程": "石块背风侧、低处",
+    "背风": "是",
+    "其他": "沙影、沙席"
+   }
+  },
+  "M20": {
+   "名称": "层状硫酸盐基岩（板状、细裂）",
+   "英文": "layered sulfate-bearing bedrock",
+   "现有地类": "基岩",
+   "新增": true,
+   "粗糙度": [
+    0.75,
+    0.9
+   ],
+   "高度混合": {
+    "对比": 0.75,
+    "角色": "盖高处",
+    "说明": "平板 + 填沙的节理；层面近水平"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     25
+    ],
+    "曲率": "凸",
+    "相对高程": "露头",
+    "其他": "Gale Mt Sharp 硫酸盐单元；与 M2 同族，颜色更浅、板更大"
+   }
+  },
+  "M21": {
+   "名称": "块状碎屑 / 块石场",
+   "英文": "blocky debris / boulder field",
+   "现有地类": "暗色岩块",
+   "新增": true,
+   "粗糙度": [
+    0.82,
+    0.92
+   ],
+   "高度混合": {
+    "对比": 0.85,
+    "角色": "盖高处",
+    "说明": "棱角块石 0.1–1 m 坐在沙上；块大于样块的部分应走石块实例"
+   },
+   "放置": {
+    "坡度_deg": [
+     0,
+     30
+    ],
+    "曲率": "凹（沟、坡脚）",
+    "相对高程": "河道、坡脚、坑缘",
+    "其他": "与 M11 崖锥衔接"
+   }
+  },
+  "M22": {
+   "名称": "坑缘角砾岩",
+   "英文": "crater-rim breccia",
+   "现有地类": "基岩",
+   "新增": true,
+   "粗糙度": [
+    0.8,
+    0.92
+   ],
+   "高度混合": {
+    "对比": 0.75,
+    "角色": "盖高处"
+   },
+   "放置": {
+    "坡度_deg": [
+     5,
+     35
+    ],
+    "曲率": "凸",
+    "相对高程": "坑缘",
+    "其他": "杂色岩块嵌在基质里"
+   }
+  }
+ },
+ "站点": {
+  "s0530": {
+   "name": "Wildcat Ridge / Hogwallow Flats（三角洲前缘，第一批）",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 1222,
+   "sols": [
+    520,
+    521,
+    526,
+    527,
+    528,
+    529,
+    530,
+    531,
+    532
+   ],
+   "types": [
+    "M1",
+    "M2",
+    "M3",
+    "M4",
+    "M8",
+    "M12"
+   ],
+   "note": "第一批（71_地面样块.py）的同一套设置，74 复现核对用。Navcam NCAM00712 工作区全分辨率 9 帧（7 帧正午 + 14:33 + 15:49）；Mastcam-Z ZCAM08544/08547。",
+   "local_glob": "资料/地面材质/PDS/批1/sol*/NLF_*XYZ_*.IMG",
+   "grid_from_sol": 530,
+   "ref": "0531_1201",
+   "cs": 0.002,
+   "r_sel": [
+    1.0,
+    6.0
+   ],
+   "r_grid": 5.5,
+   "sep": [
+    "0520_1246",
+    "0520_1549",
+    "0526_1229",
+    "0527_1237",
+    "0528_1236",
+    "0529_1203",
+    "0530_1433",
+    "0531_1201",
+    "0532_1143"
+   ],
+   "sep_ref_rule": {
+    "el": 46,
+    "tol": 2.5
+   },
+   "photo_sol": 530,
+   "cut": {
+    "min_frames": 4,
+    "max_hole": 0.08,
+    "mask_shadow": false,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M1",
+      "N": 768,
+      "k": 5,
+      "max": 3,
+      "min_score": 0.88,
+      "score": "sand*okf - 0.5*fragd - 0.6*slab",
+      "note": "暗沙（含风成小波纹与零星小砾）"
+     },
+     {
+      "type": "M2",
+      "N": 512,
+      "k": 5,
+      "max": 3,
+      "score": "slab*okf + 0.3*frag",
+      "note": "浅色裂隙岩板岛 + 板间沙",
+      "edge_note": true
+     },
+     {
+      "type": "M3",
+      "N": 512,
+      "k": 5,
+      "max": 3,
+      "avoid": [
+       "M2"
+      ],
+      "score": "okf*frag - 0.5*slab - 2*taken",
+      "note": "棱角碎片砾石铺面"
+     }
+    ],
+    "decals": [
+     {
+      "type": "M12",
+      "label": "钻孔A",
+      "center": [
+       -2.162,
+       -0.519
+      ],
+      "N": 80
+     },
+     {
+      "type": "M12",
+      "label": "钻孔B",
+      "center": [
+       -2.054,
+       -0.611
+      ],
+      "N": 80
+     },
+     {
+      "type": "M12",
+      "label": "磨蚀斑",
+      "center": [
+       -2.217,
+       -0.49
+      ],
+      "N": 80
+     }
+    ]
+   },
+   "mastcam": {
+    "patches": [
+     {
+      "type": "M4",
+      "sol": 520,
+      "cs": 0.001,
+      "N": 768,
+      "dir": "资料/地面材质/PDS/批2/sol0520",
+      "station_origin": false,
+      "note": "撞击沙纹（ZCAM08544）"
+     },
+     {
+      "type": "M4",
+      "sol": 531,
+      "cs": 0.001,
+      "N": 768,
+      "dir": "资料/地面材质/PDS/批2/sol0531",
+      "station_origin": false,
+      "note": "撞击沙纹（ZCAM08544，11 天后同一块地）"
+     },
+     {
+      "type": "M8",
+      "sol": 523,
+      "cs": 0.0005,
+      "N": 768,
+      "dir": "资料/地面材质/PDS/批2/sol0523",
+      "station_origin": false,
+      "note": "片状纹层（ZCAM08547）"
+     }
+    ]
+   },
+   "ifov_mrad": 0.33,
+   "cam_h": 1.95
+  },
+  "s0538": {
+   "name": "三角洲前缘下坡沙地（风成床面）",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 2548,
+   "sols": [
+    538
+   ],
+   "types": [
+    "M5",
+    "M17",
+    "M6"
+   ],
+   "note": "批3 到站环拍：5 帧 2576×1936，方位一圈、俯仰约 −30°，同一 sol 下午单一光照。",
+   "local_glob": "资料/地面材质/PDS/批3/sol0538/NLF_*XYZ_*.IMG",
+   "ref": "0538_1341",
+   "cs": 0.003,
+   "r_sel": [
+    1.5,
+    6.5
+   ],
+   "r_grid": 6.0,
+   "grid_union": true,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.08,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M5",
+      "sub": "槽/平滑细沙",
+      "size": 1.2,
+      "k": 5,
+      "max": 3,
+      "avoid": [
+       "*"
+      ],
+      "score": "(okf*(r>1.6)*(r<3.6) - 10*seam - 2*shadow - 2*taken)*(x<-1.2)*(y>-1.5)",
+      "note": "平滑浅色细沙面（大波纹间/坡面），零星小砾"
+     },
+     {
+      "type": "M6",
+      "sub": "车辙 + 卵石",
+      "size": 1.2,
+      "k": 5,
+      "max": 3,
+      "avoid": [
+       "*"
+      ],
+      "score": "(okf*(r>1.6)*(r<3.6) - 10*seam - 2*shadow - 2*taken)*(y<-1.2)*(x<-1.0)",
+      "note": "毅力号车辙压过的卵石沙面"
+     }
+    ],
+    "windows": [
+     {
+      "type": "M6",
+      "sub": "真实车辙",
+      "x0": -3.05,
+      "y0": -4.45,
+      "size": 1.2,
+      "note": "毅力号车辙（sol 537→538 的行驶），两条平行辙带人字纹",
+      "max": 9
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "flags": [
+    "单一光照",
+    "半分辨率"
+   ],
+   "mosaic": true,
+   "shade_sigma_m": 0.025,
+   "h_lp": 1.88,
+   "ifov_mrad": 0.66,
+   "cam_h": 1.95
+  },
+  "s0539": {
+   "name": "下坡沙地大波纹（sol 539 落点）",
+   "rover": "M2020",
+   "site": 26,
+   "drive": 3008,
+   "sols": [
+    539
+   ],
+   "types": [
+    "M5"
+   ],
+   "note": "批3 到站环拍：5 帧 2576×1936，方位一圈、俯仰约 −30°，同一 sol 下午单一光照。",
+   "local_glob": "资料/地面材质/PDS/批3/sol0539/NLF_*XYZ_*.IMG",
+   "ref": "0539_1401",
+   "cs": 0.003,
+   "r_sel": [
+    1.5,
+    6.5
+   ],
+   "r_grid": 6.0,
+   "grid_union": true,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.08,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M5",
+      "sub": "脊/颗粒装甲面",
+      "size": 1.2,
+      "k": 6,
+      "max": 4,
+      "avoid": [
+       "*"
+      ],
+      "score": "(okf*(r>1.6)*(r<3.6) - 10*seam - 2*shadow - 2*taken)*(x<-1.0)",
+      "note": "下坡沙地：颗粒与小砾铺满的沙面，大波纹脊带（浅色条带）穿过"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "flags": [
+    "单一光照",
+    "半分辨率"
+   ],
+   "mosaic": true,
+   "shade_sigma_m": 0.025,
+   "h_lp": 1.88,
+   "ifov_mrad": 0.66,
+   "cam_h": 1.95
+  },
+  "m105_418": {
+   "name": "Mt Sharp 硫酸盐单元，Gediz Vallis 前的裂隙板（合日期间驻留）",
+   "rover": "MSL",
+   "site": 105,
+   "drive": 418,
+   "sols": [
+    4002,
+    4003,
+    4004,
+    4005,
+    4006,
+    4007,
+    4008,
+    4009
+   ],
+   "types": [
+    "M20"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：Upper 60% of ncam00400 frame: bright cross-laminated slabs 0.2-1 m with dark sand/granule-filled joints (very clean); lower 30%: dark granule sand; bottom-right: rover wheel + deck hardware (masked in XYZ). 42 identical repeats: 14x each at LTST ~11:02, ~14:04, ~17:21 -> 3 illuminations with noise-averaging. Ring frames sols 3974/3984 add 2 more LTSTs over a wider slab field.（NCAM00400 同一指向 42 次重拍，按 11:0x / 14:0x / 17:2x 三簇各取前 5 帧）",
+   "frames": [
+    {
+     "sol": 4002,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04002/NLB_752760350XYZ_F1050418NCAM00400M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04002/NLB_752760350RAS_F1050418NCAM00400M1.IMG",
+     "ltst": "10:59:17",
+     "seq": "NCAM00400",
+     "inst": [
+      168.0,
+      -45.3
+     ]
+    },
+    {
+     "sol": 4002,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04002/NLB_752783808XYZ_F1050418NCAM00400M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04002/NLB_752783808RAS_F1050418NCAM00400M1.IMG",
+     "ltst": "17:19:50",
+     "seq": "NCAM00400",
+     "inst": [
+      168.0,
+      -45.3
+     ]
+    },
+    {
+     "sol": 4003,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04003/NLB_752849279XYZ_F1050418NCAM00400M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04003/NLB_752849279RAS_F1050418NCAM00400M1.IMG",
+     "ltst": "11:01:57",
+     "seq": "NCAM00400",
+     "inst": [
+      168.0,
+      -45.3
+     ]
+    },
+    {
+     "sol": 4003,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04003/NLB_752860450XYZ_F1050418NCAM00400M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04003/NLB_752860450RAS_F1050418NCAM00400M1.IMG",
+     "ltst": "14:03:10",
+     "seq": "NCAM00400",
+     "inst": [
+      168.0,
+      -45.3
+     ]
+    },
+    {
+     "sol": 4004,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04004/NLB_752949217XYZ_F1050418NCAM00400M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04004/NLB_752949217RAS_F1050418NCAM00400M1.IMG",
+     "ltst": "14:03:12",
+     "seq": "NCAM00400",
+     "inst": [
+      168.0,
+      -45.3
+     ]
+    },
+    {
+     "sol": 4004,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04004/NLB_752961366XYZ_F1050418NCAM00400M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04004/NLB_752961366RAS_F1050418NCAM00400M1.IMG",
+     "ltst": "17:20:18",
+     "seq": "NCAM00400",
+     "inst": [
+      168.0,
+      -45.3
+     ]
+    },
+    {
+     "sol": 4005,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04005/NLB_753026828XYZ_F1050418NCAM00400M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04005/NLB_753026828RAS_F1050418NCAM00400M1.IMG",
+     "ltst": "11:02:16",
+     "seq": "NCAM00400",
+     "inst": [
+      168.0,
+      -45.3
+     ]
+    },
+    {
+     "sol": 4005,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04005/NLB_753050131XYZ_F1050418NCAM00400M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04005/NLB_753050131RAS_F1050418NCAM00400M1.IMG",
+     "ltst": "17:20:19",
+     "seq": "NCAM00400",
+     "inst": [
+      168.0,
+      -45.3
+     ]
+    },
+    {
+     "sol": 4006,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04006/NLB_753115603XYZ_F1050418NCAM00400M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04006/NLB_753115603RAS_F1050418NCAM00400M1.IMG",
+     "ltst": "11:02:27",
+     "seq": "NCAM00400",
+     "inst": [
+      168.0,
+      -45.3
+     ]
+    },
+    {
+     "sol": 4006,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04006/NLB_753126766XYZ_F1050418NCAM00400M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04006/NLB_753126766RAS_F1050418NCAM00400M1.IMG",
+     "ltst": "14:03:32",
+     "seq": "NCAM00400",
+     "inst": [
+      168.0,
+      -45.3
+     ]
+    },
+    {
+     "sol": 4007,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04007/NLB_753215541XYZ_F1050418NCAM00400M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04007/NLB_753215541RAS_F1050418NCAM00400M1.IMG",
+     "ltst": "14:03:42",
+     "seq": "NCAM00400",
+     "inst": [
+      168.0,
+      -45.3
+     ]
+    },
+    {
+     "sol": 4007,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04007/NLB_753227690XYZ_F1050418NCAM00400M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04007/NLB_753227690RAS_F1050418NCAM00400M1.IMG",
+     "ltst": "17:20:47",
+     "seq": "NCAM00400",
+     "inst": [
+      168.0,
+      -45.3
+     ]
+    },
+    {
+     "sol": 4008,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04008/NLB_753293151XYZ_F1050418NCAM00400M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04008/NLB_753293151RAS_F1050418NCAM00400M1.IMG",
+     "ltst": "11:02:45",
+     "seq": "NCAM00400",
+     "inst": [
+      168.0,
+      -45.3
+     ]
+    },
+    {
+     "sol": 4008,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04008/NLB_753316455XYZ_F1050418NCAM00400M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04008/NLB_753316455RAS_F1050418NCAM00400M1.IMG",
+     "ltst": "17:20:48",
+     "seq": "NCAM00400",
+     "inst": [
+      168.0,
+      -45.3
+     ]
+    },
+    {
+     "sol": 4009,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04009/NLB_753381926XYZ_F1050418NCAM00400M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04009/NLB_753381926RAS_F1050418NCAM00400M1.IMG",
+     "ltst": "11:02:55",
+     "seq": "NCAM00400",
+     "inst": [
+      168.0,
+      -45.3
+     ]
+    },
+    {
+     "sol": 4009,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04009/NLB_753393090XYZ_F1050418NCAM00400M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04009/NLB_753393090RAS_F1050418NCAM00400M1.IMG",
+     "ltst": "14:04:02",
+     "seq": "NCAM00400",
+     "inst": [
+      168.0,
+      -45.3
+     ]
+    }
+   ],
+   "ref_xyz": "NLB_752760350",
+   "cs": 0.0025,
+   "r_sel": [
+    1.0,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "shade_sigma_m": 0.01,
+   "h_lp": 3.0,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.08,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M20",
+      "sub": "裂隙板 + 填沙节理",
+      "size": 1.0,
+      "k": 24,
+      "max": 3,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*okf - 4*shadow - 4*taken)*(r<4.3)",
+      "note": "浅色交错层理硫酸盐板，节理里填暗色颗粒沙"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "flags": [
+    "单色（Navcam 全色）"
+   ],
+   "ifov_mrad": 0.82,
+   "cam_h": 1.9,
+   "ref": "4002_1059"
+  },
+  "m95_3152": {
+   "name": "Mt Sharp 硫酸盐单元，平整浅色层状基岩（细裂纹）",
+   "rover": "MSL",
+   "site": 95,
+   "drive": 3152,
+   "sols": [
+    3511,
+    3512,
+    3513,
+    3515,
+    3527
+   ],
+   "types": [
+    "M20"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：az~136 el~-42 frame (ncam00323) repeated at 6 LTSTs (10:06, 10:59, 11:57, 13:44, 14:56, 15:59) over 5 sols: flat light bedrock with hairline fractures + sparse dark sand; right-bottom quarter is rover wheel (masked) and rover shadow at some LTSTs. Distant layered ledges at top (beyond 5 m). Very clean bedrock in left/centre.",
+   "frames": [
+    {
+     "sol": 3511,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03511/NLB_709177207XYZ_F0953152NCAM00323M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03511/NLB_709177207RAS_F0953152NCAM00323M1.IMG",
+     "ltst": "11:57:05",
+     "seq": "NCAM00323",
+     "inst": [
+      47.2,
+      -35.0
+     ]
+    },
+    {
+     "sol": 3511,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03511/NLB_709192130XYZ_F0953152NCAM00323M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03511/NLB_709192130RAS_F0953152NCAM00323M1.IMG",
+     "ltst": "15:59:03",
+     "seq": "NCAM00323",
+     "inst": [
+      46.9,
+      -35.0
+     ]
+    },
+    {
+     "sol": 3512,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03512/NLB_709272642XYZ_F0953152NCAM00323M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03512/NLB_709272642RAS_F0953152NCAM00323M1.IMG",
+     "ltst": "13:44:24",
+     "seq": "NCAM00323",
+     "inst": [
+      47.1,
+      -35.0
+     ]
+    },
+    {
+     "sol": 3513,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03513/NLB_709348004XYZ_F0953152NCAM00323M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03513/NLB_709348004RAS_F0953152NCAM00323M1.IMG",
+     "ltst": "10:06:16",
+     "seq": "NCAM00323",
+     "inst": [
+      46.9,
+      -35.0
+     ]
+    },
+    {
+     "sol": 3513,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03513/NLB_709365884XYZ_F0953152NCAM00323M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03513/NLB_709365884RAS_F0953152NCAM00323M1.IMG",
+     "ltst": "14:56:10",
+     "seq": "NCAM00323",
+     "inst": [
+      46.9,
+      -35.0
+     ]
+    },
+    {
+     "sol": 3515,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03515/NLB_709528915XYZ_F0953152NCAM00323M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03515/NLB_709528915RAS_F0953152NCAM00323M1.IMG",
+     "ltst": "10:59:25",
+     "seq": "NCAM00323",
+     "inst": [
+      47.0,
+      -35.0
+     ]
+    },
+    {
+     "sol": 3527,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03527/NLB_710616129XYZ_F0953152NCAM00323M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03527/NLB_710616129RAS_F0953152NCAM00323M1.IMG",
+     "ltst": "16:46:24",
+     "seq": "NCAM00323",
+     "inst": [
+      47.0,
+      -35.0
+     ]
+    }
+   ],
+   "ref_xyz": "NLB_709177207",
+   "cs": 0.0025,
+   "r_sel": [
+    1.0,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "shade_sigma_m": 0.01,
+   "h_lp": 3.0,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.08,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M20",
+      "sub": "平整层状基岩",
+      "size": 1.0,
+      "k": 24,
+      "max": 3,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*okf - 4*shadow - 4*taken - 1*edge)*(x<1.3)*(r<4.3)",
+      "note": "平整浅色基岩，发丝状细裂纹，零星暗色碎屑"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "flags": [
+    "单色（Navcam 全色）"
+   ],
+   "ifov_mrad": 0.82,
+   "cam_h": 1.9,
+   "ref": "3511_1157"
+  },
+  "m87_2578": {
+   "name": "黏土–硫酸盐过渡带，平板状层状基岩",
+   "rover": "MSL",
+   "site": 87,
+   "drive": 2578,
+   "sols": [
+    3088,
+    3092,
+    3104,
+    3107
+   ],
+   "types": [
+    "M20"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：Post-drive ring (5 az) imaged at sols 3088 (~15:19), 3104 (~12:29), 3107 (~12:49): same ground, 3 illuminations; workspace pair at 6 LTSTs but arm/turret intrudes in 3088/3094/3104 frames. Flat platy bedrock with loose slab fragments; very clean beyond rover hardware.",
+   "frames": [
+    {
+     "sol": 3088,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03088/NLB_671640666XYZ_F0872578NCAM00353M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03088/NLB_671640666RAS_F0872578NCAM00353M1.IMG",
+     "ltst": "15:35:23",
+     "seq": "NCAM00353",
+     "inst": [
+      306.0,
+      -58.6
+     ]
+    },
+    {
+     "sol": 3088,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03088/NLB_671640691XYZ_F0872578NCAM00353M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03088/NLB_671640691RAS_F0872578NCAM00353M1.IMG",
+     "ltst": "15:35:47",
+     "seq": "NCAM00353",
+     "inst": [
+      339.3,
+      -56.2
+     ]
+    },
+    {
+     "sol": 3092,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03092/NLB_672001443XYZ_F0872578NCAM00353M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03092/NLB_672001443RAS_F0872578NCAM00353M1.IMG",
+     "ltst": "17:08:59",
+     "seq": "NCAM00353",
+     "inst": [
+      306.3,
+      -58.5
+     ]
+    },
+    {
+     "sol": 3092,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03092/NLB_672001469XYZ_F0872578NCAM00353M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03092/NLB_672001469RAS_F0872578NCAM00353M1.IMG",
+     "ltst": "17:09:24",
+     "seq": "NCAM00353",
+     "inst": [
+      339.5,
+      -56.1
+     ]
+    },
+    {
+     "sol": 3104,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03104/NLB_673048265XYZ_F0872578NCAM00353M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03104/NLB_673048265RAS_F0872578NCAM00353M1.IMG",
+     "ltst": "12:13:34",
+     "seq": "NCAM00353",
+     "inst": [
+      306.1,
+      -58.6
+     ]
+    },
+    {
+     "sol": 3104,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03104/NLB_673048295XYZ_F0872578NCAM00353M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03104/NLB_673048295RAS_F0872578NCAM00353M1.IMG",
+     "ltst": "12:14:04",
+     "seq": "NCAM00353",
+     "inst": [
+      339.4,
+      -56.2
+     ]
+    },
+    {
+     "sol": 3107,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03107/NLB_673315660XYZ_F0872578NCAM00353M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03107/NLB_673315660RAS_F0872578NCAM00353M1.IMG",
+     "ltst": "12:32:00",
+     "seq": "NCAM00353",
+     "inst": [
+      306.1,
+      -58.7
+     ]
+    },
+    {
+     "sol": 3107,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03107/NLB_673315691XYZ_F0872578NCAM00353M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03107/NLB_673315691RAS_F0872578NCAM00353M1.IMG",
+     "ltst": "12:32:30",
+     "seq": "NCAM00353",
+     "inst": [
+      339.4,
+      -56.3
+     ]
+    }
+   ],
+   "ref_xyz": "NLB_671640666",
+   "cs": 0.0025,
+   "r_sel": [
+    1.0,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "shade_sigma_m": 0.01,
+   "h_lp": 3.0,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.08,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M20",
+      "sub": "板状层状基岩",
+      "size": 1.0,
+      "k": 24,
+      "max": 2,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*okf - 4*shadow - 4*taken - 1*edge)*(x>-1.9)*(r<4.3)",
+      "note": "黏土–硫酸盐过渡带的平板状层状基岩，板缘小坎"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "flags": [
+    "单色（Navcam 全色）",
+    "残余明暗（高通相关 0.04–0.18）"
+   ],
+   "grid_union": true,
+   "ifov_mrad": 0.82,
+   "cam_h": 1.9,
+   "ref": "3088_1535"
+  },
+  "m105_106": {
+   "name": "Gediz Vallis 附近，沙上的棱角块石/卵石场",
+   "rover": "MSL",
+   "site": 105,
+   "drive": 106,
+   "sols": [
+    3960,
+    3962
+   ],
+   "types": [
+    "M21"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：Angular to subrounded blocks 0.1-1 m, densely packed, with dark sand between; ring sol 3960 ~14:53 plus az~90 frame sol 3961 12:04 (2 illuminations at one pointing). Rover hardware only at ring ends.",
+   "frames": [
+    {
+     "sol": 3960,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03960/NLB_749045872XYZ_F1050106NCAM00353M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03960/NLB_749045872RAS_F1050106NCAM00353M1.IMG",
+     "ltst": "14:40:36",
+     "seq": "NCAM00353",
+     "inst": [
+      182.5,
+      -40.4
+     ]
+    },
+    {
+     "sol": 3960,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03960/NLB_749045903XYZ_F1050106NCAM00353M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03960/NLB_749045903RAS_F1050106NCAM00353M1.IMG",
+     "ltst": "14:41:06",
+     "seq": "NCAM00353",
+     "inst": [
+      206.2,
+      -39.9
+     ]
+    },
+    {
+     "sol": 3960,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03960/NLB_749046645XYZ_F1050106NCAM00354M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03960/NLB_749046645RAS_F1050106NCAM00354M1.IMG",
+     "ltst": "14:53:09",
+     "seq": "NCAM00354",
+     "inst": [
+      225.5,
+      -35.6
+     ]
+    },
+    {
+     "sol": 3960,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03960/NLB_749046677XYZ_F1050106NCAM00354M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03960/NLB_749046677RAS_F1050106NCAM00354M1.IMG",
+     "ltst": "14:53:40",
+     "seq": "NCAM00354",
+     "inst": [
+      250.7,
+      -39.8
+     ]
+    },
+    {
+     "sol": 3960,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03960/NLB_749046702XYZ_F1050106NCAM00354M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03960/NLB_749046702RAS_F1050106NCAM00354M1.IMG",
+     "ltst": "14:54:04",
+     "seq": "NCAM00354",
+     "inst": [
+      277.3,
+      -45.8
+     ]
+    },
+    {
+     "sol": 3960,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03960/NLB_749046726XYZ_F1050106NCAM00354M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03960/NLB_749046726RAS_F1050106NCAM00354M1.IMG",
+     "ltst": "14:54:27",
+     "seq": "NCAM00354",
+     "inst": [
+      306.8,
+      -52.5
+     ]
+    },
+    {
+     "sol": 3960,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03960/NLB_749046757XYZ_F1050106NCAM00354M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03960/NLB_749046757RAS_F1050106NCAM00354M1.IMG",
+     "ltst": "14:54:58",
+     "seq": "NCAM00354",
+     "inst": [
+      341.7,
+      -58.0
+     ]
+    },
+    {
+     "sol": 3962,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03962/NLB_749226891XYZ_F1050106NCAM00353M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03962/NLB_749226891RAS_F1050106NCAM00353M1.IMG",
+     "ltst": "15:37:11",
+     "seq": "NCAM00353",
+     "inst": [
+      182.6,
+      -40.6
+     ]
+    },
+    {
+     "sol": 3962,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03962/NLB_749226922XYZ_F1050106NCAM00353M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03962/NLB_749226922RAS_F1050106NCAM00353M1.IMG",
+     "ltst": "15:37:42",
+     "seq": "NCAM00353",
+     "inst": [
+      206.2,
+      -39.9
+     ]
+    }
+   ],
+   "ref_xyz": "NLB_749045872",
+   "cs": 0.0025,
+   "r_sel": [
+    1.0,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "shade_sigma_m": 0.01,
+   "h_lp": 3.0,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.15,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M21",
+      "sub": "沙上棱角块石",
+      "size": 0.8,
+      "k": 24,
+      "max": 3,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*okf - 4*shadow - 4*taken - 1*edge - 3*seam)*(r<4.3) - 5*(x>-2.3)*(y>2.2)",
+      "note": "0.1–1 m 棱角块石密布在暗沙上；块后被挡的地方多，补洞比例高（避开 y>2.2 的车辙）"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "flags": [
+    "单色（Navcam 全色）",
+    "块石背后遮挡，补洞多"
+   ],
+   "mosaic": true,
+   "grid_union": true,
+   "ifov_mrad": 0.82,
+   "cam_h": 1.9,
+   "ref": "3960_1440"
+  },
+  "m106_660": {
+   "name": "Gediz Vallis 河道边缘：块状碎屑 + 板 + 小沙纹",
+   "rover": "MSL",
+   "site": 106,
+   "drive": 660,
+   "sols": [
+    4116
+   ],
+   "types": [
+    "M21",
+    "M11"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：Two pointings (az~115 & ~149, el -34/-38) each imaged at 09:51, 12:02-12:06, 15:25-15:28, ~16:45 on sol 4116 -> 4 illuminations same sol (no surface change). Mixed scene: tilted laminated slabs, loose blocks, small dark ripples; wheel at right edge of az149 frames. Lower el -> coarser px (~3-5 mm).",
+   "frames": [
+    {
+     "sol": 4116,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04116/NLB_762876179XYZ_F1060660NCAM00322M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04116/NLB_762876179RAS_F1060660NCAM00322M1.IMG",
+     "ltst": "09:51:38",
+     "seq": "NCAM00322",
+     "inst": [
+      289.2,
+      -46.1
+     ]
+    },
+    {
+     "sol": 4116,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04116/NLB_762876211XYZ_F1060660NCAM00323M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04116/NLB_762876211RAS_F1060660NCAM00323M1.IMG",
+     "ltst": "09:52:09",
+     "seq": "NCAM00323",
+     "inst": [
+      252.1,
+      -40.0
+     ]
+    },
+    {
+     "sol": 4116,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04116/NLB_762884272XYZ_F1060660NCAM00323M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04116/NLB_762884272RAS_F1060660NCAM00323M1.IMG",
+     "ltst": "12:02:53",
+     "seq": "NCAM00323",
+     "inst": [
+      252.0,
+      -40.1
+     ]
+    },
+    {
+     "sol": 4116,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04116/NLB_762884493XYZ_F1060660NCAM00322M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04116/NLB_762884493RAS_F1060660NCAM00322M1.IMG",
+     "ltst": "12:06:28",
+     "seq": "NCAM00322",
+     "inst": [
+      289.0,
+      -46.1
+     ]
+    },
+    {
+     "sol": 4116,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04116/NLB_762896735XYZ_F1060660NCAM00323M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04116/NLB_762896735RAS_F1060660NCAM00323M1.IMG",
+     "ltst": "15:25:01",
+     "seq": "NCAM00323",
+     "inst": [
+      251.9,
+      -40.1
+     ]
+    },
+    {
+     "sol": 4116,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04116/NLB_762896960XYZ_F1060660NCAM00322M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04116/NLB_762896960RAS_F1060660NCAM00322M1.IMG",
+     "ltst": "15:28:40",
+     "seq": "NCAM00322",
+     "inst": [
+      288.9,
+      -46.1
+     ]
+    },
+    {
+     "sol": 4116,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04116/NLB_762901679XYZ_F1060660NCAM00323M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04116/NLB_762901679RAS_F1060660NCAM00323M1.IMG",
+     "ltst": "16:45:11",
+     "seq": "NCAM00323",
+     "inst": [
+      252.0,
+      -40.1
+     ]
+    },
+    {
+     "sol": 4116,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04116/NLB_762901910XYZ_F1060660NCAM00322M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL04116/NLB_762901910RAS_F1060660NCAM00322M1.IMG",
+     "ltst": "16:48:56",
+     "seq": "NCAM00322",
+     "inst": [
+      289.0,
+      -46.1
+     ]
+    }
+   ],
+   "ref_xyz": "NLB_762876179",
+   "cs": 0.0025,
+   "r_sel": [
+    1.0,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "shade_sigma_m": 0.01,
+   "h_lp": 3.0,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.08,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M20",
+      "sub": "裂隙板（河道边）",
+      "size": 0.8,
+      "k": 24,
+      "max": 3,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*slab*okf + 0.6*frag - 4*shadow - 4*taken)*(r<4.3)",
+      "note": "Gediz Vallis 河道边的浅色裂隙板，缝里填暗沙"
+     },
+     {
+      "type": "M4",
+      "sub": "河道暗沙沙纹",
+      "size": 0.8,
+      "k": 24,
+      "max": 3,
+      "avoid": [
+       "*"
+      ],
+      "min_score": 1.0,
+      "score": "(2*sand*okf - fragd - 1.2*slab - 4*shadow - 4*taken)*(r<4.3)",
+      "note": "河道里的暗色沙，厘米–分米级沙纹"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "flags": [
+    "单色（Navcam 全色）"
+   ],
+   "grid_union": true,
+   "ifov_mrad": 0.82,
+   "cam_h": 1.9,
+   "ref": "4116_0951"
+  },
+  "m52_1162": {
+   "name": "Bagnold 沙丘 Namib Dune（暗色玄武质沙，沙纹）",
+   "rover": "MSL",
+   "site": 52,
+   "drive": 1162,
+   "sols": [
+    1221,
+    1224,
+    1226,
+    1228,
+    1231
+   ],
+   "types": [
+    "M18"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：Ring frames sol 1221 16:28 az 30-60 el-47: pristine ripple field (cm-scale ripples clearly resolved) + scoop/wheel scuffs near bottom. Workspace az-23 el-53 at 6 LTSTs (14:01-16:54, sols 1224-1231): upper third pristine ripples, middle has scoop pits/scuffs, lower third rover hardware.",
+   "frames": [
+    {
+     "sol": 1221,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL01221/NLB_505898763XYZ_F0521162NCAM00353M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL01221/NLB_505898763RAS_F0521162NCAM00353M1.IMG",
+     "ltst": "16:09:08",
+     "seq": "NCAM00353",
+     "inst": [
+      321.6,
+      -55.0
+     ]
+    },
+    {
+     "sol": 1224,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL01224/NLB_506162420XYZ_F0521162NCAM00346M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL01224/NLB_506162420RAS_F0521162NCAM00346M1.IMG",
+     "ltst": "15:26:17",
+     "seq": "NCAM00346",
+     "inst": [
+      321.5,
+      -55.2
+     ]
+    },
+    {
+     "sol": 1226,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL01226/NLB_506334718XYZ_F0521162NCAM00368M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL01226/NLB_506334718RAS_F0521162NCAM00368M1.IMG",
+     "ltst": "14:01:23",
+     "seq": "NCAM00368",
+     "inst": [
+      321.5,
+      -55.1
+     ]
+    },
+    {
+     "sol": 1228,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL01228/NLB_506512735XYZ_F0521162NCAM00346M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL01228/NLB_506512735RAS_F0521162NCAM00346M1.IMG",
+     "ltst": "14:09:16",
+     "seq": "NCAM00346",
+     "inst": [
+      321.5,
+      -55.1
+     ]
+    },
+    {
+     "sol": 1228,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL01228/NLB_506522903XYZ_F0521162NCAM00368M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL01228/NLB_506522903RAS_F0521162NCAM00368M1.IMG",
+     "ltst": "16:54:12",
+     "seq": "NCAM00368",
+     "inst": [
+      321.6,
+      -55.0
+     ]
+    },
+    {
+     "sol": 1231,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL01231/NLB_506784943XYZ_F0521162NCAM00346M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL01231/NLB_506784943RAS_F0521162NCAM00346M1.IMG",
+     "ltst": "15:45:08",
+     "seq": "NCAM00346",
+     "inst": [
+      321.5,
+      -55.2
+     ]
+    },
+    {
+     "sol": 1231,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL01231/NLB_506787283XYZ_F0521162NCAM00190M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL01231/NLB_506787283RAS_F0521162NCAM00190M1.IMG",
+     "ltst": "16:23:05",
+     "seq": "NCAM00190",
+     "inst": [
+      320.2,
+      -48.2
+     ]
+    }
+   ],
+   "ref_xyz": "NLB_505898763",
+   "cs": 0.0025,
+   "r_sel": [
+    1.0,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "shade_sigma_m": 0.01,
+   "h_lp": 3.0,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.08,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M18",
+      "sub": "沙丘迎风坡沙纹",
+      "size": 0.8,
+      "k": 24,
+      "max": 3,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*okf - 4*shadow - 4*taken - 3*seam)*(r<4.3)*(x>-2.2)*(y>2.0) - 5*(y<2.35)",
+      "note": "Namib Dune：暗色玄武质沙，分米级沙纹，无尘"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "flags": [
+    "单色（Navcam 全色）"
+   ],
+   "ifov_mrad": 0.82,
+   "cam_h": 1.9,
+   "ref": "1221_1609"
+  },
+  "m5_104": {
+   "name": "Rocknest 沙影（颗粒波纹沙席）",
+   "rover": "MSL",
+   "site": 5,
+   "drive": 104,
+   "sols": [
+    60
+   ],
+   "types": [
+    "M19"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：Sol 60 12:12-12:13 ring (az 222-312, el -50): smooth sand shadow surface with faint granule ripples, scattered pebbles, wheel tracks; arm in some. Workspace az-15 el-54 over sols 66-93 at many LTSTs but CHIMRA/arm and scoop pits dominate; only pit-free strips usable. Sun el ~80 deg at noon (sol 60) -> low shading contrast.",
+   "frames": [
+    {
+     "sol": 60,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00060/NLA_402815600XYZ_F0050104NCAM00452M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00060/NLA_402815600RAS_F0050104NCAM00452M1.IMG",
+     "ltst": "12:12:00",
+     "seq": "NCAM00452",
+     "inst": [
+      222.4,
+      -49.8
+     ]
+    },
+    {
+     "sol": 60,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00060/NLA_402815635XYZ_F0050104NCAM00452M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00060/NLA_402815635RAS_F0050104NCAM00452M1.IMG",
+     "ltst": "12:12:33",
+     "seq": "NCAM00452",
+     "inst": [
+      252.5,
+      -49.8
+     ]
+    },
+    {
+     "sol": 60,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00060/NLA_402815670XYZ_F0050104NCAM00452M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00060/NLA_402815670RAS_F0050104NCAM00452M1.IMG",
+     "ltst": "12:13:07",
+     "seq": "NCAM00452",
+     "inst": [
+      282.5,
+      -49.8
+     ]
+    },
+    {
+     "sol": 60,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00060/NLA_402815705XYZ_F0050104NCAM00452M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00060/NLA_402815705RAS_F0050104NCAM00452M1.IMG",
+     "ltst": "12:13:42",
+     "seq": "NCAM00452",
+     "inst": [
+      312.4,
+      -49.8
+     ]
+    },
+    {
+     "sol": 60,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00060/NLA_402816168XYZ_F0050104NCAM00450M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00060/NLA_402816168RAS_F0050104NCAM00450M1.IMG",
+     "ltst": "12:21:12",
+     "seq": "NCAM00450",
+     "inst": [
+      342.9,
+      -50.0
+     ]
+    },
+    {
+     "sol": 60,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00060/NLA_402816196XYZ_F0050104NCAM00450M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00060/NLA_402816196RAS_F0050104NCAM00450M1.IMG",
+     "ltst": "12:21:40",
+     "seq": "NCAM00450",
+     "inst": [
+      12.2,
+      -49.9
+     ]
+    },
+    {
+     "sol": 60,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00060/NLA_402816231XYZ_F0050104NCAM00450M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00060/NLA_402816231RAS_F0050104NCAM00450M1.IMG",
+     "ltst": "12:22:14",
+     "seq": "NCAM00450",
+     "inst": [
+      42.5,
+      -49.9
+     ]
+    },
+    {
+     "sol": 60,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00060/NLA_402816266XYZ_F0050104NCAM00450M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00060/NLA_402816266RAS_F0050104NCAM00450M1.IMG",
+     "ltst": "12:22:47",
+     "seq": "NCAM00450",
+     "inst": [
+      72.4,
+      -49.9
+     ]
+    }
+   ],
+   "ref_xyz": "NLA_402815600",
+   "cs": 0.0025,
+   "r_sel": [
+    1.0,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "shade_sigma_m": 0.01,
+   "h_lp": 3.0,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.12,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M19",
+      "sub": "沙影颗粒面",
+      "size": 0.8,
+      "k": 24,
+      "max": 4,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*okf - 4*shadow - 4*taken - 1*edge - 3*seam)*(r<4.3)*(y>-0.6)*(x>-2.6)",
+      "note": "Rocknest 沙影：颗粒铺面的平滑沙，低对比（避开南边车辙和西边岩屑）"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "flags": [
+    "单色（Navcam 全色）"
+   ],
+   "mosaic": true,
+   "grid_union": true,
+   "ifov_mrad": 0.82,
+   "cam_h": 1.9,
+   "ref": "0060_1212"
+  },
+  "m2_0": {
+   "name": "Bradbury 着陆点，卵石/颗粒滞留铺面",
+   "rover": "MSL",
+   "site": 2,
+   "drive": 0,
+   "sols": [
+    2
+   ],
+   "types": [
+    "M17"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：Very clean pebble/granule pavement over whole frame (az 160-220, el -47); only rover shadow (low sun, 16:12, sun el ~25) and a wheel at frame corner. Single illumination. Landing-site blast zones nearby (Goulburn) - avoid az ~180+ far field.",
+   "frames": [
+    {
+     "sol": 2,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00002/NLA_397681917XYZ_F0020000AUT_04096M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00002/NLA_397681917RAS_F0020000AUT_04096M1.IMG",
+     "ltst": "16:12:39",
+     "seq": "AUT_04096",
+     "inst": [
+      160.4,
+      -46.8
+     ]
+    },
+    {
+     "sol": 2,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00002/NLA_397681941XYZ_F0020000AUT_04096M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00002/NLA_397681941RAS_F0020000AUT_04096M1.IMG",
+     "ltst": "16:13:02",
+     "seq": "AUT_04096",
+     "inst": [
+      190.4,
+      -46.9
+     ]
+    },
+    {
+     "sol": 2,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00002/NLA_397681967XYZ_F0020000AUT_04096M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00002/NLA_397681967RAS_F0020000AUT_04096M1.IMG",
+     "ltst": "16:13:27",
+     "seq": "AUT_04096",
+     "inst": [
+      220.5,
+      -46.9
+     ]
+    },
+    {
+     "sol": 2,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00002/NLA_397681999XYZ_F0020000AUT_04096M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA_V1/SOL00002/NLA_397681999RAS_F0020000AUT_04096M1.IMG",
+     "ltst": "16:13:59",
+     "seq": "AUT_04096",
+     "inst": [
+      250.4,
+      -46.9
+     ]
+    }
+   ],
+   "ref_xyz": "NLA_397681917",
+   "cs": 0.0025,
+   "r_sel": [
+    1.0,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "shade_sigma_m": 0.01,
+   "h_lp": 3.0,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.08,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M17",
+      "sub": "卵石/颗粒铺面",
+      "size": 1.0,
+      "k": 24,
+      "max": 4,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*okf - 4*shadow - 4*taken - 3*seam)*(r<4.3)",
+      "note": "Bradbury 着陆点：满铺的卵石与颗粒，零星 2–5 cm 小石"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "flags": [
+    "单色（Navcam 全色）"
+   ],
+   "mosaic": true,
+   "grid_union": true,
+   "ifov_mrad": 0.82,
+   "cam_h": 1.9,
+   "ref": "0002_1612"
+  },
+  "m89_724": {
+   "name": "Pontours 多边形（六边形）裂纹面",
+   "rover": "MSL",
+   "site": 89,
+   "drive": 724,
+   "sols": [
+    3154
+   ],
+   "types": [
+    "M15"
+   ],
+   "note": "好奇号 Navcam 立体 XYZ_F（1024²，CAHVOR，SITE 系）+ RAS_F（全色）。调研：Workspace + 4-frame partial ring, single sol (13:32-13:44), near-identical illumination. Bedrock with mm-cm polygonal texture visible in the test-read RAS NLB_677490876 (see sheets/test_ras_z_NLB_677490876.png) plus white veins and dark sand strips; arm in the az-23 frame.",
+   "frames": [
+    {
+     "sol": 3154,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03154/NLB_677490876XYZ_F0890724NCAM00375M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03154/NLB_677490876RAS_F0890724NCAM00375M1.IMG",
+     "ltst": "13:32:10",
+     "seq": "NCAM00375",
+     "inst": [
+      205.6,
+      -39.3
+     ]
+    },
+    {
+     "sol": 3154,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03154/NLB_677491547XYZ_F0890724NCAM00312M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03154/NLB_677491547RAS_F0890724NCAM00312M1.IMG",
+     "ltst": "13:43:03",
+     "seq": "NCAM00312",
+     "inst": [
+      253.1,
+      -44.6
+     ]
+    },
+    {
+     "sol": 3154,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03154/NLB_677491579XYZ_F0890724NCAM00312M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03154/NLB_677491579RAS_F0890724NCAM00312M1.IMG",
+     "ltst": "13:43:34",
+     "seq": "NCAM00312",
+     "inst": [
+      282.4,
+      -48.8
+     ]
+    },
+    {
+     "sol": 3154,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03154/NLB_677491603XYZ_F0890724NCAM00312M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03154/NLB_677491603RAS_F0890724NCAM00312M1.IMG",
+     "ltst": "13:43:57",
+     "seq": "NCAM00312",
+     "inst": [
+      314.1,
+      -52.8
+     ]
+    },
+    {
+     "sol": 3154,
+     "xyz": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03154/NLB_677491627XYZ_F0890724NCAM00312M1.IMG",
+     "ras": "https://planetarydata.jpl.nasa.gov/img/data/msl/MSLNAV_1XXX/DATA/SOL03154/NLB_677491627RAS_F0890724NCAM00312M1.IMG",
+     "ltst": "13:44:21",
+     "seq": "NCAM00312",
+     "inst": [
+      348.7,
+      -55.1
+     ]
+    }
+   ],
+   "ref_xyz": "NLB_677490876",
+   "cs": 0.0025,
+   "r_sel": [
+    1.0,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "shade_sigma_m": 0.01,
+   "h_lp": 3.0,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.08,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M15",
+      "sub": "多边形裂纹 + 填沙",
+      "size": 1.0,
+      "k": 24,
+      "max": 3,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*okf - 4*shadow - 4*taken - 3*seam)*(r<4.3)",
+      "note": "Pontours 一带：浅色泥岩/硫酸盐板，暗沙填的多边形裂纹网"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "flags": [
+    "单色（Navcam 全色）"
+   ],
+   "mosaic": true,
+   "grid_union": true,
+   "ifov_mrad": 0.82,
+   "cam_h": 1.9,
+   "ref": "3154_1332"
+  },
+  "p7_2050": {
+   "name": "Séítah 边缘的 Máaz 多边形铺路石（合日驻留）",
+   "rover": "M2020",
+   "site": 7,
+   "drive": 2050,
+   "sols": [
+    210,
+    213,
+    236
+   ],
+   "types": [
+    "M14",
+    "M15"
+   ],
+   "note": "毅力号 Navcam 立体（4 帧全分辨率 / 2 帧半分辨率或 3840 宽）。调研：az70/az142: flat light-toned polygonally fractured paver plates with dark sand in the cracks, ~85% clean; mast/rover shadow in lower-right near field, wheel in az142 corner. az286: dense dark-sand ripple field 4-15 m beyond the rover deck (deck fills lower half). Measured from thumbnails (sheets/A_7-2050.jpg).",
+   "frames": [
+    {
+     "sol": 210,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00210/ids/rdr/ncam/NLF_0210_0685593603_793XYZ_N0072050NCAM03210_0A0195J02.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00210/ids/rdr/ncam/NLF_0210_0685593603_793RAS_N0072050NCAM03210_0A0195J03.IMG",
+     "ltst": "15:39:50",
+     "seq": "ncam03210",
+     "ns": 2560,
+     "sun": [
+      286.9,
+      38.9
+     ],
+     "inst": [
+      69.7,
+      -29.9
+     ]
+    },
+    {
+     "sol": 210,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00210/ids/rdr/ncam/NLF_0210_0685593754_289XYZ_N0072050NCAM03210_0A0195J03.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00210/ids/rdr/ncam/NLF_0210_0685593754_289RAS_N0072050NCAM03210_0A0195J03.IMG",
+     "ltst": "15:42:16",
+     "seq": "ncam03210",
+     "ns": 2560,
+     "sun": [
+      287.0,
+      38.3
+     ],
+     "inst": [
+      141.8,
+      -30.3
+     ]
+    },
+    {
+     "sol": 213,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00213/ids/rdr/ncam/NLF_0213_0685860332_292XYZ_N0072050NCAM05213_0A00LLJ04.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00213/ids/rdr/ncam/NLF_0213_0685860332_292RAS_N0072050NCAM05213_0A00LLJ05.IMG",
+     "ltst": "15:46:47",
+     "seq": "ncam05213",
+     "ns": 5120,
+     "sun": [
+      286.9,
+      37.3
+     ],
+     "inst": [
+      69.8,
+      -30.1
+     ]
+    },
+    {
+     "sol": 213,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00213/ids/rdr/ncam/NLF_0213_0685860738_191XYZ_N0072050NCAM05213_0A20LLJ02.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00213/ids/rdr/ncam/NLF_0213_0685860738_191RAS_N0072050NCAM05213_0A20LLJ02.IMG",
+     "ltst": "15:53:22",
+     "seq": "ncam05213",
+     "ns": 5120,
+     "sun": [
+      287.1,
+      35.8
+     ],
+     "inst": [
+      141.8,
+      -30.3
+     ]
+    },
+    {
+     "sol": 236,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00236/ids/rdr/ncam/NLF_0236_0687899009_037XYZ_N0072050NCAM05236_0A10LLJ01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00236/ids/rdr/ncam/NLF_0236_0687899009_037RAS_N0072050NCAM05236_0A10LLJ02.IMG",
+     "ltst": "14:58:57",
+     "seq": "ncam05236",
+     "ns": 5120,
+     "sun": [
+      283.5,
+      48.1
+     ],
+     "inst": [
+      69.8,
+      -30.1
+     ],
+     "rasR": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00236/ids/rdr/ncam/NRF_0236_0687899009_037RAS_N0072050NCAM05236_0A10LLJ02.IMG"
+    },
+    {
+     "sol": 236,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00236/ids/rdr/ncam/NLF_0236_0687899406_236XYZ_N0072050NCAM05236_0A20LLJ04.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00236/ids/rdr/ncam/NLF_0236_0687899406_236RAS_N0072050NCAM05236_0A20LLJ03.IMG",
+     "ltst": "15:05:23",
+     "seq": "ncam05236",
+     "ns": 5120,
+     "sun": [
+      283.7,
+      46.6
+     ],
+     "inst": [
+      141.8,
+      -30.3
+     ]
+    }
+   ],
+   "ref": "0236_1458",
+   "ref_xyz": "NLF_0236_0687899009_037",
+   "r_sel": [
+    1.2,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "cam_h": 1.95,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.08,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M14",
+      "sub": "铺路石板 + 板间暗沙",
+      "size": 1.0,
+      "k": 24,
+      "max": 4,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*okf - 4*shadow - 4*taken - 1*edge - 3*seam)*(r<4.4) - 6*(x<2.7)*(y>-2.2)*(y<1.0)",
+      "note": "Máaz 坑底：浅色多边形铺路石板（10–50 cm），板间暗色细沙（避开车身/桅杆影子）"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "mastcam": {
+    "frames": [
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978032_223XYZ_N0072050ZCAM08260_1100LMJ03.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978032_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:22:14",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978138_223XYZ_N0072050ZCAM08260_1100LMJ03.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978138_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:22:50",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978153_223XYZ_N0072050ZCAM08260_1100LMJ02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978153_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:23:04",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978168_223XYZ_N0072050ZCAM08260_1100LMJ02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978168_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:23:18",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978182_223XYZ_N0072050ZCAM08260_1100LMJ02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978182_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:23:43",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978208_223XYZ_N0072050ZCAM08260_1100LMJ02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978208_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:24:01",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978226_223XYZ_N0072050ZCAM08260_1100LMJ02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978226_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:24:14",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978239_223XYZ_N0072050ZCAM08260_1100LMJ02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978239_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:24:26",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978252_223XYZ_N0072050ZCAM08260_1100LMJ02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978252_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:24:53",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978279_223XYZ_N0072050ZCAM08260_1100LMJ03.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978279_223IOF_N0072050ZCAM08260_1100LMA04.IMG",
+      "ltst": "12:25:12",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978299_223XYZ_N0072050ZCAM08260_1100LMJ04.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978299_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:25:36",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978326_223XYZ_N0072050ZCAM08260_1100LMJ04.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978326_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:25:57",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978345_223XYZ_N0072050ZCAM08260_1100LMJ03.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978345_223IOF_N0072050ZCAM08260_1100LMA04.IMG",
+      "ltst": "12:26:09",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978358_223XYZ_N0072050ZCAM08260_1100LMJ02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978358_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:26:24",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978373_223XYZ_N0072050ZCAM08260_1100LMJ02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978373_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:26:37",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978388_223XYZ_N0072050ZCAM08260_1100LMJ03.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978388_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:26:53",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978403_223XYZ_N0072050ZCAM08260_1100LMJ02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978403_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:27:19",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978432_206XYZ_N0072050ZCAM08260_1100LMJ02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978432_206IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:27:39",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978453_223XYZ_N0072050ZCAM08260_1100LMJ03.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978453_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:27:56",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978467_223XYZ_N0072050ZCAM08260_1100LMJ04.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978467_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:28:08",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978480_223XYZ_N0072050ZCAM08260_1100LMJ03.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978480_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:28:21",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978495_223XYZ_N0072050ZCAM08260_1100LMJ02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978495_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:28:37",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978512_223XYZ_N0072050ZCAM08260_1100LMJ02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978512_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:29:05",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978538_223XYZ_N0072050ZCAM08260_1100LMJ03.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978538_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:29:21",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978556_223XYZ_N0072050ZCAM08260_1100LMJ03.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978556_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:29:38",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978574_223XYZ_N0072050ZCAM08260_1100LMJ03.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978574_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:30:06",
+      "seq": "zcam08260"
+     },
+     {
+      "sol": 237,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00237/ids/rdr/zcam/ZLF_0237_0687978601_223XYZ_N0072050ZCAM08260_1100LMJ03.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0237/iof/ZL0_0237_0687978601_223IOF_N0072050ZCAM08260_1100LMA02.IMG",
+      "ltst": "12:30:23",
+      "seq": "zcam08260"
+     }
+    ],
+    "patches": [
+     {
+      "type": "M14",
+      "sol": 237,
+      "seq": "ZCAM08260",
+      "cs": 0.0005,
+      "N": 1024,
+      "N_min": 512,
+      "search": 3.0,
+      "station_origin": true,
+      "note": "Mastcam-Z 110 mm zcam08260 拼图，亚毫米"
+     }
+    ]
+   },
+   "cs": 0.0025,
+   "ifov_mrad": 0.33,
+   "grid_union": true,
+   "shade_sigma_m": 0.012,
+   "flags": [
+    "光照差别小（太阳高 36–48°，同一方位）"
+   ]
+  },
+  "p22_788": {
+   "name": "坑底积尘卵石平原（快速行驶去三角洲途中）",
+   "rover": "M2020",
+   "site": 22,
+   "drive": 788,
+   "sols": [
+    413,
+    414
+   ],
+   "types": [
+    "M16",
+    "M17"
+   ],
+   "note": "毅力号 Navcam 立体（3 帧全分辨率 / 3 帧半分辨率或 3840 宽）。调研：Very uniform fine regolith with mm-cm pebbles, few cobbles; ~90% clean in az235/az306 (morning) and az200/az272 (evening); rover arm/deck in lower-left of az162, mast shadow in az306 lower-right, deck in right half of az344. (sheets/T_22-788.jpg)",
+   "frames": [
+    {
+     "sol": 413,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00413/ids/rdr/ncam/NLF_0413_0703614838_785XYZ_N0220788NCAM03413_0A0195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00413/ids/rdr/ncam/NLF_0413_0703614838_785RAS_N0220788NCAM03413_0A0195J02.IMG",
+     "ltst": "15:57:05",
+     "seq": "ncam03413",
+     "ns": 2560,
+     "sun": [
+      246.2,
+      23.6
+     ],
+     "inst": [
+      199.7,
+      -30.1
+     ]
+    },
+    {
+     "sol": 413,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00413/ids/rdr/ncam/NLF_0413_0703615006_293XYZ_N0220788NCAM03413_0A0195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00413/ids/rdr/ncam/NLF_0413_0703615006_293RAS_N0220788NCAM03413_0A0195J02.IMG",
+     "ltst": "15:59:48",
+     "seq": "ncam03413",
+     "ns": 2560,
+     "sun": [
+      246.5,
+      23.0
+     ],
+     "inst": [
+      271.8,
+      -29.9
+     ]
+    },
+    {
+     "sol": 413,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00413/ids/rdr/ncam/NLF_0413_0703615216_989XYZ_N0220788NCAM02413_0A0195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00413/ids/rdr/ncam/NLF_0413_0703615216_989RAS_N0220788NCAM02413_0A0195J02.IMG",
+     "ltst": "16:03:14",
+     "seq": "ncam02413",
+     "ns": 2560,
+     "sun": [
+      246.9,
+      22.3
+     ],
+     "inst": [
+      343.8,
+      -30.1
+     ]
+    },
+    {
+     "sol": 414,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00414/ids/rdr/ncam/NLF_0414_0703680217_635XYZ_N0220788NCAM00387_0A0095J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00414/ids/rdr/ncam/NLF_0414_0703680217_635RAS_N0220788NCAM00387_0A0095J02.IMG",
+     "ltst": "09:37:25",
+     "seq": "ncam00387",
+     "ns": 5120,
+     "sun": [
+      129.4,
+      42.7
+     ],
+     "inst": [
+      162.4,
+      -30.6
+     ]
+    },
+    {
+     "sol": 414,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00414/ids/rdr/ncam/NLF_0414_0703680519_770XYZ_N0220788NCAM00387_0A0095J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00414/ids/rdr/ncam/NLF_0414_0703680519_770RAS_N0220788NCAM00387_0A0095J02.IMG",
+     "ltst": "09:42:19",
+     "seq": "ncam00387",
+     "ns": 5120,
+     "sun": [
+      130.5,
+      43.6
+     ],
+     "inst": [
+      234.8,
+      -30.0
+     ]
+    },
+    {
+     "sol": 414,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00414/ids/rdr/ncam/NLF_0414_0703680893_756XYZ_N0220788NCAM00387_0A0095J02.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00414/ids/rdr/ncam/NLF_0414_0703680893_756RAS_N0220788NCAM00387_0A0095J03.IMG",
+     "ltst": "09:48:23",
+     "seq": "ncam00387",
+     "ns": 5120,
+     "sun": [
+      131.9,
+      44.7
+     ],
+     "inst": [
+      306.4,
+      -29.3
+     ],
+     "rasR": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00414/ids/rdr/ncam/NRF_0414_0703680893_756RAS_N0220788NCAM00387_0A0095J03.IMG"
+    }
+   ],
+   "ref": "0414_0948",
+   "ref_xyz": "NLF_0414_0703680893_756",
+   "r_sel": [
+    1.2,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "cam_h": 1.95,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.08,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M17",
+      "sub": "积尘沙上的小砾",
+      "size": 1.0,
+      "k": 8,
+      "max": 3,
+      "avoid": [
+       "*"
+      ],
+      "score": "(okf - 2*shadow - 2*taken - 5*edge)*(r<4.4)*(0.3 + 3*fragd)",
+      "note": "坑底平原：积尘细沙上散布 0.5–3 cm 小砾，分布较密"
+     },
+     {
+      "type": "M16",
+      "sub": "积尘平原",
+      "size": 1.0,
+      "k": 8,
+      "max": 3,
+      "avoid": [
+       "*"
+      ],
+      "score": "(okf - 2*shadow - 2*taken - 5*edge)*(r<4.4)*(1 - 4*fragd)",
+      "note": "坑底平原：积尘细沙，小砾稀疏，对比低"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "mastcam": {
+    "frames": [],
+    "patches": []
+   },
+   "cs": 0.0025,
+   "ifov_mrad": 0.33,
+   "grid_union": true,
+   "shade_sigma_m": 0.012,
+   "flags": [
+    "早晚两组帧覆盖不同地面，光照一致性改进有限（0.17 → 0.15）"
+   ]
+  },
+  "p8_0": {
+   "name": "Séítah Brac 露头（Salette/Coulettes 取样）：富橄榄石堆晶岩",
+   "rover": "M2020",
+   "site": 8,
+   "drive": 0,
+   "sols": [
+    248,
+    253,
+    262,
+    271
+   ],
+   "types": [
+    "M13",
+    "M1"
+   ],
+   "note": "毅力号 Navcam 立体（0 帧全分辨率 / 5 帧半分辨率或 3840 宽）。调研：Workspace (az53 el-44): upper ~55% is layered/fractured Séítah slabs and dark sand; lower-left is arm/turret/deck (~35%) and arm shadow; sol 253 frames show abrasion patch (white). Ring az94: Séítah slabs + sand, rover shadow+wheel at bottom; az166: sand with ripples + slabs, wheel at bottom. Half-res only. (sheets/A_seitah_8-0.jpg)",
+   "frames": [
+    {
+     "sol": 248,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00248/ids/rdr/ncam/NLF_0248_0688960139_260XYZ_N0080000NCAM00303_0A1195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00248/ids/rdr/ncam/NLF_0248_0688960139_260RAS_N0080000NCAM00303_0A1195J02.IMG",
+     "ltst": "13:53:03",
+     "seq": "ncam00303",
+     "ns": 2560,
+     "sun": [
+      280.9,
+      63.3
+     ],
+     "inst": [
+      53.0,
+      -43.6
+     ]
+    },
+    {
+     "sol": 253,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00253/ids/rdr/ncam/NLF_0253_0689403913_307XYZ_N0080000NCAM00303_0A0195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00253/ids/rdr/ncam/NLF_0253_0689403913_307RAS_N0080000NCAM00303_0A0195J02.IMG",
+     "ltst": "13:52:10",
+     "seq": "ncam00303",
+     "ns": 2560,
+     "sun": [
+      279.6,
+      63.5
+     ],
+     "inst": [
+      53.4,
+      -43.7
+     ],
+     "rasR": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00253/ids/rdr/ncam/NRF_0253_0689403913_307RAS_N0080000NCAM00303_0A0195J02.IMG"
+    },
+    {
+     "sol": 253,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00253/ids/rdr/ncam/NLF_0253_0689404650_862XYZ_N0080000NCAM00314_0A0195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00253/ids/rdr/ncam/NLF_0253_0689404650_862RAS_N0080000NCAM00314_0A0195J02.IMG",
+     "ltst": "14:04:08",
+     "seq": "ncam00314",
+     "ns": 2560,
+     "sun": [
+      279.7,
+      60.8
+     ],
+     "inst": [
+      53.4,
+      -43.7
+     ]
+    },
+    {
+     "sol": 262,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00262/ids/rdr/ncam/NLF_0262_0690212241_488XYZ_N0080000NCAM00705_0A00LLJ01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00262/ids/rdr/ncam/NLF_0262_0690212241_488RAS_N0080000NCAM00705_0A00LLJ02.IMG",
+     "ltst": "16:25:17",
+     "seq": "ncam00705",
+     "ns": 2560,
+     "sun": [
+      283.0,
+      27.8
+     ],
+     "inst": [
+      53.4,
+      -43.4
+     ]
+    },
+    {
+     "sol": 271,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00271/ids/rdr/ncam/NLF_0271_0691011600_601XYZ_N0080000NCAM00705_0A00LLJ01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00271/ids/rdr/ncam/NLF_0271_0691011600_601RAS_N0080000NCAM00705_0A00LLJ02.IMG",
+     "ltst": "16:32:57",
+     "seq": "ncam00705",
+     "ns": 2560,
+     "sun": [
+      282.0,
+      25.8
+     ],
+     "inst": [
+      53.1,
+      -43.5
+     ]
+    }
+   ],
+   "ref": "0253_1352",
+   "ref_xyz": "NLF_0253_0689403913_307",
+   "r_sel": [
+    1.2,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "cam_h": 1.95,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.12,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M13",
+      "sub": "Brac 岩面",
+      "size": 0.9,
+      "k": 24,
+      "max": 4,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*okf - 4*shadow - 4*taken - 1*edge - 3*seam)*(r<4.4)*(y>0.45)",
+      "note": "Séítah Brac 露头：富橄榄石堆晶岩，风蚀棱面与鳞片状剥落，缝里积暗沙（只取北边岩面，南边是板间沙）"
+     },
+     {
+      "type": "M1",
+      "sub": "Séítah 板间暗沙",
+      "size": 0.9,
+      "k": 24,
+      "max": 2,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*okf - 4*shadow - 4*taken - 1*edge - 3*seam)*(r<4.4)*(y<0.45)",
+      "note": "Séítah Brac 露头脚下：暗色细沙/风化层，零星小砾和浅色碎屑"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "mastcam": {
+    "frames": [
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689037883_162XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689037883_162IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "10:55:01",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689037932_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689037932_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "10:55:36",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689037968_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689037968_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "10:55:53",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689037985_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689037985_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "10:56:21",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038050_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038050_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "10:57:28",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038083_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038083_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "10:58:03",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038119_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038119_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "10:58:24",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038140_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038140_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "10:58:53",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038172_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038172_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "10:59:30",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038208_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038208_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:00:03",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038244_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038244_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:00:24",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038263_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038263_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:00:52",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038294_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038294_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:01:10",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038312_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038312_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:01:24",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038327_145XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038327_145IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:01:56",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038358_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038358_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:02:13",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038376_160XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038376_160IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:02:41",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038405_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038405_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:03:15",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038439_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038439_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:03:31",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038457_160XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038457_160IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:03:45",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038472_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038472_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:04:00",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038485_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038485_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:04:29",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038515_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038515_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:04:44",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038531_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038531_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:05:15",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038562_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038562_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:05:31",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038596_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038596_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:06:03",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038612_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038612_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:06:33",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038643_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038643_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:06:51",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038661_160XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038661_160IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:07:20",
+      "seq": "zcam08272"
+     },
+     {
+      "sol": 249,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r16/mars2020_mastcamz_ops_stereo/data/sol/00249/ids/rdr/zcam/ZLF_0249_0689038691_159XYZ_N0080000ZCAM08272_110085J02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_mastcamz_sci_calibrated/data/0249/iof/ZL0_0249_0689038691_159IOF_N0080000ZCAM08272_110085A02.IMG",
+      "ltst": "11:07:39",
+      "seq": "zcam08272"
+     }
+    ],
+    "patches": [
+     {
+      "type": "M1",
+      "sol": 249,
+      "seq": "ZCAM08272",
+      "cs": 0.0005,
+      "N": 1024,
+      "N_min": 512,
+      "search": 3.0,
+      "station_origin": true,
+      "note": "Mastcam-Z 110 mm zcam08272 拼图，亚毫米：Brac 脚下的细粒风化层，带浅色碎屑条带（不是岩面）"
+     }
+    ]
+   },
+   "cs": 0.003,
+   "ifov_mrad": 0.66,
+   "h_lp": 1.88,
+   "shade_sigma_m": 0.025,
+   "flags": [
+    "半分辨率",
+    "去光影效果差（光照一致性 0.25/0.38 → 0.24/0.33；sol 257–271 间有磨蚀、取芯，地面有变化）",
+    "岩面陡，残余明暗"
+   ]
+  },
+  "p82_2866": {
+   "name": "坑缘外沙席：颗粒/装甲沙纹（WATSON Elephant_Plains / Lion_Sands 同址）",
+   "rover": "M2020",
+   "site": 82,
+   "drive": 2866,
+   "sols": [
+    1704
+   ],
+   "types": [
+    "M19"
+   ],
+   "note": "毅力号 Navcam 立体（0 帧全分辨率 / 4 帧半分辨率或 3840 宽）。调研：Bright sand sheet with low ripples, almost no rocks: >90% clean in az359/az71/az287 apart from wheel/deck at frame edges; low contrast because all Navcam frames are near noon (sun el 62-66). (sheets/E_sand_82-2866.jpg)",
+   "frames": [
+    {
+     "sol": 1704,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_navcam_ops_stereo/data/sol/01704/ids/rdr/ncam/NLF_1704_0818211300_910XYZ_N0822866NCAM00709_0A0095J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_navcam_ops_calibrated/data/sol/01704/ids/rdr/ncam/NLF_1704_0818211300_910RAS_N0822866NCAM00709_0A0095J02.IMG",
+     "ltst": "12:55:02",
+     "seq": "ncam00709",
+     "ns": 3840,
+     "sun": [
+      215.4,
+      65.8
+     ],
+     "inst": [
+      266.1,
+      -49.8
+     ],
+     "rasR": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_navcam_ops_calibrated/data/sol/01704/ids/rdr/ncam/NRF_1704_0818211300_910RAS_N0822866NCAM00709_0A0095J02.IMG"
+    },
+    {
+     "sol": 1704,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_navcam_ops_stereo/data/sol/01704/ids/rdr/ncam/NLF_1704_0818212256_380XYZ_N0822866NCAM13704_0A0190J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_navcam_ops_calibrated/data/sol/01704/ids/rdr/ncam/NLF_1704_0818212256_380RAS_N0822866NCAM13704_0A0190J01.IMG",
+     "ltst": "13:10:32",
+     "seq": "ncam13704",
+     "ns": 2560,
+     "sun": [
+      222.7,
+      63.4
+     ],
+     "inst": [
+      286.8,
+      -30.1
+     ]
+    },
+    {
+     "sol": 1704,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_navcam_ops_stereo/data/sol/01704/ids/rdr/ncam/NLF_1704_0818212458_695XYZ_N0822866NCAM02704_0A0195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_navcam_ops_calibrated/data/sol/01704/ids/rdr/ncam/NLF_1704_0818212458_695RAS_N0822866NCAM02704_0A0195J01.IMG",
+     "ltst": "13:13:49",
+     "seq": "ncam02704",
+     "ns": 2560,
+     "sun": [
+      224.0,
+      62.9
+     ],
+     "inst": [
+      358.8,
+      -30.1
+     ]
+    },
+    {
+     "sol": 1704,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_navcam_ops_stereo/data/sol/01704/ids/rdr/ncam/NLF_1704_0818212608_691XYZ_N0822866NCAM02704_0A0195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_navcam_ops_calibrated/data/sol/01704/ids/rdr/ncam/NLF_1704_0818212608_691RAS_N0822866NCAM02704_0A0195J01.IMG",
+     "ltst": "13:16:14",
+     "seq": "ncam02704",
+     "ns": 2560,
+     "sun": [
+      225.0,
+      62.5
+     ],
+     "inst": [
+      70.8,
+      -30.1
+     ]
+    }
+   ],
+   "ref": "1704_1255",
+   "ref_xyz": "NLF_1704_0818211300_910",
+   "r_sel": [
+    1.2,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "cam_h": 1.95,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.08,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M19",
+      "sub": "颗粒沙席",
+      "size": 1.2,
+      "k": 24,
+      "max": 4,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*okf - 4*shadow - 4*taken - 1*edge - 3*seam)*(r<4.4)*(x<-1.0)",
+      "note": "坑缘外沙席：细沙上的颗粒薄层与低矮颗粒波纹，对比很低"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "mastcam": {
+    "frames": [
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297589_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297589_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:14:57",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297603_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297603_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:15:10",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297616_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297616_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:15:22",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297630_988XYZ_N0822866ZCAM09790_1100LMJ02.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297630_988IOF_N0822866ZCAM09790_1100LMA02.IMG",
+      "ltst": "12:15:37",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297644_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297644_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:15:53",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297660_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297660_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:16:05",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297673_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297673_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:16:19",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297688_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297688_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:16:38",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297706_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297706_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:16:49",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297719_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297719_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:17:04",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297733_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297733_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:17:16",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297747_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297747_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:17:31",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297761_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297761_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:17:46",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297776_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297776_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:17:58",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297789_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297789_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:18:11",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297802_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297802_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:18:25",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297816_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297816_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:18:39",
+      "seq": "zcam09790"
+     },
+     {
+      "sol": 1705,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_ops_stereo/data/sol/01705/ids/rdr/zcam/ZLF_1705_0818297831_988XYZ_N0822866ZCAM09790_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r15/mars2020_mastcamz_sci_calibrated/data/1705/iof/ZL0_1705_0818297831_988IOF_N0822866ZCAM09790_1100LMA01.IMG",
+      "ltst": "12:18:52",
+      "seq": "zcam09790"
+     }
+    ],
+    "patches": [
+     {
+      "type": "M19",
+      "sol": 1705,
+      "seq": "ZCAM09790",
+      "cs": 0.0005,
+      "N": 1024,
+      "N_min": 512,
+      "search": 3.0,
+      "station_origin": true,
+      "note": "Mastcam-Z 110 mm zcam09790 拼图，亚毫米"
+     }
+    ]
+   },
+   "cs": 0.003,
+   "ifov_mrad": 0.66,
+   "h_lp": 1.88,
+   "shade_sigma_m": 0.025,
+   "mosaic": true,
+   "grid_union": true,
+   "flags": [
+    "半分辨率"
+   ]
+  },
+  "p56_1010": {
+   "name": "坑缘脚下的棱角碎屑（角砾状）",
+   "rover": "M2020",
+   "site": 56,
+   "drive": 1010,
+   "sols": [
+    1220,
+    1221,
+    1222
+   ],
+   "types": [
+    "M22",
+    "M11"
+   ],
+   "note": "毅力号 Navcam 立体（0 帧全分辨率 / 8 帧半分辨率或 3840 宽）。调研：Dense angular cm-dm clasts of mixed tone on sand/regolith with small light bedrock plates; ~85% clean in workspace upper-right and in ring az210/az198/az270; arm in workspace left third, wheel corners. (sheets/T_56-1010.jpg, R3.jpg)",
+   "frames": [
+    {
+     "sol": 1220,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_stereo/data/sol/01220/ids/rdr/ncam/NLF_1220_0775247236_300XYZ_N0561010NCAM00709_0A0095J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_calibrated/data/sol/01220/ids/rdr/ncam/NLF_1220_0775247236_300RAS_N0561010NCAM00709_0A0095J01.IMG",
+     "ltst": "12:19:45",
+     "seq": "ncam00709",
+     "ns": 3840,
+     "sun": [
+      187.1,
+      49.5
+     ],
+     "inst": [
+      149.3,
+      -41.8
+     ],
+     "rasR": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_calibrated/data/sol/01220/ids/rdr/ncam/NRF_1220_0775247236_300RAS_N0561010NCAM00709_0A1095J01.IMG"
+    },
+    {
+     "sol": 1220,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_stereo/data/sol/01220/ids/rdr/ncam/NLF_1220_0775247905_380XYZ_N0561010NCAM03220_0A0195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_calibrated/data/sol/01220/ids/rdr/ncam/NLF_1220_0775247905_380RAS_N0561010NCAM03220_0A0195J01.IMG",
+     "ltst": "12:30:36",
+     "seq": "ncam03220",
+     "ns": 2560,
+     "sun": [
+      190.9,
+      49.1
+     ],
+     "inst": [
+      137.8,
+      -30.3
+     ]
+    },
+    {
+     "sol": 1220,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_stereo/data/sol/01220/ids/rdr/ncam/NLF_1220_0775248055_397XYZ_N0561010NCAM03220_0A1195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_calibrated/data/sol/01220/ids/rdr/ncam/NLF_1220_0775248055_397RAS_N0561010NCAM03220_0A1195J01.IMG",
+     "ltst": "12:33:02",
+     "seq": "ncam03220",
+     "ns": 2560,
+     "sun": [
+      191.7,
+      49.0
+     ],
+     "inst": [
+      209.7,
+      -30.1
+     ]
+    },
+    {
+     "sol": 1220,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_stereo/data/sol/01220/ids/rdr/ncam/NLF_1220_0775248208_425XYZ_N0561010NCAM03220_0A0195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_calibrated/data/sol/01220/ids/rdr/ncam/NLF_1220_0775248208_425RAS_N0561010NCAM03220_0A0195J01.IMG",
+     "ltst": "12:35:31",
+     "seq": "ncam03220",
+     "ns": 2560,
+     "sun": [
+      192.6,
+      48.8
+     ],
+     "inst": [
+      281.8,
+      -30.1
+     ]
+    },
+    {
+     "sol": 1221,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_stereo/data/sol/01221/ids/rdr/ncam/NLF_1221_0775344817_410XYZ_N0561010NCAM00347_0A0195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_calibrated/data/sol/01221/ids/rdr/ncam/NLF_1221_0775344817_410RAS_N0561010NCAM00347_0A0195J01.IMG",
+     "ltst": "14:42:09",
+     "seq": "ncam00347",
+     "ns": 2560,
+     "sun": [
+      226.6,
+      33.6
+     ],
+     "inst": [
+      149.2,
+      -42.1
+     ]
+    },
+    {
+     "sol": 1221,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_stereo/data/sol/01221/ids/rdr/ncam/NLF_1221_0775346016_222XYZ_N0561010NCAM00709_0A0095J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_calibrated/data/sol/01221/ids/rdr/ncam/NLF_1221_0775346016_222RAS_N0561010NCAM00709_0A0095J01.IMG",
+     "ltst": "15:01:35",
+     "seq": "ncam00709",
+     "ns": 3840,
+     "sun": [
+      230.0,
+      30.2
+     ],
+     "inst": [
+      149.3,
+      -42.1
+     ]
+    },
+    {
+     "sol": 1222,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_stereo/data/sol/01222/ids/rdr/ncam/NLF_1222_0775426161_691XYZ_N0561010NCAM03222_0A0195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_calibrated/data/sol/01222/ids/rdr/ncam/NLF_1222_0775426161_691RAS_N0561010NCAM03222_0A0195J01.IMG",
+     "ltst": "12:41:15",
+     "seq": "ncam03222",
+     "ns": 2560,
+     "sun": [
+      194.7,
+      48.8
+     ],
+     "inst": [
+      197.8,
+      -30.2
+     ]
+    },
+    {
+     "sol": 1222,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_stereo/data/sol/01222/ids/rdr/ncam/NLF_1222_0775426315_784XYZ_N0561010NCAM03222_0A1195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r11/mars2020_navcam_ops_calibrated/data/sol/01222/ids/rdr/ncam/NLF_1222_0775426315_784RAS_N0561010NCAM03222_0A1195J01.IMG",
+     "ltst": "12:43:45",
+     "seq": "ncam03222",
+     "ns": 2560,
+     "sun": [
+      195.5,
+      48.6
+     ],
+     "inst": [
+      269.8,
+      -30.0
+     ]
+    }
+   ],
+   "ref": "1220_1219",
+   "ref_xyz": "NLF_1220_0775247236_300",
+   "r_sel": [
+    1.2,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "cam_h": 1.95,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.08,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M22",
+      "sub": "棱角碎屑/角砾面",
+      "size": 1.2,
+      "k": 24,
+      "max": 3,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*okf - 4*shadow - 4*taken - 1*edge - 3*seam)*(r<4.4)",
+      "note": "坑缘脚下：棱角岩屑与半埋的角砾状岩块，块间细粒"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "mastcam": {
+    "frames": [],
+    "patches": []
+   },
+   "cs": 0.003,
+   "ifov_mrad": 0.66,
+   "h_lp": 1.88,
+   "shade_sigma_m": 0.025,
+   "grid_union": true,
+   "flags": [
+    "半分辨率"
+   ]
+  },
+  "p52_0": {
+   "name": "Mount Washburn 一带的暗沙床面与块石",
+   "rover": "M2020",
+   "site": 52,
+   "drive": 0,
+   "sols": [
+    1129
+   ],
+   "types": [
+    "M18"
+   ],
+   "note": "毅力号 Navcam 立体（4 帧全分辨率 / 0 帧半分辨率或 3840 宽）。调研：az126: rounded sand bedforms (dm-high, m-scale) and troughs filling the frame beyond the turret; az198/az270: sand drift with fine ripples, scattered angular blocks; arm/turret in az126 lower-left, deck in az54. ~70% clean. (sheets/T_52-0.jpg)",
+   "frames": [
+    {
+     "sol": 1129,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r10/mars2020_navcam_ops_stereo/data/sol/01129/ids/rdr/ncam/NLF_1129_0767167331_316XYZ_N0520000NCAM03129_0A0095J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r10/mars2020_navcam_ops_calibrated/data/sol/01129/ids/rdr/ncam/NLF_1129_0767167331_316RAS_N0520000NCAM03129_0A0095J01.IMG",
+     "ltst": "12:53:59",
+     "seq": "ncam03129",
+     "ns": 5120,
+     "sun": [
+      198.6,
+      47.2
+     ],
+     "inst": [
+      198.0,
+      -30.1
+     ],
+     "rasR": "https://pds-imaging.jpl.nasa.gov/archive/m20/r10/mars2020_navcam_ops_calibrated/data/sol/01129/ids/rdr/ncam/NRF_1129_0767167331_316RAS_N0520000NCAM03129_0A0095J01.IMG"
+    },
+    {
+     "sol": 1129,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r10/mars2020_navcam_ops_stereo/data/sol/01129/ids/rdr/ncam/NLF_1129_0767167632_428XYZ_N0520000NCAM03129_0A1095J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r10/mars2020_navcam_ops_calibrated/data/sol/01129/ids/rdr/ncam/NLF_1129_0767167632_428RAS_N0520000NCAM03129_0A1095J01.IMG",
+     "ltst": "12:58:52",
+     "seq": "ncam03129",
+     "ns": 5120,
+     "sun": [
+      200.1,
+      46.8
+     ],
+     "inst": [
+      269.7,
+      -30.1
+     ]
+    },
+    {
+     "sol": 1129,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r10/mars2020_navcam_ops_stereo/data/sol/01129/ids/rdr/ncam/NLF_1129_0767175416_410XYZ_N0520000NCAM02129_0A0095J02.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r10/mars2020_navcam_ops_calibrated/data/sol/01129/ids/rdr/ncam/NLF_1129_0767175416_410RAS_N0520000NCAM02129_0A0095J02.IMG",
+     "ltst": "15:05:04",
+     "seq": "ncam02129",
+     "ns": 5120,
+     "sun": [
+      230.1,
+      29.1
+     ],
+     "inst": [
+      53.8,
+      -30.3
+     ]
+    },
+    {
+     "sol": 1129,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r10/mars2020_navcam_ops_stereo/data/sol/01129/ids/rdr/ncam/NLF_1129_0767175699_410XYZ_N0520000NCAM02129_0A0095J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r10/mars2020_navcam_ops_calibrated/data/sol/01129/ids/rdr/ncam/NLF_1129_0767175699_410RAS_N0520000NCAM02129_0A0095J01.IMG",
+     "ltst": "15:09:40",
+     "seq": "ncam02129",
+     "ns": 5120,
+     "sun": [
+      230.8,
+      28.3
+     ],
+     "inst": [
+      125.6,
+      -29.9
+     ]
+    }
+   ],
+   "ref": "1129_1253",
+   "ref_xyz": "NLF_1129_0767167331_316",
+   "r_sel": [
+    1.2,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "cam_h": 1.95,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.12,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M18",
+      "sub": "沙丘床面细沙纹",
+      "size": 1.0,
+      "k": 24,
+      "max": 3,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*okf - 4*shadow - 4*taken - 1*edge - 3*seam)*(r<4.4)*(y<-1.4) - 6*(x>-1.7)*(x<-0.2)*(y>-1.6)",
+      "note": "Mount Washburn 一带：暗色沙床面，厘米级细沙纹（避开车辙）；沙床面背风坡有明暗残留（V 形暗区）"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "mastcam": {
+    "frames": [],
+    "patches": []
+   },
+   "cs": 0.002,
+   "ifov_mrad": 0.33,
+   "mosaic": true,
+   "grid_union": true,
+   "shade_sigma_m": 0.012
+  },
+  "p9_2818": {
+   "name": "Séítah 南出口：暗沙、细沙纹与小砾（傍晚/上午两种光照）",
+   "rover": "M2020",
+   "site": 9,
+   "drive": 2818,
+   "sols": [
+    341,
+    342
+   ],
+   "types": [
+    "M18"
+   ],
+   "note": "毅力号 Navcam 立体（2 帧全分辨率 / 2 帧半分辨率或 3840 宽）。调研：Dark sand with cm ripples, scattered pebbles/cobbles, ~85% clean in az155/az227/az200; old rover tracks at az272/299 (excluded); mast shadow in az155 at 16:38. (sheets/T_9-2818.jpg)",
+   "frames": [
+    {
+     "sol": 341,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00341/ids/rdr/ncam/NLF_0341_0697225502_848XYZ_N0092818NCAM03341_0A0195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00341/ids/rdr/ncam/NLF_0341_0697225502_848RAS_N0092818NCAM03341_0A0195J02.IMG",
+     "ltst": "16:38:27",
+     "seq": "ncam03341",
+     "ns": 2560,
+     "sun": [
+      268.0,
+      20.8
+     ],
+     "inst": [
+      154.7,
+      -30.2
+     ]
+    },
+    {
+     "sol": 341,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00341/ids/rdr/ncam/NLF_0341_0697225657_449XYZ_N0092818NCAM03341_0A0195J02.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00341/ids/rdr/ncam/NLF_0341_0697225657_449RAS_N0092818NCAM03341_0A0195J03.IMG",
+     "ltst": "16:40:58",
+     "seq": "ncam03341",
+     "ns": 2560,
+     "sun": [
+      268.2,
+      20.2
+     ],
+     "inst": [
+      226.8,
+      -30.0
+     ]
+    },
+    {
+     "sol": 342,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00342/ids/rdr/ncam/NLF_0342_0697290441_180XYZ_N0092818NCAM13341_0A0095J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00342/ids/rdr/ncam/NLF_0342_0697290441_180RAS_N0092818NCAM13341_0A0095J02.IMG",
+     "ltst": "10:11:54",
+     "seq": "ncam13341",
+     "ns": 5120,
+     "sun": [
+      114.7,
+      60.1
+     ],
+     "inst": [
+      128.0,
+      -30.1
+     ]
+    },
+    {
+     "sol": 342,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_stereo/data/sol/00342/ids/rdr/ncam/NLF_0342_0697290756_262XYZ_N0092818NCAM13341_0A0095J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00342/ids/rdr/ncam/NLF_0342_0697290756_262RAS_N0092818NCAM13341_0A0095J02.IMG",
+     "ltst": "10:17:00",
+     "seq": "ncam13341",
+     "ns": 5120,
+     "sun": [
+      116.0,
+      61.2
+     ],
+     "inst": [
+      199.7,
+      -29.9
+     ],
+     "rasR": "https://pds-imaging.jpl.nasa.gov/archive/m20/cumulative/mars2020_navcam_ops_calibrated/data/sol/00342/ids/rdr/ncam/NRF_0342_0697290756_262RAS_N0092818NCAM13341_0A0095J02.IMG"
+    }
+   ],
+   "ref": "0342_1017",
+   "ref_xyz": "NLF_0342_0697290756_262",
+   "r_sel": [
+    1.2,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "cam_h": 1.95,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.08,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M18",
+      "sub": "暗沙细沙纹 + 零星小砾",
+      "size": 1.0,
+      "k": 24,
+      "max": 4,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*okf - 4*shadow - 4*taken - 1*edge - 3*seam)*(r<4.4)*(y<-1.3)*(x>-3.3)*(x<2.6)",
+      "note": "Séítah 南出口：暗色沙，厘米级沙纹，零星卵石（避开东边旧车辙和西缘噪声）"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "mastcam": {
+    "frames": [],
+    "patches": []
+   },
+   "cs": 0.002,
+   "ifov_mrad": 0.33,
+   "grid_union": true,
+   "shade_sigma_m": 0.012
+  },
+  "p61_376": {
+   "name": "坑缘 Witch Hazel Hill 一带：浅色基岩上的暗色棱角卵石/块石（崖锥）",
+   "rover": "M2020",
+   "site": 61,
+   "drive": 376,
+   "sols": [
+    1302,
+    1303
+   ],
+   "types": [
+    "M11",
+    "M21"
+   ],
+   "note": "毅力号 Navcam 立体（0 帧全分辨率 / 6 帧半分辨率或 3840 宽）。调研：Angular dark clasts 5-60 cm scattered on pale regolith, one 0.5 m boulder in workspace; ~80% clean (arm left third of workspace; rover shadow bottom of az36). (sheets/T_61-376.jpg)",
+   "frames": [
+    {
+     "sol": 1302,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_navcam_ops_stereo/data/sol/01302/ids/rdr/ncam/NLF_1302_0782527210_159XYZ_N0610376NCAM00709_0A0095J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_navcam_ops_calibrated/data/sol/01302/ids/rdr/ncam/NLF_1302_0782527210_159RAS_N0610376NCAM00709_0A0095J01.IMG",
+     "ltst": "12:20:47",
+     "seq": "ncam00709",
+     "ns": 3840,
+     "sun": [
+      192.5,
+      65.5
+     ],
+     "inst": [
+      305.6,
+      -31.4
+     ],
+     "rasR": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_navcam_ops_calibrated/data/sol/01302/ids/rdr/ncam/NRF_1302_0782527210_159RAS_N0610376NCAM00709_0A0095J01.IMG"
+    },
+    {
+     "sol": 1302,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_navcam_ops_stereo/data/sol/01302/ids/rdr/ncam/NLF_1302_0782527896_941XYZ_N0610376NCAM03302_0A0195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_navcam_ops_calibrated/data/sol/01302/ids/rdr/ncam/NLF_1302_0782527896_941RAS_N0610376NCAM03302_0A0195J01.IMG",
+     "ltst": "12:31:56",
+     "seq": "ncam03302",
+     "ns": 2560,
+     "sun": [
+      198.9,
+      64.7
+     ],
+     "inst": [
+      107.7,
+      -30.3
+     ]
+    },
+    {
+     "sol": 1302,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_navcam_ops_stereo/data/sol/01302/ids/rdr/ncam/NLF_1302_0782528748_179XYZ_N0610376NCAM02302_0A0195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_navcam_ops_calibrated/data/sol/01302/ids/rdr/ncam/NLF_1302_0782528748_179RAS_N0610376NCAM02302_0A0195J01.IMG",
+     "ltst": "12:45:44",
+     "seq": "ncam02302",
+     "ns": 2560,
+     "sun": [
+      206.2,
+      63.5
+     ],
+     "inst": [
+      324.0,
+      -29.9
+     ]
+    },
+    {
+     "sol": 1302,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_navcam_ops_stereo/data/sol/01302/ids/rdr/ncam/NLF_1302_0782528896_020XYZ_N0610376NCAM02302_0A0195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_navcam_ops_calibrated/data/sol/01302/ids/rdr/ncam/NLF_1302_0782528896_020RAS_N0610376NCAM02302_0A0195J01.IMG",
+     "ltst": "12:48:08",
+     "seq": "ncam02302",
+     "ns": 2560,
+     "sun": [
+      207.4,
+      63.2
+     ],
+     "inst": [
+      35.5,
+      -30.2
+     ]
+    },
+    {
+     "sol": 1303,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_navcam_ops_stereo/data/sol/01303/ids/rdr/ncam/NLF_1303_0782617297_724XYZ_N0610376NCAM00347_0A0195J01.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_navcam_ops_calibrated/data/sol/01303/ids/rdr/ncam/NLF_1303_0782617297_724RAS_N0610376NCAM00347_0A0195J01.IMG",
+     "ltst": "12:42:18",
+     "seq": "ncam00347",
+     "ns": 2560,
+     "sun": [
+      204.7,
+      64.0
+     ],
+     "inst": [
+      305.5,
+      -31.8
+     ]
+    },
+    {
+     "sol": 1303,
+     "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_navcam_ops_stereo/data/sol/01303/ids/rdr/ncam/NLF_1303_0782617827_675XYZ_N0610376NCAM00709_0A0095J03.IMG",
+     "ras": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_navcam_ops_calibrated/data/sol/01303/ids/rdr/ncam/NLF_1303_0782617827_675RAS_N0610376NCAM00709_0A0095J01.IMG",
+     "ltst": "12:50:54",
+     "seq": "ncam00709",
+     "ns": 3840,
+     "sun": [
+      209.0,
+      63.1
+     ],
+     "inst": [
+      305.6,
+      -31.6
+     ]
+    }
+   ],
+   "ref": "1302_1220",
+   "ref_xyz": "NLF_1302_0782527210_159",
+   "r_sel": [
+    1.2,
+    5.0
+   ],
+   "r_grid": 4.5,
+   "cam_h": 1.95,
+   "cut": {
+    "min_frames": 1,
+    "max_hole": 0.12,
+    "mask_shadow": true,
+    "classify": {},
+    "rules": [
+     {
+      "type": "M11",
+      "sub": "浅色风化层上的棱角岩屑",
+      "size": 1.0,
+      "k": 24,
+      "max": 4,
+      "avoid": [
+       "*"
+      ],
+      "score": "(2*okf - 4*shadow - 4*taken - 1*edge - 3*seam)*(r<4.4)",
+      "note": "坑缘 Witch Hazel Hill 一带：浅色细粒上散布 5–60 cm 暗色棱角岩屑"
+     }
+    ],
+    "max_seam_step": [
+     0.035,
+     3.0
+    ]
+   },
+   "mastcam": {
+    "frames": [
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615045_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615045_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:06:47",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615110_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615110_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:07:06",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615129_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615129_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:07:19",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615143_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615143_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:07:33",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615158_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615158_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:07:49",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615173_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615173_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:08:03",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615188_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615188_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:08:17",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615203_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615203_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:08:30",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615216_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615216_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:08:44",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615230_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615230_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:08:57",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615243_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615243_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:09:09",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615257_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615257_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:09:24",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615272_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615272_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:09:41",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615289_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615289_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:09:54",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615303_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615303_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:10:09",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615317_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615317_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:10:27",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615336_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615336_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:10:42",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615353_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615353_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:10:59",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615369_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615369_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:11:13",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615383_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615383_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:11:28",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615398_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615398_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:11:42",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615413_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615413_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:11:57",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615428_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615428_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:12:15",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615447_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615447_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:12:30",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615462_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615462_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:12:43",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615476_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615476_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:13:00",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615493_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615493_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:13:16",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615511_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615511_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:13:32",
+      "seq": "zcam09365"
+     },
+     {
+      "sol": 1303,
+      "xyz": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_ops_stereo/data/sol/01303/ids/rdr/zcam/ZLF_1303_0782615526_178XYZ_N0610376ZCAM09365_1100LMJ01.IMG",
+      "iof": "https://pds-imaging.jpl.nasa.gov/archive/m20/r12/mars2020_mastcamz_sci_calibrated/data/1303/iof/ZL0_1303_0782615526_178IOF_N0610376ZCAM09365_1100LMA01.IMG",
+      "ltst": "12:13:46",
+      "seq": "zcam09365"
+     }
+    ],
+    "patches": [
+     {
+      "type": "M11",
+      "sol": 1303,
+      "seq": "ZCAM09365",
+      "cs": 0.0005,
+      "N": 1024,
+      "N_min": 512,
+      "search": 3.0,
+      "station_origin": true,
+      "note": "Mastcam-Z 110 mm zcam09365 拼图，亚毫米"
+     }
+    ]
+   },
+   "cs": 0.003,
+   "ifov_mrad": 0.66,
+   "h_lp": 1.88,
+   "shade_sigma_m": 0.025,
+   "grid_union": true,
+   "flags": [
+    "半分辨率"
+   ]
+  }
+ },
+ "类型说明": "粗糙度：PBR 粗糙度区间（火星地面都很亚光；新鲜磨蚀面最低）。高度混合.对比：0–1，高度混合时这一类边界的硬度（1 = 硬边、盖在高处；0 = 软、填低处）。放置：坡度区间（度）、曲率、相对高程、背风等线索，给程序化生成器挑子类用。现有地类：游戏现有 4 个地类里对应哪一个。程序化=True 的类没有真火星样块。"
+}
